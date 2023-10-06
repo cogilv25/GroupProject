@@ -61,7 +61,7 @@
 #### Set Objectives
 
 Either vote on 1 project above or present a new project by the end of the hoildays.
----
+
 ## Actions Points
 
 ### For Next Week

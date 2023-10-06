@@ -57,6 +57,11 @@
 - Project could become complex if features are added.
 - Hardware Needed.
 - New programming languages.
+### Overall Roles needed
+- Web backed
+- Database 
+- Frontend
+- Application
 
 #### Set Objectives
 

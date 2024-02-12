@@ -1,0 +1,124 @@
+.background-image-container {
+    background-image: url('/Graphics/Images/background-image-login.svg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    color: black; 
+}
+
+@media screen and (max-width: 1024px) { 
+    .background-image-container {
+        background-image: none;
+        background-color: #dbdbdb; 
+    }
+}
+
+.logo-container, .input-fields-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
+.input-fields-container {
+    align-items: center; 
+}
+
+.text-center {
+    text-align: center; 
+}
+
+
+.customStyle {
+    background-color: #468F8B;
+    color: black;
+    font-weight:500;
+    border: black solid 1px;
+    width: 330px;
+    border-radius: 20px; 
+    padding: 10px 20px; 
+    cursor: pointer;
+    font-size: 16px; 
+    margin-bottom: 10px;
+}
+.noaccount {
+    font-weight: 600;
+}
+.or-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-bottom: -20px; 
+    z-index: 1; 
+}
+
+.boldhr {
+    position: relative;
+    border: none;
+    height: 1px;
+    background-color: #000; 
+    margin-top: 20px;
+}
+
+.or-container::before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    width: 30px; 
+    height: 20px;
+    background-color: #dbdbdb; 
+    z-index: -1; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+input {
+    border: 0 !important;
+    outline: 0 !important;
+    border-bottom: 2px solid black !important;
+    box-shadow: none !important;
+    background-color: #dbdbdb !important;
+}
+
+input::placeholder {
+    color: black;
+    font-weight: 500;
+    opacity: 100%;
+}
+
+.google {
+    background-image: url('/Graphics/Icons/google.png');
+    background-repeat: no-repeat;
+    background-size: 30px;
+    background-position: 10px 50%; 
+    padding-left: 40px; /
+}
+
+.outlook {
+    background-image: url('/Graphics/Icons/outlook.png');
+    background-repeat: no-repeat;
+    background-size: 30px;
+    background-position: 10px 50%; 
+    padding-left: 40px; 
+}
+
+.password-container {
+    position: relative;
+}
+
+.password-container i {
+    position: absolute;
+    right: 10px;
+    top: 30%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+.error {
+    color: rgb(190, 47, 47);
+    font-size: 1em;
+    height: 10px;
+}
+#confirmPasswordError {
+    margin-bottom: 25px;
+}

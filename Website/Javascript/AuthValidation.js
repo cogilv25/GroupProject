@@ -1,0 +1,104 @@
+// Initialize Foundation
+$(document).foundation();
+
+$(document).ready(function() {
+$(".toggleFormBtn").click(function() {
+$("#loginForm").parent().toggle();
+$("#signupForm").toggle(); 
+});
+
+// Function to toggle password visibility
+function togglePassword(toggleIconId, passwordInputId) {
+$(toggleIconId).click(function() {
+    const type = $(passwordInputId).attr("type") === "password" ? "text" : "password";
+    $(passwordInputId).attr("type", type);
+    $(this).toggleClass("bi-eye bi-eye-slash");
+});
+}
+
+// Initialize password toggles for each password field
+togglePassword("#toggleLoginPassword", "#loginPassword");
+togglePassword("#toggleSignupPassword", "#signupPassword");
+togglePassword("#toggleConfirmPassword", "#confirmPassword");
+
+
+// Email validation function
+function isValidEmail(email) {
+var pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+return pattern.test(email);
+}
+
+// Password length validation function
+function isValidPasswordLength(password) {
+return password.length >= 8;
+}
+
+// Clear error message
+function clearErrorMessage(element) {
+$(element).text('');
+}
+
+// Set error message
+function setErrorMessage(element, message) {
+$(element).text(message);
+}
+
+// Validate Login Form
+$("#loginForm").submit(function(event) {
+var isValid = true;
+clearErrorMessage("#emailError");
+clearErrorMessage("#passwordError");
+
+var email = $("#email").val();
+if (!isValidEmail(email)) {
+setErrorMessage("#emailError", "Please enter a valid email.");
+isValid = false;
+}
+
+var password = $("#loginPassword").val();
+if (!isValidPasswordLength(password)) {
+setErrorMessage("#passwordError", "Password must be at least 8 characters.");
+isValid = false;
+}
+
+if (!isValid) {
+event.preventDefault(); 
+}
+});
+
+// Validate Signup Form
+$("#signupForm").submit(function(event) {
+var isValid = true;
+clearErrorMessage("#signupEmailError"); 
+clearErrorMessage("#signupPasswordError"); 
+clearErrorMessage("#confirmPasswordError"); 
+
+var email = $("#signupEmail").val();
+if (!isValidEmail(email)) {
+setErrorMessage("#signupEmailError", "Please enter a valid email."); 
+isValid = false;
+}
+
+var password = $("#signupPassword").val();
+if (!isValidPasswordLength(password)) {
+setErrorMessage("#signupPasswordError", "Password must be at least 8 characters."); 
+isValid = false;
+}
+});
+
+$("#confirmPassword").on('keyup', function() {
+var password = $("#signupPassword").val();
+var confirmPassword = $(this).val();
+
+// Clear previous error message
+clearErrorMessage("#confirmPasswordError");
+
+// Check if passwords match
+if (password !== confirmPassword) {
+// If they don't match, display an error message
+setErrorMessage("#confirmPasswordError", "Passwords do not match.");
+isValid = false;
+}
+});
+
+});

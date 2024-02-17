@@ -15,10 +15,27 @@ return function (App $app) {
         return $response;
     });
 
-    $app->get('/', function (Request $request, Response $response) {
+   $app->map(['GET', 'POST'], '/', function (Request $request, Response $response) {
         $renderer = $this->get('renderer');
-        return $renderer->render($response, 'Authpage.html');
+        $target = 'Authpage.html';
+        $session = $request->getAttribute("session");
+
+        if(isset($_SESSION['user']))
+        {
+            $response->getBody()->write("You have successfully logged in {$_SESSION['user']}!");
+            $response->getBody()->write("<hr><a href=\"/logout\">Logout</a>");
+            return $response;
+        }
+
+        return $renderer->render($response, $target);
     });
+
+   $app->get("/logout", function() {
+        session_unset();
+        session_destroy();
+        header('Location: /');
+        die();
+   });
 
     $app->group('/users', function (Group $group) {
         $group->get('', ListUsersAction::class);

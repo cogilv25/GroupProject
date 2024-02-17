@@ -27,7 +27,18 @@ return function (Container $container) {
             return $logger;
         });
     
-    $container->set('renderer', function ($container) {
+    $container->set('renderer', function (ContainerInterface $c) {
         return new PhpRenderer(__DIR__ . '/../public/Views');
+    });
+
+    $container->set('db', function(ContainerInterface $c) {
+        $db = $c->get(SettingsInterface::class)->get('db');
+        try
+        {
+            $connection = new mysqli($db['hostname'],$db['username'],$db['password'],$db['schema']);
+            return $connection;
+        } catch(Exception $e) {
+            return null;
+        }
     });
 };

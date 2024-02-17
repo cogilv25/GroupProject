@@ -6,38 +6,26 @@ use App\Application\Handlers\HttpErrorHandler;
 use App\Application\Handlers\ShutdownHandler;
 use App\Application\ResponseEmitter\ResponseEmitter;
 use App\Application\Settings\SettingsInterface;
-use DI\ContainerBuilder;
+use DI\Container;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
-use Slim\Views\PhpRenderer;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Instantiate PHP-DI ContainerBuilder
-$containerBuilder = new ContainerBuilder();
-
-if (false) { // Should be set to true in production
-	$containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
-}
+// Instantiate PHP-DI Container
+$container = new Container();
 
 // Set up settings
 $settings = require __DIR__ . '/../app/settings.php';
-$settings($containerBuilder);
+$settings($container);
 
 // Set up dependencies
 $dependencies = require __DIR__ . '/../app/dependencies.php';
-$dependencies($containerBuilder);
+$dependencies($container);
 
 // Set up repositories
 $repositories = require __DIR__ . '/../app/repositories.php';
-$repositories($containerBuilder);
-
-// Build PHP-DI Container instance
-$container = $containerBuilder->build();
-
-$container->set('renderer', function ($container) {
-    return new PhpRenderer(__DIR__ . '/Views');
-});
+$repositories($container);
 
 // Instantiate the app
 AppFactory::setContainer($container);

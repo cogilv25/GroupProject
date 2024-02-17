@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 use App\Application\Settings\Settings;
 use App\Application\Settings\SettingsInterface;
-use DI\ContainerBuilder;
+use DI\Container;
 use Monolog\Logger;
 
-return function (ContainerBuilder $containerBuilder) {
+return function (Container $container) {
 
     // Global Settings Object
-    $containerBuilder->addDefinitions([
-        SettingsInterface::class => function () {
+    $container->set(SettingsInterface::class, function () {
             return new Settings([
                 'displayErrorDetails' => true, // Should be set to false in production
                 'logError'            => false,
@@ -28,6 +27,5 @@ return function (ContainerBuilder $containerBuilder) {
                     'schema' => "mydb"
                 ]
             ]);
-        }
-    ]);
+        });
 };

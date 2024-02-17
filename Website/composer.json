@@ -1,0 +1,25 @@
+{
+    "name": "group-project/cleaning-app",
+    "description": "An app to help households organize cleaning responsibilities by generating rotas",
+    "require": {
+        "php": "^8.0",
+        "ext-json": "*",
+        "monolog/monolog": "^2.8",
+        "php-di/php-di": "^6.4",
+        "slim/php-view": "^3.2",
+        "slim/psr7": "^1.5",
+        "slim/slim": "^4.10"
+    },
+    "config": {
+        "process-timeout": 0,
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "scripts": {
+        "start": "php -S localhost:8080 -t public"
+    }
+}

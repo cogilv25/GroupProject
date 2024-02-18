@@ -1,5 +1,6 @@
 # Cleaning App
 ## Introduction
+The project aims to develop an application for a non-profit organization that assists students in managing the cleaning and tidying responsibilities of shared accommodation facilities. The application seeks to facilitate cooperation among co-habitants through a structured and user-friendly rota system, ultimately promoting a cleaner and more organized living environment.
 
 ---
 ## How to get up and running

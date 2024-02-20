@@ -22,9 +22,8 @@ return function (App $app) {
 
         if(isset($_SESSION['user']))
         {
-            $response->getBody()->write("You have successfully logged in {$_SESSION['user']}!");
-            $response->getBody()->write("<hr><a href=\"/logout\">Logout</a>");
-            return $response;
+            $target = "Example.php";
+            return $renderer->render($response, $target, ["name" => $_SESSION['user']]);
         }
 
         return $renderer->render($response, $target);

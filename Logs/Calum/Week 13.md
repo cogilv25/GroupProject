@@ -6,7 +6,7 @@ Create an account for firebase and determine viability.
 	Create the account, determine if mvc frameworks can be installed and used, determine if node.js can be used.
 </details>
 
-Completed: **Not Completed**  
+Completed: **16/12/2023**  
 
 ---
 
@@ -16,7 +16,7 @@ Do initial research on backend solutions.
 	Do some initial research on backend solutions (Rust, Go, MVC Frameworks, node.js)
 </details>
 
-Completed: **Not Completed**
+Completed: **20/12/2023**
 
 ---
 
@@ -29,4 +29,4 @@ Completed: **Not Completed**
 
 ---
 
-Weekly Log Completed: **Not Completed**  
+Weekly Log Completed: **21/12/2023**  

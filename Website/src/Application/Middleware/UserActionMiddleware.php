@@ -59,6 +59,7 @@ class UserActionMiddleware implements Middleware
                     return $handler->handle($request);
 
                 $_SESSION['user'] = $fname;
+                $_SESSION['email'] = $email;
             }
             elseif($data['formName'] == 'register')
             {
@@ -102,6 +103,7 @@ class UserActionMiddleware implements Middleware
 
 
                 $_SESSION['user'] = $fname;
+                $_SESSION['email'] = $email;
 
                 
             }

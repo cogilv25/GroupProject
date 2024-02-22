@@ -4,7 +4,7 @@ $(document).foundation();
 $(document).ready(function() {
 $(".toggleFormBtn").click(function() {
 $("#loginForm").parent().toggle();
-$("#signupForm").toggle(); 
+$("#signup").toggle(); 
 });
 
 // Function to toggle password visibility
@@ -101,4 +101,77 @@ isValid = false;
 }
 });
 
+});
+
+$(document).ready(function() {
+    // Handle the submission of the login form
+    $('#loginForm').submit(function(event) {
+        // Prevent the default form submission
+        event.preventDefault();
+
+        // Serialize the form data
+        var formData = $(this).serialize();
+
+        // Perform the AJAX request
+        $.ajax({
+            type: "POST",
+            url: "/login", // Specify your own URL for the login form
+            data: formData,
+            dataType: "json",
+            success: function(response) {
+                if (response && response.message) {
+                    console.log("Login Successful: ", response.message);
+                    location.reload();
+                } else {
+                    console.error("Error: Invalid response format");
+                }
+            },
+            error: function(xhr, status, error) {
+                try {
+                    response = JSON.parse(xhr.responseText);
+                    console.error("Error: ", response.message);
+                } catch (e) {
+                    console.error("Error submitting login form: ", error);
+                }
+            }
+        });
+    });
+
+    // Handle the submission of the signup form
+    $('#signupForm').submit(function(event) {
+        // Prevent the default form submission
+        event.preventDefault();
+
+        // Serialize the form data
+        var formData = $(this).serialize();
+
+        // Perform the AJAX request
+        $.ajax({
+            type: "POST",
+            url: "/signup", // Specify your own URL for the signup form
+            data: formData,
+            dataType: "json",
+            success: function(response) {
+                if (response && response.message) {
+                                        location.reload();
+
+                    console.log("Signup form Successful: ", response.message);
+                    
+                } else {
+                    console.error("Error: Invalid response format");
+                }
+            },
+            error: function(error) {
+                var response;
+            try {
+                response = JSON.parse(error.responseText);
+                console.error("Error: ", response.message);
+            } catch (e) {
+                // If response is not JSON or empty
+                console.error("Error submitting login form: ", error);
+            }
+                // Handle error
+            }
+        });
+    });
 });

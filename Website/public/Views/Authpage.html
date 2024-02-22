@@ -22,7 +22,6 @@
                     <div class="input-fields-container">
                         <div class="input-fields-container text-center">
                             <form id="loginForm" method="post">
-                                <input type="hidden" name="formName" value="login">
                                 <h2 class="form-title">Start Cleaning</h2>
                                 <p class="form-subtitle">Login Today.</p>
                                 <input type="email" id="email" name="email" placeholder=" Enter Email" required>
@@ -46,9 +45,8 @@
                             </form>
                         </div>
                         
-                        <div id="signupForm" class="input-fields-container text-center" style="display:none;">
-                            <form method="post">
-                                <input type="hidden" name="formName" value="register">
+                        <div id="signup" class="input-fields-container text-center" style="display:none;">
+                            <form id="signupForm" method="post">
                                 <h2 class="form-title">Start Cleaning</h2>
                                 <p class="form-subtitle">Join today.</p>
                                 <input type="text" id="forename" name="forename" placeholder="First Name" required>

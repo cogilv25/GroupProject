@@ -15,19 +15,32 @@ return function (App $app) {
         return $response;
     });
 
-   $app->map(['GET', 'POST'], '/', function (Request $request, Response $response) {
-        $renderer = $this->get('renderer');
-        $target = 'Authpage.html';
-        $session = $request->getAttribute("session");
-
-        if(isset($_SESSION['user']))
-        {
-            $target = "Example.php";
-            return $renderer->render($response, $target, ["name" => $_SESSION['user']]);
+    $app->map(['GET', 'POST'],'/', function (Request $request, Response $response) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
-
-        return $renderer->render($response, $target);
+        // If a user session exists, redirect to another page 
+        if (isset($_SESSION['loggedIn'])) {
+            return $response->withHeader('Location', '/Example.php')->withStatus(302);
+        }
+        // If no user session exists, show the Authpage.html
+        $renderer = $this->get('renderer'); 
+        return $renderer->render($response, 'Authpage.html');
     });
+
+
+    $app->get('/Example.php', function (Request $request, Response $response) {
+        $renderer = $this->get('renderer');
+        return $renderer->render($response, 'Example.php');
+    });
+
+    $app->post('/login', function (Request $request, Response $response) {
+        return $response;
+    })->add(\App\Application\Middleware\LoginMiddleware::class);
+     
+    $app->post('/signup', function (Request $request, Response $response) {
+        return $response;
+    })->add(\App\Application\Middleware\RegistrationMiddleware::class);
 
    $app->get("/logout", function() {
         session_unset();

@@ -7,12 +7,18 @@ USE `mydb`;
 -- -----------------------------------------------------
 -- Table `mydb`.`House`
 -- -----------------------------------------------------
+SET FOREIGN_KEY_CHECKS = 0;
 CREATE TABLE `mydb`.`House` (
   `houseId` INT NOT NULL,
+  `adminEmail` VARCHAR(45) NOT NULL,
   `roomCounter` INT,
-  PRIMARY KEY (`houseId`));
+  PRIMARY KEY (`houseId`),
+  INDEX `fk_House_user_idx` (`adminEmail` ASC),
+  CONSTRAINT `fk_house_user`
+    FOREIGN KEY (`adminEmail`)
+    REFERENCES `mydb`.`user` (`email`));
 
-
+SET FOREIGN_KEY_CHECKS = 1;
 -- -----------------------------------------------------
 -- Table `mydb`.`user`
 -- -----------------------------------------------------
@@ -21,12 +27,11 @@ CREATE TABLE `mydb`.`user` (
   `surname` VARCHAR(45) NOT NULL,
   `email` VARCHAR(45) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
-  `role` TINYINT NOT NULL DEFAULT 0,
   `House_houseId` INT,
   `personalPoints` INT,
   PRIMARY KEY (`email`),
   INDEX `fk_user_House_idx` (`House_houseId` ASC),
-  CONSTRAINT `fk_user_House`
+  CONSTRAINT `fk_user_house`
     FOREIGN KEY (`House_houseId`)
     REFERENCES `mydb`.`House` (`houseId`));
 
@@ -134,6 +139,7 @@ CREATE TABLE `mydb`.`Task_has_user` (
   `roomId` INT NOT NULL,
   `email` VARCHAR(45) NOT NULL,
   `rotaId` INT NOT NULL,
+  `status` enum('Todo','Ongoing','Complete'),
   `startTime` VARCHAR(45) NOT NULL,
   `endTime` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`taskId`, `roomId`, `email`, `rotaId`),

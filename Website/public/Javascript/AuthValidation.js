@@ -153,7 +153,7 @@ $(document).ready(function() {
             dataType: "json",
             success: function(response) {
                 if (response && response.message) {
-                    location.reload();
+                                        location.reload();
 
                     console.log("Signup form Successful: ", response.message);
                     

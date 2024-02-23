@@ -21,16 +21,17 @@ return function (App $app) {
    $app->map(['GET', 'POST'], '/', function (Request $request, Response $response) {
         // If a user session exists, redirect to another page 
         if (isset($_SESSION['loggedIn'])) {
-            return $response->withHeader('Location', '/Example.php')->withStatus(302);
+            return $response->withHeader('Location', '/Dashboard.php')->withStatus(302);
         }
         // If no user session exists, show the Authpage.html
         $renderer = $this->get('renderer'); 
         return $renderer->render($response, 'Authpage.html');
     });
 
-    $app->get('/Example.php', function (Request $request, Response $response) {
+
+    $app->get('/Dashboard.php', function (Request $request, Response $response) {
         $renderer = $this->get('renderer');
-        return $renderer->render($response, 'Example.php');
+        return $renderer->render($response, 'Dashboard.php');
     });
 
     $app->post('/login', function (Request $request, Response $response) {

@@ -9,7 +9,7 @@ USE `mydb`;
 -- -----------------------------------------------------
 SET FOREIGN_KEY_CHECKS = 0;
 CREATE TABLE `mydb`.`House` (
-  `houseId` INT NOT NULL,
+  `houseId` INT NOT NULL AUTO_INCREMENT,
   `adminEmail` VARCHAR(45) NOT NULL,
   `roomCounter` INT,
   PRIMARY KEY (`houseId`),

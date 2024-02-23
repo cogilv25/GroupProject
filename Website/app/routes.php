@@ -29,8 +29,10 @@ return function (App $app) {
 
     $app->get('/Dashboard.php', function (Request $request, Response $response) {
         $renderer = $this->get('renderer');
-        return $renderer->render($response, 'Dashboard.php');
-    });
+
+        $data = ['link' => $request->getAttribute('link')];
+        return $renderer->render($response, 'Dashboard.php', $data);
+    })->add(\App\Application\Middleware\DashboardMiddleware::class);
 
     $app->post('/login', function (Request $request, Response $response) {
         return $response;

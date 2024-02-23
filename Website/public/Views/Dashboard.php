@@ -39,7 +39,7 @@
                     <div class="grid-x grid-padding-x align-middle">
                         <div class="cell auto urlstyle">
                             <!-- -->
-                            <p><a id="invitationUrl">Output backend stuff here</a></p>
+                            <p><a id="invitationUrl"><?=$link?></a></p>
                         </div>
                         <div class="cell shrink">
                             <button type="button" class="button primary">Copy</button>

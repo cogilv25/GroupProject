@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Application\Actions\House;
+use App\Application\Actions\HouseHold;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -40,13 +40,13 @@ return function (App $app) {
         return $response;
     })->add(\App\Application\Middleware\RegistrationMiddleware::class);
 
-    //House Actions
-    $app->group('/house', function (Group $group)
+    //HouseHold Actions
+    $app->group('/household', function (Group $group)
     {
-        $group->get('/create', House\CreateHouseAction::class);
-        $group->get('/join/{id}', House\JoinHouseAction::class);
-        $group->get('/delete', House\DeleteHouseAction::class);
-        $group->get('/leave', House\LeaveHouseAction::class);
+        $group->get('/create', HouseHold\CreateHouseHoldAction::class);
+        $group->get('/join/{id}', HouseHold\JoinHouseHoldAction::class);
+        $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
+        $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);
     });
 
    $app->get("/logout", function() {

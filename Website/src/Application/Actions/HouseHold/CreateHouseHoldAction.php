@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Application\Actions\House;
+namespace App\Application\Actions\HouseHold;
 
 use App\Application\Actions\Action;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -9,7 +9,7 @@ use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Exception\HttpMethodNotAllowedException;
 
-class CreateHouseAction extends Action
+class CreateHouseHoldAction extends Action
 {
 
     protected function action(): Response

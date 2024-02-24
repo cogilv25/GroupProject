@@ -46,9 +46,11 @@ return function (App $app) {
     $app->group('/household', function (Group $group)
     {
         $group->get('/create', HouseHold\CreateHouseHoldAction::class);
+        //TODO: redirect user to login/register then back to this route afterwards
         $group->get('/join/{id}', HouseHold\JoinHouseHoldAction::class);
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);
+        $group->post('/remove', Household\RemoveUserHouseHoldAction::class);
     });
 
    $app->get("/logout", function() {

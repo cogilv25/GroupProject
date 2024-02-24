@@ -19,36 +19,26 @@ class RemoveUserHouseHoldAction extends Action
         if(!isset($_POST['userId']))
             throw new HttpBadRequestException($this->request, "No userId provided");
 
-        $email = $_SESSION['loggedIn'];
-        $targetUser = $_POST['userId'];
+        $userId = $_SESSION['loggedIn'];
+        $targetUserId = $_POST['userId'];
         $db = $this->container->get('db');
 
-        //Get users of the house administrated by the acting user excluding the acting user.
-        //This will return null if the user is not an admin of a house or is the only member of their house.
-        $query = $db->prepare("SELECT `email` FROM `user` JOIN `House` ON `House_houseId`=`houseId` WHERE `adminEmail`=? AND NOT `email`=?");
-        $query->bind_param("ss", $email, $email);
+        //Get the target user of the house administrated by the acting user.
+        //This will return null if the user is not an admin of a house or the target user isn't part of their house.
+        $query = $db->prepare("SELECT `userId` FROM `user` JOIN `House` ON `House_houseId`=`houseId` WHERE `adminId`=? AND `userId`=?");
+        $query->bind_param("ii", $userId, $targetUserId);
         $query->execute();
-        $query->bind_result($memberEmail);
-
-        //Attempt to find the targerUser specified in the query results
-        $targetUserInHouse = false;
-        while($query->fetch())
-        {
-            if($targetUser == $memberEmail)
-            {
-                $targetUserInHouse = true;
-                break;
-            }
-        }
+        $query->bind_result($memberId);
+        $query->fetch();
         $query->close();
 
-        if(!$targetUserInHouse)
-            throw new HttpBadRequestException($this->request, "Target user is not a member of a house administered by acting users");
+        if($targetUserId == null)
+            throw new HttpBadRequestException($this->request, "Target user is not a member of a house administered by the acting user");
         
 
         //Remove targetUser from House
-        $query = $db->prepare("UPDATE `user` SET `House_houseId`=null  WHERE `email`=?");
-        $query->bind_param("s", $targetUser);
+        $query = $db->prepare("UPDATE `user` SET `House_houseId`=null  WHERE `userId`=?");
+        $query->bind_param("i", $targetUserId);
         $result = $query->execute();
         $query->close();
         $db->close();

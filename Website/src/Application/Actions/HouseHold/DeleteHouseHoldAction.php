@@ -17,20 +17,20 @@ class DeleteHouseHoldAction extends Action
         if(!isset($_SESSION['loggedIn']))
             throw new HttpUnauthorizedException($this->request, "You need to be logged in to do this");
             
-        $email = $_SESSION['loggedIn'];
+        $userId = $_SESSION['loggedIn'];
         $db = $this->container->get('db');
 
         //Check if the user is an admin of a house
-        $query = $db->prepare("SELECT `House_houseId`, `adminEmail` from `user` left join `House` on `user`.`House_houseId` = `House`.`houseId` WHERE email = ?");
-        $query->bind_param("s", $email);
+        $query = $db->prepare("SELECT `House_houseId`, `adminId` from `user` left join `House` on `user`.`House_houseId` = `House`.`houseId` WHERE `userId` = ?");
+        $query->bind_param("i", $userId);
         $query->execute();
-        $query->bind_result($house, $adminEmail);
+        $query->bind_result($house, $adminId);
         $query->fetch();
         $query->close();
 
         if($house==null)
             throw new HttpBadRequestException($this->request, "You are not a member of any house!");
-        else if($adminEmail != $email)
+        else if($adminId != $userId)
             throw new HttpUnauthorizedException($this->request, "You are not the admin of your house!");
 
         //Remove all users from House

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Settings\SettingsInterface;
+use App\Application\Domain\DatabaseDomain;
 use DI\Container;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -32,13 +33,6 @@ return function (Container $container) {
     });
 
     $container->set('db', function(ContainerInterface $c) {
-        $db = $c->get(SettingsInterface::class)->get('db');
-        try
-        {
-            $connection = new mysqli($db['hostname'],$db['username'],$db['password'],$db['schema']);
-            return $connection;
-        } catch(Exception $e) {
-            return null;
-        }
+        return new mysqli("127.0.0.1", "root", "", "cleansync");
     });
 };

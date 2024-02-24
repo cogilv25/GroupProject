@@ -41,7 +41,7 @@ class LoginMiddleware implements Middleware
                 return $handler->handle($request);
             }
 
-            $query = $db->prepare("SELECT password, forename FROM user WHERE email = ?");
+            $query = $db->prepare("SELECT password, userId FROM user WHERE email = ?");
             $query->bind_param("s", $email);
             $query->execute();
             $query->store_result(); 
@@ -51,7 +51,7 @@ class LoginMiddleware implements Middleware
                 return $handler->handle($request);
             }
 
-            $query->bind_result($hashedPassword, $forename);
+            $query->bind_result($hashedPassword, $id);
             $query->fetch();
             $query->close();
 
@@ -60,7 +60,7 @@ class LoginMiddleware implements Middleware
                 return $handler->handle($request);
             } else {
                 // Creates Session called Logged In with the value of the user email
-                $_SESSION['loggedIn'] = $email;
+                $_SESSION['loggedIn'] = $id;
                 // Returns a Json response 
                 return $this->returnJsonResponse($handler->handle($request), 'Login was successful');
             }

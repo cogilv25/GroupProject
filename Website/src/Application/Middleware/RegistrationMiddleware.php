@@ -63,8 +63,22 @@ class RegistrationMiddleware implements Middleware
                 return $handler->handle($request);
             }  else {
                 $insertQuery->close();
-                // Creates Session called Logged In with the value of the user email
-                $_SESSION['loggedIn'] = $email;
+
+                // Creates Session called Logged In with the new users userId
+                $selectQuery = $db->prepare("SELECT userId FROM user WHERE email = ?");
+                $selectQuery->bind_param("s", $email);
+                $selectQuery->execute();
+                $selectQuery->bind_result($id);
+
+                //Theoretically unreachable, only happens if the user doesn't exist
+                if($selectQuery->fetch()!=true)
+                {
+                    $selectQuery->close();
+                    return $handler->handle($request);
+                }
+
+                $selectQuery->close();
+                $_SESSION['loggedIn'] = $id;
                 // Returns a Json response 
                 return $this->returnJsonResponse($handler->handle($request), 'Signup was successful');
             }

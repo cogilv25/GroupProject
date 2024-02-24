@@ -19,7 +19,7 @@ class DashboardMiddleware implements Middleware
         if(!isset($_SESSION['loggedIn']))
             throw new HttpUnauthorizedException($request, "You must be logged ion to access this page");
         
-        $email = $_SESSION['loggedIn'];
+        $userId = $_SESSION['loggedIn'];
         $container = $request->getAttribute('container');
         $request = $request->withAttribute('link', 'No Link');
 
@@ -28,16 +28,16 @@ class DashboardMiddleware implements Middleware
         if (!$db)
             return $handler->handle($request);
 
-        $query = $db->prepare("SELECT `houseId` FROM `user` JOIN `House` ON `adminEmail`=`email` WHERE `email` = ?");
-        $query->bind_param("s", $email);
+        $query = $db->prepare("SELECT `houseId` FROM `user` JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
+        $query->bind_param("i", $userId);
         $query->execute(); 
-        $query->bind_result($id);
+        $query->bind_result($houseId);
         $query->fetch();
         $query->close();
 
 
         //Fails if the user is not an admin of a Household
-        if ($id == null)
+        if ($houseId == null)
             return $handler->handle($request);
 
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";

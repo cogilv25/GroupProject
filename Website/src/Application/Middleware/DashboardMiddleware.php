@@ -17,7 +17,7 @@ class DashboardMiddleware implements Middleware
     public function process(Request $request, RequestHandler $handler): Response
     {
         if(!isset($_SESSION['loggedIn']))
-            throw new HttpUnauthorizedException($request, "You must be logged ion to access this page");
+            throw new HttpUnauthorizedException($request, "You must be logged in to access this page");
         
         $userId = $_SESSION['loggedIn'];
         $container = $request->getAttribute('container');
@@ -41,7 +41,7 @@ class DashboardMiddleware implements Middleware
             return $handler->handle($request);
 
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-        $link = $protocol . "://" . $_SERVER['HTTP_HOST'] . "/household/join/" . $id;
+        $link = $protocol . "://" . $_SERVER['HTTP_HOST'] . "/household/join/" . $houseId;
         $request = $request->withAttribute('link', $link);
         return $handler->handle($request);
     }

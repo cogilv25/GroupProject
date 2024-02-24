@@ -53,6 +53,7 @@ return function (App $app) {
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);
         $group->post('/remove', Household\RemoveUserHouseHoldAction::class);
+        $group->get('/list', Household\ListHouseholdAction::class);
     });
 
    $app->get("/logout", function() {

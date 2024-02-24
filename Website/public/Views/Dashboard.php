@@ -6,6 +6,11 @@
     <title>CleanSync</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="/CSS/dashboard.css">
+    <link rel="stylesheet" href="/CSS/householdModal.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js" crossorigin="anonymous"></script>    
+
 </head>
 <body>
 
@@ -16,7 +21,7 @@
         <a class="navlink" href="/notifications">Notifications</a>
         <a class="navlink" href="/rules">Rules</a>
         <a class="navlink" href="/tasks">Tasks</a>
-        <a class="navlink" href="/household">HouseHold</a>
+        <a class="navlink" data-open="exampleModal">HouseHold</a>
         <!--Maybe household Admins can only see rooms not too sure yet -->
         <a class="navlink" href="/rooms">Rooms</a>
         <a class="navlink" href="">Profile</a>
@@ -28,7 +33,7 @@
     <div class="main">
 
     </div>
-
+    <?php include 'householdModal.html'; ?>
     <!--Invite members to household via this universal link -->
     <div class="reveal" id="inviteModal" data-reveal>
         <div class="grid-x grid-padding-x align-center">
@@ -52,8 +57,6 @@
             </div>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js" crossorigin="anonymous"></script>    
     <script src="/Javascript/dashboard.js"></script>
 
 </body>

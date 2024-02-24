@@ -1,0 +1,67 @@
+div.leavhouse:hover ,.leaving:hover{
+    background-color: red;
+    color: black;
+}
+div.hovering:hover{
+    background-color: #535353;
+}
+.hhadmin{
+    margin: 0px;
+    text-align: left;
+    margin-left: 10px;
+}
+.member{
+    text-align: left;
+    margin: 0px;
+    margin-left: 10px;
+}
+.smalltext {
+    padding: 0px;
+    margin: 0px;
+    margin-left: 10px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    text-align: left;
+}
+hr.dropdownhr {
+   border-bottom: 2px solid black;
+   padding: 0px;
+   margin: 0px;
+}
+.dropdown-pane {
+z-index: 1000; /* Adjust this value as needed to ensure it's above the modal */
+}
+#modalnav{
+background-color: white;
+}
+div.top-bar {
+background-color: white;
+border-bottom: #535353 solid 2px;
+width:100%;
+padding-bottom: 0.3rem;
+margin-bottom: 15px;
+
+}
+a.modalnavlink {
+color: black;
+padding-bottom: 0px;
+}
+.modalnavlink:hover {
+color: black;
+}
+#exampleModal {
+overflow: visible;
+}
+.customdropdown{
+height: fit-content;
+width: 200px;
+border: solid 1px black;
+padding: 0px;
+margin: 0px;
+}
+p.leaving{
+color: red;
+text-align: center;
+margin: 0px;
+padding: 0px;
+}

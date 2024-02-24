@@ -18,7 +18,7 @@ class DeleteHouseHoldAction extends Action
             throw new HttpUnauthorizedException($this->request, "You need to be logged in to do this");
             
         $userId = $_SESSION['loggedIn'];
-        $db = $this->container->get('db');
+        $db = $this->container->get('db')();
 
         //Check if the user is an admin of a house
         $query = $db->prepare("SELECT `House_houseId`, `adminId` from `user` left join `House` on `user`.`House_houseId` = `House`.`houseId` WHERE `userId` = ?");

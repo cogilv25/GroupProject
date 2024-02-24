@@ -32,7 +32,8 @@ return function (Container $container) {
         return new PhpRenderer(__DIR__ . '/../public/Views');
     });
 
-    $container->set('db', function(ContainerInterface $c) {
-        return new mysqli("127.0.0.1", "root", "", "cleansync");
+    //TODO: Implement DatabaseDomain and don't call it's __invoke function
+    $container->set('db', function (ContainerInterface $c) {
+        return new DatabaseDomain($c);
     });
 };

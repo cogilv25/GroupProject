@@ -18,7 +18,7 @@ class CreateHouseHoldAction extends Action
             throw new HttpUnauthorizedException($this->request, "You need to be logged in to do this");
             
         $userId = $_SESSION['loggedIn'];
-        $db = $this->container->get('db');
+        $db = $this->container->get('db')();
 
         //Check if the user already has a house
         $query = $db->prepare("SELECT `House_houseId` FROM `user` WHERE `userId` = ?");

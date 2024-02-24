@@ -11,7 +11,8 @@ use Slim\Exception\HttpMethodNotAllowedException;
 
 class JoinHouseHoldAction extends Action
 {
-
+    
+    //TODO: redirect user to login/register then back to this route afterwards
     protected function action(): Response
     {
         $id = $this->args['id'];
@@ -22,7 +23,7 @@ class JoinHouseHoldAction extends Action
             throw new HttpUnauthorizedException($this->request, "You need to be logged in to do this");
             
         $userId = $_SESSION['loggedIn'];
-        $db = $this->container->get('db');
+        $db = $this->container->get('db')();
 
         //Check if the user is an admin of a house
         $query = $db->prepare("SELECT `houseId` FROM `user` right join `House` ON `userId`=`adminId` WHERE userId = ?");

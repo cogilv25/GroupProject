@@ -21,7 +21,7 @@ class RemoveUserHouseHoldAction extends Action
 
         $userId = $_SESSION['loggedIn'];
         $targetUserId = $_POST['userId'];
-        $db = $this->container->get('db');
+        $db = $this->container->get('db')();
 
         //Get the target user of the house administrated by the acting user.
         //This will return null if the user is not an admin of a house or the target user isn't part of their house.

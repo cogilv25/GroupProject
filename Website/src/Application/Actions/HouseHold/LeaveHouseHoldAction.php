@@ -18,7 +18,7 @@ class LeaveHouseHoldAction extends Action
             throw new HttpUnauthorizedException($this->request, "You need to be logged in to do this");
             
         $userId = $_SESSION['loggedIn'];
-        $db = $this->container->get('db');
+        $db = $this->container->get('db')();
 
         //Check if the user is in a house and if the user is an admin of a house
         $query = $db->prepare("SELECT `House_houseId`, `houseId` FROM `user` left join `House` ON `userId`=`adminId` WHERE `userId` = ?");

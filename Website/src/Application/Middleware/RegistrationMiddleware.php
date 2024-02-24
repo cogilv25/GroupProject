@@ -32,7 +32,7 @@ class RegistrationMiddleware implements Middleware
             }
 
             $container = $request->getAttribute('container');
-            $db = $container->get('db');
+            $db = $container->get('db')();
 
             if (!$db) {
                 return $handler->handle($request);

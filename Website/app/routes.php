@@ -29,8 +29,11 @@ return function (App $app) {
 
     $app->get('/Dashboard.php', function (Request $request, Response $response) {
         $renderer = $this->get('renderer');
+        $db = $this->get('db');
+        $userId = $request->getAttribute('userId');
+        $link = $db->getUserInviteLink($userId);
 
-        $data = ['link' => $request->getAttribute('link')];
+        $data = ['link' => $link == false ? "No Link" : $link];
         return $renderer->render($response, 'Dashboard.php', $data);
     })->add(\App\Application\Middleware\DashboardMiddleware::class);
 
@@ -46,7 +49,6 @@ return function (App $app) {
     $app->group('/household', function (Group $group)
     {
         $group->get('/create', HouseHold\CreateHouseHoldAction::class);
-        //TODO: redirect user to login/register then back to this route afterwards
         $group->get('/join/{id}', HouseHold\JoinHouseHoldAction::class);
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);

@@ -181,6 +181,56 @@ class DatabaseDomain
 
         return ($data != null) ? $data : false;
     }
+
+    public function createTask(int $houseId, string $name, string $description) : bool
+    {
+        //Create new task in house
+        $query = $this->db->prepare("INSERT INTO `Task` (`name`, `description`, `houseId`) VALUES (?, ?, ?)");
+        $query->bind_param("ssi", $name, $description, $houseId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function updateTask(int $houseId, int $taskId, string $name, string $description) : bool
+    {
+        //Update task in house
+        $query = $this->db->prepare("UPDATE `Task` SET `name`=?, `description`=? WHERE `houseId`=? AND `taskId`=?");
+        $query->bind_param("ssii", $name, $description, $houseId, $taskId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function deleteTask(int $taskId, int $adminId) : bool
+    {
+        //Delete task from house
+        $query = $this->db->prepare("DELETE FROM `Task` WHERE `taskId`=(SELECT `taskId` FROM `Task` JOIN `House` ON `Task`.`houseId`=`House`.`houseId` WHERE `taskId`=? AND `adminId`=?)");
+        $query->bind_param("ii", $taskId, $adminId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function getTasksInHousehold(int $houseId)
+    {
+        $query = $this->db->prepare("SELECT `taskId`,`name`,`description` FROM `Task` WHERE `houseId` = ?");
+        $query->bind_param("i", $houseId);
+        $query->execute(); 
+        $query->bind_result($taskId, $name, $description);
+
+        while($query->fetch())
+        {
+            $data[$taskId] = ['name' => $name, 'description' => $description];
+        }
+
+        $query->close();
+
+        return ($data != null) ? $data : false;
+    }
 }
 
 ?>

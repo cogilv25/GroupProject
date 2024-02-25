@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Application\Actions\HouseHold;
 use App\Application\Actions\User;
 use App\Application\Actions\Room;
+use App\Application\Actions\Task;
+
 use App\Application\Middleware\AuthenticationMiddleware;
 use App\Application\Middleware;
 
@@ -75,5 +77,14 @@ return function (App $app) {
         $group->post('/update', Room\UpdateRoomAction::class)->add(AuthenticationMiddleware::class);
         $group->post('/delete', Room\DeleteRoomAction::class)->add(AuthenticationMiddleware::class);
         $group->get('/list', Room\ListRoomAction::class)->add(AuthenticationMiddleware::class);
+    });
+
+    //Task Actions
+    $app->group('/task', function (Group $group)
+    {
+        $group->post('/create', Task\CreateTaskAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/update', Task\UpdateTaskAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/delete', Task\DeleteTaskAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/list', Task\ListTaskAction::class)->add(AuthenticationMiddleware::class);
     });
 };

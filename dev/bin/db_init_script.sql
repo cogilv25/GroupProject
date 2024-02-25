@@ -93,8 +93,8 @@ CREATE TABLE `cleansync`.`Rule` (
 CREATE TABLE `cleansync`.`Schedule` (
   `scheduleId` INT NOT NULL AUTO_INCREMENT,
   -- begin to end range is inclusive
-  `beginTimeSlot` INT NOT NULL,
-  `endTimeSlot` INT NOT NULL,
+  `beginTimeslot` INT NOT NULL,
+  `endTimeslot` INT NOT NULL,
   `day` ENUM('Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
   `userId` INT NOT NULL,
   PRIMARY KEY (`scheduleId`),

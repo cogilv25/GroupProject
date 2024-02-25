@@ -17,12 +17,12 @@ class CreateHouseHoldAction extends Action
         if(!isset($_SESSION['loggedIn']))
             throw new HttpUnauthorizedException($this->request, "You need to be logged in to do this");
             
-        $email = $_SESSION['loggedIn'];
-        $db = $this->container->get('db');
+        $userId = $_SESSION['loggedIn'];
+        $db = $this->container->get('db')();
 
         //Check if the user already has a house
-        $query = $db->prepare("SELECT House_houseId FROM user WHERE email = ?");
-        $query->bind_param("s", $email);
+        $query = $db->prepare("SELECT `House_houseId` FROM `user` WHERE `userId` = ?");
+        $query->bind_param("i", $userId);
         $query->execute();
         $query->bind_result($house);
         $query->fetch();
@@ -32,8 +32,8 @@ class CreateHouseHoldAction extends Action
             throw new HttpMethodNotAllowedException($this->request, "You are already a member of a household");
 
         //Create new House
-        $query = $db->prepare("INSERT INTO `House` (`adminEmail`) VALUES (?)");
-        $query->bind_param("s", $email);
+        $query = $db->prepare("INSERT INTO `House` (`adminId`) VALUES (?)");
+        $query->bind_param("i", $userId);
         $result = $query->execute();
         $query->close();
 
@@ -42,8 +42,8 @@ class CreateHouseHoldAction extends Action
             return $this->createJsonResponse($this->response, ["message" => "Failed to create House"], 500);
 
         //Add user to House
-        $query = $db->prepare("UPDATE `user` SET `House_houseId`=(SELECT `houseId` FROM `House` WHERE `adminEmail`=?)  WHERE `email`=?");
-        $query->bind_param("ss", $email, $email);
+        $query = $db->prepare("UPDATE `user` SET `House_houseId`=(SELECT `houseId` FROM `House` WHERE `adminId`=?)  WHERE `userId`=?");
+        $query->bind_param("ii", $userId, $userId);
         $result = $query->execute();
         $query->close();
         $db->close();

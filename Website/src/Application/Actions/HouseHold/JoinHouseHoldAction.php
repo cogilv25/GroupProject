@@ -11,7 +11,8 @@ use Slim\Exception\HttpMethodNotAllowedException;
 
 class JoinHouseHoldAction extends Action
 {
-
+    
+    //TODO: redirect user to login/register then back to this route afterwards
     protected function action(): Response
     {
         $id = $this->args['id'];
@@ -21,12 +22,12 @@ class JoinHouseHoldAction extends Action
         if(!isset($_SESSION['loggedIn']))
             throw new HttpUnauthorizedException($this->request, "You need to be logged in to do this");
             
-        $email = $_SESSION['loggedIn'];
-        $db = $this->container->get('db');
+        $userId = $_SESSION['loggedIn'];
+        $db = $this->container->get('db')();
 
         //Check if the user is an admin of a house
-        $query = $db->prepare("SELECT `houseId` FROM `user` right join `House` ON `email`=`adminEmail` WHERE email = ?");
-        $query->bind_param("s", $email);
+        $query = $db->prepare("SELECT `houseId` FROM `user` right join `House` ON `userId`=`adminId` WHERE userId = ?");
+        $query->bind_param("i", $userId);
         $query->execute();
         $query->bind_result($house);
         $query->fetch();
@@ -42,8 +43,8 @@ class JoinHouseHoldAction extends Action
 
 
         //Add user to House
-        $query = $db->prepare("UPDATE `user` SET `House_houseId`=?  WHERE `email`=?");
-        $query->bind_param("is", $id, $email);
+        $query = $db->prepare("UPDATE `user` SET `House_houseId`=?  WHERE `userId`=?");
+        $query->bind_param("ii", $id, $userId);
         $result = $query->execute();
         $query->close();
         $db->close();

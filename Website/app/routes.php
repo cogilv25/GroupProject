@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 use App\Application\Actions\HouseHold;
+use App\Application\Actions\User;
+use App\Application\Middleware\AuthenticationMiddleware;
+use App\Application\Middleware;
+
+use Slim\Exception\HttpUnauthorizedException;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -17,38 +22,44 @@ return function (App $app) {
 
     //TODO: Single page logic
    $app->map(['GET', 'POST'], '/', function (Request $request, Response $response) {
-        // If a user session exists, redirect to another page 
-        if (isset($_SESSION['loggedIn'])) {
-            return $response->withHeader('Location', '/Dashboard.php')->withStatus(302);
-        }
-        // If no user session exists, show the Authpage.html
         $renderer = $this->get('renderer'); 
-        return $renderer->render($response, 'Authpage.html');
-    });
+
+        $loggedIn = $request->getAttribute('loggedIn');
+        if(!$loggedIn)
+            return $renderer->render($response, 'Authpage.html');
+        else
+            return $response->withHeader('Location', '/Dashboard.php')->withStatus(302);
+    })->add(AuthenticationMiddleware::class);
 
 
     $app->get('/Dashboard.php', function (Request $request, Response $response) {
+        $loggedIn = $request->getAttribute('loggedIn');
+        if(!$loggedIn)
+            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
         $renderer = $this->get('renderer');
+        $db = $this->get('db');
+        $link = $db->getUserInviteLink($loggedIn['userId']);
+        if($link == false)
+            $link = "No Link";
 
-        $data = ['link' => $request->getAttribute('link')];
+        $data = ['link' => $link];
         return $renderer->render($response, 'Dashboard.php', $data);
-    })->add(\App\Application\Middleware\DashboardMiddleware::class);
+    })->add(AuthenticationMiddleware::class);
 
-    $app->post('/login', function (Request $request, Response $response) {
-        return $response;
-    })->add(\App\Application\Middleware\LoginMiddleware::class);
-     
-    $app->post('/signup', function (Request $request, Response $response) {
-        return $response;
-    })->add(\App\Application\Middleware\RegistrationMiddleware::class);
+    //User Actions
+    $app->post('/login', User\LoginAction::class)->add(AuthenticationMiddleware::class);
+    $app->post('/signup', User\RegisterAction::class)->add(AuthenticationMiddleware::class);
 
     //HouseHold Actions
     $app->group('/household', function (Group $group)
     {
-        $group->get('/create', HouseHold\CreateHouseHoldAction::class);
-        $group->get('/join/{id}', HouseHold\JoinHouseHoldAction::class);
-        $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
-        $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);
+        $group->get('/create', HouseHold\CreateHouseHoldAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/join/{id}', HouseHold\JoinHouseHoldAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/delete', HouseHold\DeleteHouseHoldAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/leave', HouseHold\LeaveHouseHoldAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/remove', Household\RemoveUserHouseHoldAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/list', Household\ListHouseholdAction::class)->add(AuthenticationMiddleware::class);
     });
 
    $app->get("/logout", function() {

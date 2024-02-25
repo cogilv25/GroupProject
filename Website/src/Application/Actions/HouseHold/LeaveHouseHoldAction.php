@@ -17,12 +17,12 @@ class LeaveHouseHoldAction extends Action
         if(!isset($_SESSION['loggedIn']))
             throw new HttpUnauthorizedException($this->request, "You need to be logged in to do this");
             
-        $email = $_SESSION['loggedIn'];
-        $db = $this->container->get('db');
+        $userId = $_SESSION['loggedIn'];
+        $db = $this->container->get('db')();
 
         //Check if the user is in a house and if the user is an admin of a house
-        $query = $db->prepare("SELECT `House_houseId`, `houseId` FROM `user` left join `House` ON `email`=`adminEmail` WHERE email = ?");
-        $query->bind_param("s", $email);
+        $query = $db->prepare("SELECT `House_houseId`, `houseId` FROM `user` left join `House` ON `userId`=`adminId` WHERE `userId` = ?");
+        $query->bind_param("i", $userId);
         $query->execute();
         $query->bind_result($userHouse, $adminHouse);
         $query->fetch();
@@ -34,8 +34,8 @@ class LeaveHouseHoldAction extends Action
             throw new HttpBadRequestException($this->request, "You are not a member of any house");
 
         //Remove user from House
-        $query = $db->prepare("UPDATE `user` SET `House_houseId`=null  WHERE `email`=?");
-        $query->bind_param("s", $email);
+        $query = $db->prepare("UPDATE `user` SET `House_houseId`=null  WHERE `userId`=?");
+        $query->bind_param("i", $userId);
         $result = $query->execute();
         $query->close();
         $db->close();

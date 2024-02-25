@@ -1,45 +1,46 @@
--- Schema mydb
+-- Schema cleansync
 -- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `mydb`;
-CREATE SCHEMA `mydb` DEFAULT CHARACTER SET utf8;
-USE `mydb`;
+DROP SCHEMA IF EXISTS `cleansync`;
+CREATE SCHEMA `cleansync` DEFAULT CHARACTER SET utf8;
+USE `cleansync`;
 
 -- -----------------------------------------------------
--- Table `mydb`.`House`
+-- Table `cleansync`.`House`
 -- -----------------------------------------------------
 SET FOREIGN_KEY_CHECKS = 0;
-CREATE TABLE `mydb`.`House` (
+CREATE TABLE `cleansync`.`House` (
   `houseId` INT NOT NULL AUTO_INCREMENT,
-  `adminEmail` VARCHAR(45) NOT NULL,
+  `adminId` INT NOT NULL,
   `roomCounter` INT,
   PRIMARY KEY (`houseId`),
-  INDEX `fk_House_user_idx` (`adminEmail` ASC),
+  INDEX `fk_House_user_idx` (`adminId` ASC),
   CONSTRAINT `fk_house_user`
-    FOREIGN KEY (`adminEmail`)
-    REFERENCES `mydb`.`user` (`email`));
+    FOREIGN KEY (`adminId`)
+    REFERENCES `cleansync`.`user` (`userId`));
 
 SET FOREIGN_KEY_CHECKS = 1;
 -- -----------------------------------------------------
--- Table `mydb`.`user`
+-- Table `cleansync`.`user`
 -- -----------------------------------------------------
-CREATE TABLE `mydb`.`user` (
+CREATE TABLE `cleansync`.`user` (
+  `userId` INT NOT NULL AUTO_INCREMENT,
   `forename` VARCHAR(45) NOT NULL,
   `surname` VARCHAR(45) NOT NULL,
   `email` VARCHAR(45) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
   `House_houseId` INT,
   `personalPoints` INT,
-  PRIMARY KEY (`email`),
+  PRIMARY KEY (`userId`),
   INDEX `fk_user_House_idx` (`House_houseId` ASC),
   CONSTRAINT `fk_user_house`
     FOREIGN KEY (`House_houseId`)
-    REFERENCES `mydb`.`House` (`houseId`));
+    REFERENCES `cleansync`.`House` (`houseId`));
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Room`
+-- Table `cleansync`.`Room`
 -- -----------------------------------------------------
-CREATE TABLE `mydb`.`Room` (
+CREATE TABLE `cleansync`.`Room` (
   `roomId` INT NOT NULL,
   `name` VARCHAR(45),
   `houseId` INT NOT NULL,
@@ -47,13 +48,13 @@ CREATE TABLE `mydb`.`Room` (
   INDEX `fk_Room_House1_idx` (`houseId` ASC),
   CONSTRAINT `fk_Room_House1`
     FOREIGN KEY (`houseId`)
-    REFERENCES `mydb`.`House` (`houseId`));
+    REFERENCES `cleansync`.`House` (`houseId`));
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Task`
+-- Table `cleansync`.`Task`
 -- -----------------------------------------------------
-CREATE TABLE `mydb`.`Task` (
+CREATE TABLE `cleansync`.`Task` (
   `taskId` INT NOT NULL,
   `name` VARCHAR(45) NOT NULL,
   `description` VARCHAR(1000),
@@ -63,51 +64,52 @@ CREATE TABLE `mydb`.`Task` (
   INDEX `fk_Task_Room1_idx` (`Room_roomId` ASC),
   CONSTRAINT `fk_Task_Room1`
     FOREIGN KEY (`Room_roomId`)
-    REFERENCES `mydb`.`Room` (`roomId`));
+    REFERENCES `cleansync`.`Room` (`roomId`));
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Rule`
+-- Table `cleansync`.`Rule`
 -- -----------------------------------------------------
-CREATE TABLE `mydb`.`Rule` (
+CREATE TABLE `cleansync`.`Rule` (
   `ruleId` INT NOT NULL,
   `startTime` DATETIME NOT NULL,
   `endTime` DATETIME NOT NULL,
-  `user_email` VARCHAR(45) NOT NULL,
+  `userId` INT NOT NULL,
   `taskId` INT NOT NULL,
   `roomId` INT NOT NULL,
   PRIMARY KEY (`ruleId`),
-  INDEX `fk_Rule_user1_idx` (`user_email` ASC),
+  INDEX `fk_Rule_user1_idx` (`userId` ASC),
   INDEX `fk_Rule_Task1_idx` (`taskId` ASC),
   CONSTRAINT `fk_Rule_user1`
-    FOREIGN KEY (`user_email`)
-    REFERENCES `mydb`.`user` (`email`),
+    FOREIGN KEY (`userId`)
+    REFERENCES `cleansync`.`user` (`userId`),
   CONSTRAINT `fk_Rule_Task1`
     FOREIGN KEY (`taskId`)
-    REFERENCES `mydb`.`Task` (`taskId`));
+    REFERENCES `cleansync`.`Task` (`taskId`));
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Schedule`
+-- Table `cleansync`.`Schedule`
 -- -----------------------------------------------------
-CREATE TABLE `mydb`.`Schedule` (
+CREATE TABLE `cleansync`.`Schedule` (
   `scheduleId` INT NOT NULL,
   `startTime` VARCHAR(45),
   `endTime` VARCHAR(45),
+  -- TODO: May be removed, otherwise should be NOT NULL
   `days` ENUM('Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NULL,
   `Schedulecol` VARCHAR(45),
-  `user_email` VARCHAR(45) NOT NULL,
+  `userId` INT NOT NULL,
   PRIMARY KEY (`scheduleId`),
-  INDEX `fk_Schedule_user1_idx` (`user_email` ASC),
+  INDEX `fk_Schedule_user1_idx` (`userId` ASC),
   CONSTRAINT `fk_Schedule_user1`
-    FOREIGN KEY (`user_email`)
-    REFERENCES `mydb`.`user` (`email`));
+    FOREIGN KEY (`userId`)
+    REFERENCES `cleansync`.`user` (`userId`));
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`taskPoints`
+-- Table `cleansync`.`taskPoints`
 -- -----------------------------------------------------
-CREATE TABLE `mydb`.`taskPoints` (
+CREATE TABLE `cleansync`.`taskPoints` (
   `pointId` INT NOT NULL,
   `quantity` INT NOT NULL,
   `Task_taskId` INT NOT NULL,
@@ -117,46 +119,46 @@ CREATE TABLE `mydb`.`taskPoints` (
   INDEX `fk_Rule_room2_idx` (`Room_roomId` ASC),
   CONSTRAINT `fk_Rule_task2`
     FOREIGN KEY (`Task_taskId`)
-    REFERENCES `mydb`.`Task` (`taskId`),
+    REFERENCES `cleansync`.`Task` (`taskId`),
   CONSTRAINT `fk_Rule_room2`
     FOREIGN KEY (`Room_roomId`)
-    REFERENCES `mydb`.`Room` (`roomId`));
+    REFERENCES `cleansync`.`Room` (`roomId`));
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Rota`
+-- Table `cleansync`.`Rota`
 -- -----------------------------------------------------
-CREATE TABLE `mydb`.`Rota` (
+CREATE TABLE `cleansync`.`Rota` (
   `rotaId` INT NOT NULL,
   PRIMARY KEY (`rotaId`));
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Task_has_user`
+-- Table `cleansync`.`Task_has_user`
 -- -----------------------------------------------------
-CREATE TABLE `mydb`.`Task_has_user` (
+CREATE TABLE `cleansync`.`Task_has_user` (
   `taskId` INT NOT NULL,
   `roomId` INT NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
+  `userId` INT NOT NULL,
   `rotaId` INT NOT NULL,
   `status` enum('Todo','Ongoing','Complete'),
   `startTime` VARCHAR(45) NOT NULL,
   `endTime` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`taskId`, `roomId`, `email`, `rotaId`),
-  INDEX `fk_Task_has_user_user1_idx` (`email` ASC),
+  PRIMARY KEY (`taskId`, `roomId`, `userId`, `rotaId`),
+  INDEX `fk_Task_has_user_user1_idx` (`userId` ASC),
   INDEX `fk_Task_has_user_Task1_idx` (`taskId` ASC),
   INDEX `fk_Task_has_user_Room1_idx` (`roomId` ASC),
   INDEX `fk_Task_has_user_Rota1_idx` (`rotaId` ASC),
   CONSTRAINT `fk_Task_has_user_Task1`
     FOREIGN KEY (`taskId`)
-    REFERENCES `mydb`.`Task` (`taskId`),
+    REFERENCES `cleansync`.`Task` (`taskId`),
   CONSTRAINT `fk_Task_has_user_Room1`
     FOREIGN KEY (`roomId`)
-    REFERENCES `mydb`.`Room` (`roomId`),
+    REFERENCES `cleansync`.`Room` (`roomId`),
   CONSTRAINT `fk_Task_has_user_user1`
-    FOREIGN KEY (`email`)
-    REFERENCES `mydb`.`user` (`email`),
+    FOREIGN KEY (`userId`)
+    REFERENCES `cleansync`.`user` (`userId`),
   CONSTRAINT `fk_Task_has_user_Rota1`
     FOREIGN KEY (`rotaId`)
-    REFERENCES `mydb`.`Rota` (`rotaId`));
+    REFERENCES `cleansync`.`Rota` (`rotaId`));
     

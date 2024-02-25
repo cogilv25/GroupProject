@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Settings\SettingsInterface;
+use App\Application\Domain\DatabaseDomain;
 use DI\Container;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -31,14 +32,8 @@ return function (Container $container) {
         return new PhpRenderer(__DIR__ . '/../public/Views');
     });
 
-    $container->set('db', function(ContainerInterface $c) {
-        $db = $c->get(SettingsInterface::class)->get('db');
-        try
-        {
-            $connection = new mysqli($db['hostname'],$db['username'],$db['password'],$db['schema']);
-            return $connection;
-        } catch(Exception $e) {
-            return null;
-        }
+    //TODO: Implement DatabaseDomain and don't call it's __invoke function
+    $container->set('db', function (ContainerInterface $c) {
+        return new DatabaseDomain($c);
     });
 };

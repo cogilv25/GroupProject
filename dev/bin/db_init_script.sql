@@ -41,7 +41,7 @@ CREATE TABLE `cleansync`.`user` (
 -- Table `cleansync`.`Room`
 -- -----------------------------------------------------
 CREATE TABLE `cleansync`.`Room` (
-  `roomId` INT NOT NULL,
+  `roomId` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45),
   `houseId` INT NOT NULL,
   PRIMARY KEY (`roomId`),

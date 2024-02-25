@@ -91,12 +91,11 @@ CREATE TABLE `cleansync`.`Rule` (
 -- Table `cleansync`.`Schedule`
 -- -----------------------------------------------------
 CREATE TABLE `cleansync`.`Schedule` (
-  `scheduleId` INT NOT NULL,
-  `startTime` VARCHAR(45),
-  `endTime` VARCHAR(45),
-  -- TODO: May be removed, otherwise should be NOT NULL
-  `days` ENUM('Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NULL,
-  `Schedulecol` VARCHAR(45),
+  `scheduleId` INT NOT NULL AUTO_INCREMENT,
+  -- begin to end range is inclusive
+  `beginTimeSlot` INT NOT NULL,
+  `endTimeSlot` INT NOT NULL,
+  `day` ENUM('Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
   `userId` INT NOT NULL,
   PRIMARY KEY (`scheduleId`),
   INDEX `fk_Schedule_user1_idx` (`userId` ASC),

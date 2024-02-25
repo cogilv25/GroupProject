@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Application\Actions\HouseHold;
 use App\Application\Actions\User;
 use App\Application\Actions\Room;
+use App\Application\Actions\Task;
+use App\Application\Actions\Schedule;
+
 use App\Application\Middleware\AuthenticationMiddleware;
 use App\Application\Middleware;
 
@@ -51,6 +54,11 @@ return function (App $app) {
     //User Actions
     $app->post('/login', User\LoginAction::class)->add(AuthenticationMiddleware::class);
     $app->post('/signup', User\RegisterAction::class)->add(AuthenticationMiddleware::class);
+    $app->get("/logout", function(Request $request, Response $response) {
+        session_unset();
+        session_destroy();
+        return $response->withHeader('Location', '/')->withStatus(302);
+    });
 
     //HouseHold Actions
     $app->group('/household', function (Group $group)
@@ -61,19 +69,33 @@ return function (App $app) {
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class)->add(AuthenticationMiddleware::class);
         $group->post('/remove', Household\RemoveUserHouseHoldAction::class)->add(AuthenticationMiddleware::class);
         $group->get('/list', Household\ListHouseholdAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/schedules', Schedule\GetHouseholdSchedulesAction::class)->add(AuthenticationMiddleware::class);
     });
 
     //Room Actions
     $app->group('/room', function (Group $group)
     {
         $group->post('/create', Room\CreateRoomAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/update', Room\UpdateRoomAction::class)->add(AuthenticationMiddleware::class);
         $group->post('/delete', Room\DeleteRoomAction::class)->add(AuthenticationMiddleware::class);
         $group->get('/list', Room\ListRoomAction::class)->add(AuthenticationMiddleware::class);
     });
 
-   $app->get("/logout", function(Request $request, Response $response) {
-        session_unset();
-        session_destroy();
-        return $response->withHeader('Location', '/')->withStatus(302);
-   });
+    //Task Actions
+    $app->group('/task', function (Group $group)
+    {
+        $group->post('/create', Task\CreateTaskAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/update', Task\UpdateTaskAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/delete', Task\DeleteTaskAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/list', Task\ListTaskAction::class)->add(AuthenticationMiddleware::class);
+    });
+
+    //Scedule Actions
+    $app->group('/schedule', function (Group $group)
+    {
+        $group->post('/create_row', Schedule\CreateScheduleRowAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/update_row', Schedule\UpdateScheduleRowAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/delete_row', Schedule\DeleteScheduleRowAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/list', Schedule\GetScheduleAction::class)->add(AuthenticationMiddleware::class);
+    });
 };

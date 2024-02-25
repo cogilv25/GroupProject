@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Application\Actions\Room;
+namespace App\Application\Actions\Task;
 
 use App\Application\Actions\Action;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -9,7 +9,7 @@ use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Exception\HttpMethodNotAllowedException;
 
-class ListRoomAction extends Action
+class ListTaskAction extends Action
 {
 
     protected function action(): Response
@@ -25,10 +25,10 @@ class ListRoomAction extends Action
         if($houseId == false)
             throw new HttpBadRequestException($this->request, "You are not a member of a Household");
 
-        $data = $db->getRoomsInHousehold($houseId);
+        $data = $db->getTasksInHousehold($houseId);
 
         if(!$data)
-            return $this->createJsonResponse($this->response, ['message' => 'No rooms to list'], 500);
+            return $this->createJsonResponse($this->response, []);
 
         return $this->createJsonResponse($this->response, $data);
     }

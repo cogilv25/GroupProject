@@ -100,7 +100,7 @@ class DatabaseDomain
         $result = $query->fetch();
         $query->close();
 
-        return $result ? $houseId : false;
+        return $houseId != null ? $houseId : false;
     }
 
     public function getUsersInHousehold(int $houseId)
@@ -142,6 +142,18 @@ class DatabaseDomain
 
         return $result;
     }
+
+    public function updateRoom(int $houseId, int $roomId, string $name) : bool
+    {
+        //Create new room in house
+        $query = $this->db->prepare("UPDATE `Room` SET `name`=? WHERE `houseId`=? AND `roomId`=?");
+        $query->bind_param("sii", $name, $houseId, $roomId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
     public function deleteRoom(int $roomId, int $adminId) : bool
     {
         //Create new room in house
@@ -169,6 +181,155 @@ class DatabaseDomain
 
         return ($data != null) ? $data : false;
     }
+
+    public function createTask(int $houseId, string $name, string $description) : bool
+    {
+        //Create new task in house
+        $query = $this->db->prepare("INSERT INTO `Task` (`name`, `description`, `houseId`) VALUES (?, ?, ?)");
+        $query->bind_param("ssi", $name, $description, $houseId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function updateTask(int $houseId, int $taskId, string $name, string $description) : bool
+    {
+        //Update task in house
+        $query = $this->db->prepare("UPDATE `Task` SET `name`=?, `description`=? WHERE `houseId`=? AND `taskId`=?");
+        $query->bind_param("ssii", $name, $description, $houseId, $taskId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function deleteTask(int $taskId, int $adminId) : bool
+    {
+        //Delete task from house
+        $query = $this->db->prepare("DELETE FROM `Task` WHERE `taskId`=(SELECT `taskId` FROM `Task` JOIN `House` ON `Task`.`houseId`=`House`.`houseId` WHERE `taskId`=? AND `adminId`=?)");
+        $query->bind_param("ii", $taskId, $adminId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function getTasksInHousehold(int $houseId)
+    {
+        $query = $this->db->prepare("SELECT `taskId`,`name`,`description` FROM `Task` WHERE `houseId` = ?");
+        $query->bind_param("i", $houseId);
+        $query->execute(); 
+        $query->bind_result($taskId, $name, $description);
+
+        while($query->fetch())
+        {
+            $data[$taskId] = ['name' => $name, 'description' => $description];
+        }
+
+        $query->close();
+
+        return ($data != null) ? $data : false;
+    }
+
+    private function expandDayToArray(string $day) : array
+    {
+        $days = [];
+        if($day == 'All')
+        {
+            array_push($days, 'Monday','Tuesday','Wednesday','Thursday','Friday');
+            array_push($days, 'Saturday','Sunday');
+        }
+        elseif($day = 'Weekdays')
+            array_push($days, 'Monday','Tuesday','Wednesday','Thursday','Friday');
+        elseif($day == 'Weekends')
+            array_push($days, 'Saturday','Sunday');
+        else
+            $days[] = $day;
+        return $days;
+    }
+
+    public function createScheduleRows(int $userId, int $begin, int $end, string $day)
+    {
+        $days = $this->expandDayToArray($day);
+
+        //Create/s new row/s in a users Schedule
+        $this->db->begin_transaction();
+        foreach ($days as &$day) {
+            $query = $this->db->prepare("INSERT INTO `Schedule` (`userId`, `day`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
+            $query->bind_param("isii", $userId, $day, $begin, $end);
+            $result = $query->execute();
+            $query->close();
+
+            if(!$result)
+            {
+                $db->rollback();
+                return false;
+            }
+        }
+        
+        return $this->db->commit();
+    }
+
+    public function updateScheduleRow(int $userId, int $scheduleId, int $begin, int $end, string $day)
+    {
+        //Update row in a users Schedule
+        $query = $this->db->prepare("UPDATE `Schedule` SET `day`=?, `beginTimeslot`=?, `endTimeslot`=? WHERE `userId`=? AND `scheduleId`=?");
+        $query->bind_param("siiii", $day, $begin, $end, $userId, $scheduleId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function deleteScheduleRow(int $userId, int $scheduleId) : bool
+    {
+        //Delete row from a users Schedule
+        $query = $this->db->prepare("DELETE FROM `Schedule` WHERE `scheduleId`=(SELECT `scheduleId` FROM `Schedule` JOIN `user` ON `Schedule`.`userId`=`user`.`userId` WHERE `scheduleId`=? AND `userId`=?)");
+        $query->bind_param("ii", $scheduleId, $userId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function getSchedule(int $userId)
+    {
+        $query = $this->db->prepare("SELECT `scheduleId`, `day`, `beginTimeslot`,`endTimeslot` FROM `Schedule` WHERE `userId` = ?");
+        $query->bind_param("i", $userId);
+        $query->execute(); 
+        $query->bind_result($scheduleId, $day, $begin, $end);
+
+        while($query->fetch())
+            $data[] = ['rowId' => $scheduleId, 'day' => $day, 'beginTimeslot' => $begin, 'endTimeslot' => $end];
+
+        $query->close();
+
+        return isset($data) ? $data : false;
+    }
+
+    public function getUserSchedulesInHousehold(int $houseId)
+    {
+        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname` FROM `user` WHERE `House_houseId` = ?");
+        $query->bind_param("i", $houseId);
+        $query->execute(); 
+        $query->bind_result($userId, $forename, $surname);
+
+        while($query->fetch())
+        {
+            $users[$userId] = ['forename' => $forename, 'surname' => $surname];
+        }
+        $query->close();
+
+        foreach ($users as $id => $details)
+        {
+            $users[$id]['schedule'] = $this->getSchedule($userId);
+        }
+
+
+        return ($users != null) ? $users : false;
+    }
+
 }
 
 ?>

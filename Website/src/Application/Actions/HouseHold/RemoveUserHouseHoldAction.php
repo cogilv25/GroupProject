@@ -32,13 +32,15 @@ class RemoveUserHouseHoldAction extends Action
         $query->fetch();
         $query->close();
 
-        if($targetUserId == null)
+        if($memberId == null)
             throw new HttpBadRequestException($this->request, "Target user is not a member of a house administered by the acting user");
+        if($memberId == $userId)
+            throw new HttpBadRequestException($this->request, "Cannot remove the admin from a house, house must always have an admin");
         
 
         //Remove targetUser from House
         $query = $db->prepare("UPDATE `user` SET `House_houseId`=null  WHERE `userId`=?");
-        $query->bind_param("i", $targetUserId);
+        $query->bind_param("i", $memberId);
         $result = $query->execute();
         $query->close();
         $db->close();

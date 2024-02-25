@@ -51,6 +51,11 @@ return function (App $app) {
     //User Actions
     $app->post('/login', User\LoginAction::class)->add(AuthenticationMiddleware::class);
     $app->post('/signup', User\RegisterAction::class)->add(AuthenticationMiddleware::class);
+    $app->get("/logout", function(Request $request, Response $response) {
+        session_unset();
+        session_destroy();
+        return $response->withHeader('Location', '/')->withStatus(302);
+    });
 
     //HouseHold Actions
     $app->group('/household', function (Group $group)
@@ -67,13 +72,8 @@ return function (App $app) {
     $app->group('/room', function (Group $group)
     {
         $group->post('/create', Room\CreateRoomAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/update', Room\UpdateRoomAction::class)->add(AuthenticationMiddleware::class);
         $group->post('/delete', Room\DeleteRoomAction::class)->add(AuthenticationMiddleware::class);
         $group->get('/list', Room\ListRoomAction::class)->add(AuthenticationMiddleware::class);
     });
-
-   $app->get("/logout", function(Request $request, Response $response) {
-        session_unset();
-        session_destroy();
-        return $response->withHeader('Location', '/')->withStatus(302);
-   });
 };

@@ -142,6 +142,18 @@ class DatabaseDomain
 
         return $result;
     }
+
+    public function updateRoom(int $houseId, int $roomId, string $name) : bool
+    {
+        //Create new room in house
+        $query = $this->db->prepare("UPDATE `Room` SET `name`=? WHERE `houseId`=? AND `roomId`=?");
+        $query->bind_param("sii", $name, $houseId, $roomId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
     public function deleteRoom(int $roomId, int $adminId) : bool
     {
         //Create new room in house

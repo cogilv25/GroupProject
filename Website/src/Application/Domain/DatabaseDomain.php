@@ -22,17 +22,69 @@ class DatabaseDomain
         return $this->db;
     }
 
-    public function getUserInviteLink(int $userId) : string | false
+    public function getUserIdAndPasswordHash(string $email) : array | false
+    {
+        $query = $this->db->prepare("SELECT `userId`, `password` FROM `user` WHERE `email` = ?");
+        $query->bind_param("s", $email);
+        $query->execute(); 
+        $query->bind_result($data['id'], $data['passwordHash']);
+        $query->fetch();
+        $query->close();
+
+        return !$data ? false : $data;
+    }
+
+    public function getUserId(string $email) : int | false
+    {
+        $query = $this->db->prepare("SELECT `userId` FROM `user` WHERE `email` = ?");
+        $query->bind_param("s", $email);
+        $query->execute();
+        $query->bind_result($id);
+        $result = $query->fetch();
+        $query->close();
+
+        return ($result == null) ? false : $id;
+    }
+
+    public function createUser(string $forename, string $surname, string $email, string $hashedPassword) : int | false
+    {
+        //Create new user
+        $query = $this->db->prepare("INSERT INTO `user` (`forename`, `surname`, `email`, `password`) VALUES (?, ?, ?, ?)");
+        $query->bind_param("ssss", $forename, $surname, $email, $hashedPassword);
+        if(!$query->execute())
+            return false;
+
+        //Return new userId
+        $query = $this->db->prepare("SELECT `userId` FROM `user` WHERE `email` = ?");
+        $query->bind_param("s", $email);
+        $query->execute();
+        $query->bind_result($id);
+        $result = $query->fetch();
+        $query->close();
+
+        return $result ? $id : false;
+    }
+
+    public function getAdminHouse(int $adminId) : int | null
     {
         $query = $this->db->prepare("SELECT `houseId` FROM `user` JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
-        $query->bind_param("i", $userId);
+        $query->bind_param("i", $adminId);
         $query->execute(); 
         $query->bind_result($houseId);
         $query->fetch();
         $query->close();
+        return $houseId;
+    }
 
-        //Fails if the user is not an admin of a Household
-        if ($houseId == null)
+    public function isUserAdmin(int $userId) : bool
+    {
+        return $this->getAdminHouse($userId) == null ? false : true;
+    }
+
+    public function getUserInviteLink(int $userId) : string | false
+    {
+        $houseId = $this->getAdminHouse($userId);
+        if($houseId == null)
             return false;
 
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";

@@ -23,7 +23,7 @@ class ListTaskAction extends Action
         $userId = $loggedIn['userId'];
         $houseId = $db->getUserHousehold($userId);
         if($houseId == false)
-            throw new HttpBadRequestException($request, "You are not a member of a Household");
+            throw new HttpBadRequestException($this->request, "You are not a member of a Household");
 
         $data = $db->getTasksInHousehold($houseId);
 

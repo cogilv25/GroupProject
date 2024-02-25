@@ -55,16 +55,15 @@ CREATE TABLE `cleansync`.`Room` (
 -- Table `cleansync`.`Task`
 -- -----------------------------------------------------
 CREATE TABLE `cleansync`.`Task` (
-  `taskId` INT NOT NULL,
+  `taskId` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NOT NULL,
-  `description` VARCHAR(1000),
-  `Room_roomId` INT NOT NULL,
-  `Room_houseId` INT NOT NULL,
+  `description` VARCHAR(1000) NOT NULL,
+  `houseId` INT NOT NULL,
   PRIMARY KEY (`taskId`),
-  INDEX `fk_Task_Room1_idx` (`Room_roomId` ASC),
-  CONSTRAINT `fk_Task_Room1`
-    FOREIGN KEY (`Room_roomId`)
-    REFERENCES `cleansync`.`Room` (`roomId`));
+  INDEX `fk_Task_Room1_idx` (`houseId` ASC),
+  CONSTRAINT `fk_Task_House`
+    FOREIGN KEY (`houseId`)
+    REFERENCES `cleansync`.`House` (`houseId`));
 
 
 -- -----------------------------------------------------

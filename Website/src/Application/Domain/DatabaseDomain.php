@@ -91,7 +91,7 @@ class DatabaseDomain
         return $protocol . "://" . $_SERVER['HTTP_HOST'] . "/household/join/" . $houseId;
     }
 
-    public function getUserHousehold(int $userId)
+    public function getUserHousehold(int $userId) : int | false
     {
         $query = $this->db->prepare("SELECT `House_houseId` FROM `user` WHERE `userId` = ?");
         $query->bind_param("i", $userId);
@@ -151,6 +151,23 @@ class DatabaseDomain
         $query->close();
 
         return $result;
+    }
+
+    public function getRoomsInHousehold(int $houseId)
+    {
+        $query = $this->db->prepare("SELECT `roomId`,`name` FROM `Room` WHERE `houseId` = ?");
+        $query->bind_param("i", $houseId);
+        $query->execute(); 
+        $query->bind_result($roomId, $name);
+
+        while($query->fetch())
+        {
+            $data[$roomId] = ['name' => $name];
+        }
+
+        $query->close();
+
+        return ($data != null) ? $data : false;
     }
 }
 

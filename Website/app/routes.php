@@ -68,6 +68,7 @@ return function (App $app) {
     {
         $group->post('/create', Room\CreateRoomAction::class)->add(AuthenticationMiddleware::class);
         $group->post('/delete', Room\DeleteRoomAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/list', Room\ListRoomAction::class)->add(AuthenticationMiddleware::class);
     });
 
    $app->get("/logout", function(Request $request, Response $response) {

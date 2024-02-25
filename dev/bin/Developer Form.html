@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Spectral">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+sans">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CleanSync Dev Forms</title> 
+    <style>
+        body {
+            font-family: Spectral, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0px;
+            padding:20px 0px 20px 0px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .box {
+            margin: 5px auto 5px auto;
+            padding: 5px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            width: 960px;
+            background-color: #333;
+        }
+
+        h3 {
+            font-family: Noto Sans, sans-serif;
+            color: #f2f2f2;
+            font-size: 18px;
+            margin-bottom: 5px;
+            margin-top: 5px;
+            display: flex;
+            margin-left: auto;
+            margin-right: auto;
+            justify-content: center;
+        }
+
+        h1 {
+            font-family: Noto Sans, sans-serif;
+            color: #f2f2f2;
+            font-size: 30px;
+            margin:  0px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #f2f2f2;
+        }
+
+        button {
+            width: calc(100% - 10px);
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ff5;
+            border-radius: 3px;
+            background-color: #333;
+            box-sizing: border-box;
+            cursor: pointer;
+            color: #f2f2f2;
+        }
+
+        input {
+            border: 1px solid #ff5;
+            border-radius: 3px;
+            background-color: #333;
+            color: #f2f2f2;
+            padding: 8px;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        a {
+            color: #ff3;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        a:hover {
+            color: #dd1;
+        }
+    </style>
+    <script>
+        function joinHouse()
+        {
+            let houseId = document.getElementById("joinHouseId").value;
+            window.location.href = "http://cleansync.com/household/join/" + houseId;
+        }
+
+        function register()
+        {
+            let confirmPassword = document.getElementById("confirmPassword");
+            confirmPassword.value = document.getElementById("password");
+        }
+    </script>
+</head>
+<body>
+    <div class="box">
+        <center>
+            <h1>CleanSync Developer Form</h1>
+        </center>
+    </div>
+    <div class="box">
+        <h3>User</h3><hr>
+        <form onsubmit="register();" action="http://cleansync.com/signup" method="post">
+            <label>Register</label>
+            <input name="forename" value="John">
+            <input name="surname" value="Doe">
+            <input name="email" value="j.doe@gmail.com">
+            <input id="password" name="password" value="aaaaaaaa">
+            <input id="confirmPassword" hidden>
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/login" method="post">
+            <label>Login</label>
+            <input name="email" value="j.doe@gmail.com">
+            <input name="password" value="aaaaaaaa">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/logout" method="get">
+            <label>Logout</label>
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+    </div>
+
+
+    <div class="box">
+        <h3>Household</h3><hr>
+        <form action="http://cleansync.com/household/create" method="get">
+            <label>Create Household</label>
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form onsubmit="event.preventDefault(); joinHouse();">
+            <label>Join Household</label>
+            <input id="joinHouseId" value="1">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/household/leave" method="get">
+            <label>Leave Household</label>
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action = "http://cleansync.com/household/remove"method="post">
+            <label>Remove User From Household</label>
+            <input name="userId" value="1">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/household/delete" method="get">
+            <label>Delete Household</label>
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <a href="http://cleansync.com/household/list">List Members</a>
+    </div>
+
+    <div class="box">
+        <h3>Task</h3><hr>
+    	<form action="http://cleansync.com/task/create" method="post">
+            <label>Create Task</label>
+            <input name="name" value="Hoovering">
+            <input name="description" value="">
+            <button style="width: 50px;" type="submit">Go</button>
+    	</form>
+
+        <form action="http://cleansync.com/task/update" method="post">
+            <label>Update Task</label>
+            <input name="taskId" value="1">
+            <input name="name" value="Hoovering">
+            <input name="description" value="">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/task/delete" method="post">
+            <label>Delete Task</label>
+            <input name="taskId" value="1">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+        <a href="http://cleansync.com/task/list">List Tasks</a>
+    </div>
+
+    <div class="box">
+        <h3>Room</h3><hr>
+        <form action="http://cleansync.com/room/create" method="post">
+            <label>Create Room</label>
+            <input name="name" value="Bathroom">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/room/update" method="post">
+            <label>Update Room</label>
+            <input name="roomId" value="1">
+            <input name="name" value="Bathroom">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/room/delete" method="post">
+            <label>Delete Room</label>
+            <input name="roomId" value="1">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+        <a href="http://cleansync.com/room/list">List Rooms</a>
+    </div>
+
+    <div class="box">
+        <h3>Schedule</h3><hr>
+
+        <!-- beginTimeSlot and endTimeSlot:                 -->
+        <!--                                                -->
+        <!-- - range is from begin to end inclusively       -->
+        <!-- - value is an int from 0 - 95 where each value -->
+        <!--   represents a 15 min slot in a 24h cycle.     -->
+
+
+        <form action="http://cleansync.com/schedule/create_row" method="post">
+            <label>Add Row to Schedule</label>
+            <!-- Possible values for day = Monday-Sunday, All, Weekends, Weekdays -->
+            <input name="day" value="Weekdays">
+            <!-- Example 9am-12pm == (9:00-9:15)-(11:45-12:00) == (9*4)-(12*4-1) == 36-47 -->
+            <input name="beginTimeslot" value="36">
+            <input name="endTimeslot" value="47">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/schedule/update_row" method="post">
+            <label>Edit Row in Schedule</label>
+            <input name="rowId" value="1">
+            <!-- Currently no support for All, Weekend and Weekdays -->
+            <input name="day" value="Monday">
+            <!-- Example 3pm-4pm == (15:00-15:15)-(15:45-16:00) == (15*4)-(16*4-1) == 60-63 -->
+            <input name="beginTimeslot" value="60">
+            <input name="endTimeslot" value="63">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/schedule/delete_row" method="post">
+            <label>Delete Row from Schedule</label>
+            <input name="rowId" value="1">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+        <a href="http://cleansync.com/schedule/list">Show My Schedule</a>
+        <a href="http://cleansync.com/household/schedules">Show All Schedules in Household as Admin</a>
+
+    </div>
+</body>
+</html>
+
+

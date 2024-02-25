@@ -131,6 +131,27 @@ class DatabaseDomain
 
         return ($data != null) ? $data : false;
     }
+
+    public function createRoom(int $houseId, string $name) : bool
+    {
+        //Create new room in house
+        $query = $this->db->prepare("INSERT INTO `Room` (`name`, `houseId`) VALUES (?, ?)");
+        $query->bind_param("si", $name, $houseId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+    public function deleteRoom(int $roomId, int $adminId) : bool
+    {
+        //Create new room in house
+        $query = $this->db->prepare("DELETE FROM `Room` WHERE `roomId`=(SELECT `roomId` FROM `Room` JOIN `House` ON `Room`.`houseId`=`House`.`houseId` WHERE `roomId`=? AND `adminId`=?)");
+        $query->bind_param("ii", $roomId, $adminId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
 }
 
 ?>

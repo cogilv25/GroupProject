@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Actions\HouseHold;
 use App\Application\Actions\User;
+use App\Application\Actions\Room;
 use App\Application\Middleware\AuthenticationMiddleware;
 use App\Application\Middleware;
 
@@ -62,10 +63,16 @@ return function (App $app) {
         $group->get('/list', Household\ListHouseholdAction::class)->add(AuthenticationMiddleware::class);
     });
 
-   $app->get("/logout", function() {
+    //Room Actions
+    $app->group('/room', function (Group $group)
+    {
+        $group->post('/create', Room\CreateRoomAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/delete', Room\DeleteRoomAction::class)->add(AuthenticationMiddleware::class);
+    });
+
+   $app->get("/logout", function(Request $request, Response $response) {
         session_unset();
         session_destroy();
-        header('Location: /');
-        die();
+        return $response->withHeader('Location', '/')->withStatus(302);
    });
 };

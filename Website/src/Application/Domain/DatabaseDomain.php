@@ -6,6 +6,8 @@ use Psr\Container\ContainerInterface;
 use mysqli;
 
 //TODO: Full implementation
+//TODO: Once User Validation is implemented in actions houseId and userId will be known safe values so we can remove
+// some of the prepared queries making things a bit less.... big
 class DatabaseDomain
 {
 	private mysqli $db;
@@ -328,6 +330,52 @@ class DatabaseDomain
 
 
         return ($users != null) ? $users : false;
+    }
+
+    //TODO: Delete Rota rows (currently isn't linked, might not be required..)
+    public function deleteHousehold(int $houseId) : bool
+    {
+         //If there is an issue with this, god help me!
+        $queryString = "DELETE `Room`, `Task`, `Rule`, `House`, `Task_has_user`, `taskPoints` FROM `House` LEFT JOIN ".
+        "`Task` ON `House`.`houseId`=`Task`.`houseId` LEFT JOIN `Room` ON `House`.`houseId`=`Room`.`houseId` LEFT JOIN ".
+        "`user` ON `House`.`houseId`=`user`.`House_houseId` LEFT JOIN `Task_has_user` ON `Task_has_user`.`userId`=".
+        "`user`.`userId` LEFT JOIN `Rule` ON `Rule`.`userId`=`user`.`userId` OR `Rule`.`taskId`=`Task`.`taskId` OR ".
+        "`Rule`.`roomId`=`Room`.`roomId` LEFT JOIN `taskPoints` ON `taskPoints`.`Task_taskId`=`Task`.`taskId` WHERE ".
+        "`House`.`houseId`=?";
+
+        //Begin a transaction so we can rollback if anything goes wrong
+        $this->db->begin_transaction();
+
+        //Makes all users who were in the Household homeless
+        $query = $this->db->prepare("UPDATE `user`SET `House_houseId`=null WHERE `House_houseId`=?");
+        $query->bind_param("i", $houseId);
+        $result = $query->execute();
+        $query->close();
+
+        if($result != true)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        //Deletes all rows in all tables related to the Household except the user table
+        $this->db->query("SET SQL_SAFE_UPDATES = 0");
+        $this->db->query("SET FOREIGN_KEY_CHECKS = 0");
+        $query = $this->db->prepare($queryString);
+        $query->bind_param("i", $houseId);
+        $result = $query->execute();
+        $query->close();
+
+        if($result != true)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        //Returns true if our changes have been committed to the database
+        $this->db->query("SET SQL_SAFE_UPDATES = 1");
+        $this->db->query("SET FOREIGN_KEY_CHECKS = 1");
+        return $this->db->commit();
     }
 
 }

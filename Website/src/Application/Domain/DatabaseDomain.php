@@ -8,6 +8,9 @@ use mysqli;
 //TODO: Once User Validation is implemented in actions houseId and userId will be known safe values so we can remove
 // some of the prepared queries making things a bit less.... big.
 //TODO: Just discovered Join Delete's so that might reduce the number of queries required here and there.
+//TODO: Full implementation
+//TODO: Once User Validation is implemented in actions houseId and userId will be known safe values so we can remove
+// some of the prepared queries making things a bit less.... big
 class DatabaseDomain
 {
 	private mysqli $db;
@@ -382,7 +385,6 @@ class DatabaseDomain
         $this->db->query("SET FOREIGN_KEY_CHECKS = 1");
         return $this->db->commit();
     }
-
     public function deleteRule(int $houseId, int $ruleId) : bool
     {
         //Delete task from house

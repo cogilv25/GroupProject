@@ -96,8 +96,8 @@
 
         function register()
         {
-            let confirmPassword = document.getElementById("confirmPassword");
-            confirmPassword.value = document.getElementById("password");
+            let confirmPassword = document.getElementById("confirmPasswordInput");
+            confirmPassword.value = document.getElementById("passwordInput").value;
         }
     </script>
 </head>
@@ -114,8 +114,8 @@
             <input name="forename" value="John">
             <input name="surname" value="Doe">
             <input name="email" value="j.doe@gmail.com">
-            <input id="password" name="password" value="aaaaaaaa">
-            <input id="confirmPassword" hidden>
+            <input id="passwordInput" name="password" value="aaaaaaaa">
+            <input id="confirmPasswordInput" name="confirmPassword" value="aaaaaaaa" hidden>
             <button style="width: 50px;" type="submit">Go</button>
         </form>
 

@@ -69,19 +69,32 @@ CREATE TABLE `cleansync`.`Task` (
 -- -----------------------------------------------------
 -- Table `cleansync`.`Rule`
 -- -----------------------------------------------------
+-- Four types:
+-- A user does not perform a certain task
+-- A task is restricted from certain timeslots
+-- A room is inaccessible during certain timeslots
+-- A user does not clean in a certain room
+-- -----------------------------------------------------
 CREATE TABLE `cleansync`.`Rule` (
-  `ruleId` INT NOT NULL,
-  `startTime` DATETIME NOT NULL,
-  `endTime` DATETIME NOT NULL,
-  `userId` INT NOT NULL,
-  `taskId` INT NOT NULL,
-  `roomId` INT NOT NULL,
+  `ruleId` INT NOT NULL AUTO_INCREMENT,
+  `houseId` INT NOT NULL,
+  `beginTimeslot` INT,
+  `endTimeslot` INT,
+  `userId` INT,
+  `taskId` INT,
+  `roomId` INT,
   PRIMARY KEY (`ruleId`),
   INDEX `fk_Rule_user1_idx` (`userId` ASC),
   INDEX `fk_Rule_Task1_idx` (`taskId` ASC),
   CONSTRAINT `fk_Rule_user1`
     FOREIGN KEY (`userId`)
     REFERENCES `cleansync`.`user` (`userId`),
+  CONSTRAINT `fk_Rule_house1`
+    FOREIGN KEY (`houseId`)
+    REFERENCES `cleansync`.`House` (`houseId`),
+  CONSTRAINT `fk_Rule_room1`
+    FOREIGN KEY (`roomId`)
+    REFERENCES `cleansync`.`Room` (`roomId`),
   CONSTRAINT `fk_Rule_Task1`
     FOREIGN KEY (`taskId`)
     REFERENCES `cleansync`.`Task` (`taskId`));

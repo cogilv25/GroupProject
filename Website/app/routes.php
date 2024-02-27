@@ -60,6 +60,15 @@ return function (App $app) {
         return $response->withHeader('Location', '/')->withStatus(302);
     });
 
+    //Schedule Actions
+    $app->group('/schedule', function (Group $group)
+    {
+        $group->post('/create_row', Schedule\CreateScheduleRowAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/update_row', Schedule\UpdateScheduleRowAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/delete_row', Schedule\DeleteScheduleRowAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/list', Schedule\GetScheduleAction::class)->add(AuthenticationMiddleware::class);
+    });
+
     //HouseHold Actions
     $app->group('/household', function (Group $group)
     {
@@ -90,12 +99,17 @@ return function (App $app) {
         $group->get('/list', Task\ListTaskAction::class)->add(AuthenticationMiddleware::class);
     });
 
-    //Scedule Actions
-    $app->group('/schedule', function (Group $group)
+    //Rule Actions
+    $app->group('/rule', function (Group $group)
     {
-        $group->post('/create_row', Schedule\CreateScheduleRowAction::class)->add(AuthenticationMiddleware::class);
-        $group->post('/update_row', Schedule\UpdateScheduleRowAction::class)->add(AuthenticationMiddleware::class);
-        $group->post('/delete_row', Schedule\DeleteScheduleRowAction::class)->add(AuthenticationMiddleware::class);
-        $group->get('/list', Schedule\GetScheduleAction::class)->add(AuthenticationMiddleware::class);
+        $group->group('/create', function (Group $createGroup)
+            {
+                $group->post('/room_time', Rule\CreateRoomTimeRuleAction::class)->add(AuthenticationMiddleware::class);
+                $group->post('/task_time', Rule\CreateTaskTimeRuleAction::class)->add(AuthenticationMiddleware::class);
+                $group->post('/user_task', Rule\CreateUserTaskRuleAction::class)->add(AuthenticationMiddleware::class);
+                $group->post('/user_room', Rule\CreateUserRoomRuleAction::class)->add(AuthenticationMiddleware::class);
+            });
+        $group->post('/delete', Rule\DeleteRuleAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/list', Rule\ListRuleAction::class)->add(AuthenticationMiddleware::class);
     });
 };

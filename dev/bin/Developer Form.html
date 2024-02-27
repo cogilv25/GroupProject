@@ -214,6 +214,47 @@
     </div>
 
     <div class="box">
+        <h3>Rule</h3><hr>
+        <!-- All rules are negative, meaning that they prevent something. -->
+        <form action="http://cleansync.com/rule/create/room_time" method="post">
+            <label>Create Room Time Restriction Rule</label>
+            <input name="roomId" value="1">
+            <input name="beginTimeslot" value="24">
+            <input name="endTimeslot" value="27">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/rule/create/task_time" method="post">
+            <label>Create Task Time Restriction Rule</label>
+            <input name="taskId" value="1">
+            <input name="beginTimeslot" value="24">
+            <input name="endTimeslot" value="27">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/rule/create/user_task" method="post">
+            <label>Create User Task Restriction Rule</label>
+            <input name="userId" value="1">
+            <input name="taskId" value="1">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/rule/create/user_room" method="post">
+            <label>Create User Room Restriction Rule</label>
+            <input name="userId" value="2">
+            <input name="roomId" value="12">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+
+        <form action="http://cleansync.com/rule/delete" method="post">
+            <label>Delete Rule</label>
+            <input name="ruleId" value="1">
+            <button style="width: 50px;" type="submit">Go</button>
+        </form>
+        <a href="http://cleansync.com/rule/list">List Rules</a>
+    </div>
+
+    <div class="box">
         <h3>Schedule</h3><hr>
 
         <!-- beginTimeSlot and endTimeSlot:                 -->

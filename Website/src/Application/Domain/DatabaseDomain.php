@@ -433,7 +433,7 @@ class DatabaseDomain
     public function deleteRule(int $houseId, int $ruleId) : bool
     {
         //Delete task from house
-        $query = $this->db->prepare("DELETE `Rule` FROM `Rule` JOIN `House` ON `Rule`.`houseId`= WHERE `ruleId`= ?");
+        $query = $this->db->prepare("DELETE FROM `Rule` WHERE `houseId`=? AND `ruleId`=?");
         $query->bind_param("ii", $houseId, $ruleId);
         $result = $query->execute();
         $query->close();

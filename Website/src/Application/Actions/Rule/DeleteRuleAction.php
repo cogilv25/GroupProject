@@ -26,13 +26,12 @@ class DeleteRuleAction extends Action
         // Validation checks
         if (!isset($data['ruleId']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
-        if (!is_numeric($data['ruleId']);
+        if (!is_numeric($data['ruleId']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
         $db = $this->container->get('db');
         $userId = $loggedIn['userId'];
-        $ruleId = $data['ruleId'];
-        $targetUserId = $data['userId'];
+        $ruleId = (int)$data['ruleId'];
 
         $houseId = $db->getAdminHouse($userId);
         if(!$houseId)

@@ -26,7 +26,7 @@ class CreateUserRoomRuleAction extends Action
         // Validation checks
         if (!isset($data['roomId'], $data['userId']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
-        if (!is_numeric($data['roomId']), !is_numeric($data['userId']));
+        if (!is_numeric($data['roomId']) || !is_numeric($data['userId']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
         $db = $this->container->get('db');

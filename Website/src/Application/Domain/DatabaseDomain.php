@@ -9,8 +9,6 @@ use mysqli;
 // some of the prepared queries making things a bit less.... big.
 //TODO: Just discovered Join Delete's so that might reduce the number of queries required here and there.
 //TODO: Full implementation
-//TODO: Once User Validation is implemented in actions houseId and userId will be known safe values so we can remove
-// some of the prepared queries making things a bit less.... big
 class DatabaseDomain
 {
 	private mysqli $db;
@@ -182,6 +180,7 @@ class DatabaseDomain
         $query->execute(); 
         $query->bind_result($roomId, $name);
 
+        $data = [];
         while($query->fetch())
         {
             $data[$roomId] = ['name' => $name];
@@ -189,7 +188,7 @@ class DatabaseDomain
 
         $query->close();
 
-        return ($data != null) ? $data : false;
+        return $data;
     }
 
     public function createTask(int $houseId, string $name, string $description) : bool
@@ -231,6 +230,7 @@ class DatabaseDomain
         $query->bind_param("i", $houseId);
         $query->execute(); 
         $query->bind_result($taskId, $name, $description);
+        $data = null;
 
         while($query->fetch())
         {
@@ -385,6 +385,51 @@ class DatabaseDomain
         $this->db->query("SET FOREIGN_KEY_CHECKS = 1");
         return $this->db->commit();
     }
+
+    public function createUserRoomRule(int $houseId, $userId, $roomId) : bool
+    {
+        //Create new user_room rule in house
+        $query = $this->db->prepare("INSERT INTO `Rule` (`houseId`, `userId`, `roomId`) VALUES (?, ?, ?)");
+        $query->bind_param("iii", $houseId, $userId, $roomId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function createTaskTimeRule(int $houseId, $taskId, $begin, $end) : bool
+    {
+        //Create new task_time rule in house
+        $query = $this->db->prepare("INSERT INTO `Rule` (`houseId`, `taskId`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
+        $query->bind_param("iiii", $houseId, $taskId, $begin, $end);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function createRoomTimeRule(int $houseId, $roomId, $begin, $end) : bool
+    {
+        //Create new room_time rule in house
+        $query = $this->db->prepare("INSERT INTO `Rule` (`houseId`, `roomId`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
+        $query->bind_param("iiii", $houseId, $roomId, $begin, $end);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function createUserTaskRule(int $houseId, $userId, $taskId) : bool
+    {
+        //Create new user_task rule in house
+        $query = $this->db->prepare("INSERT INTO `Rule` (`houseId`, `userId`, `taskId`) VALUES (?, ?, ?)");
+        $query->bind_param("iii", $houseId, $userId, $taskId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
     public function deleteRule(int $houseId, int $ruleId) : bool
     {
         //Delete task from house
@@ -394,6 +439,66 @@ class DatabaseDomain
         $query->close();
 
         return $result;
+    }
+
+    public function getRulesInHousehold(int $houseId) : array | bool
+    {
+        $query = $this->db->prepare("SELECT `ruleId`, `userId`, `taskId`, `roomId`, `beginTimeslot`, `endTimeslot` FROM `Rule` WHERE `houseId` = ?");
+        $query->bind_param("i", $houseId);
+        $query->execute(); 
+        $query->bind_result($ruleId, $userId, $taskId, $roomId, $begin, $end);
+
+        $rules = [];
+        while($query->fetch())
+        {
+            if($userId == null)
+            {
+                if($taskId == null)
+                {
+                    //Room_Time Rule
+                    $rules[1][$ruleId] = ['roomId' => $roomId, 'beginTimeslot' => $begin, 'endTimeslot' => $end];
+                }
+                elseif($roomId == null)
+                {
+                    //Task_Time Rule
+                    $rules[2][$ruleId] = ['taskId' => $taskId, 'beginTimeslot' => $begin, 'endTimeslot' => $end];
+                }
+                else
+                {
+                    //Unreachable, TODO: Unreachable Errors
+                    $query->close();
+                    return false;
+                }
+            }
+            elseif($begin == null)
+            {
+                if($taskId == null)
+                {
+                    //User_Room Rule
+                    $rules[3][$ruleId] = ['userId' => $userId, 'roomId' => $roomId];
+                }
+                elseif($roomId == null)
+                {
+                    //User_Task Rule
+                    $rules[4][$ruleId] = ['userId' => $userId, 'taskId' => $taskId];
+                }
+                else
+                {
+                    //Unreachable, TODO: Unreachable Errors
+                    $query->close();
+                    return false;
+                }
+            }
+            else
+            {
+                //Unreachable, TODO: Unreachable Errors
+                $query->close();
+                return false;
+            }
+        }
+        $query->close();
+
+        return $rules;
     }
 }
 

@@ -26,7 +26,7 @@ class CreateRoomTimeRuleAction extends Action
         // Validation checks
         if (!isset($data['roomId'], $data['beginTimeslot'], $data['endTimeslot']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
-        if (!is_numeric($data['roomId']), !is_numeric($data['beginTimeslot']), !is_numeric($data['endTimeslot']));
+        if (!is_numeric($data['roomId']) || !is_numeric($data['beginTimeslot']) || !is_numeric($data['endTimeslot']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
         $db = $this->container->get('db');

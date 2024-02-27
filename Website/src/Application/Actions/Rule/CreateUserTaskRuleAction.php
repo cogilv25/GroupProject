@@ -26,7 +26,7 @@ class CreateUserTaskRuleAction extends Action
         // Validation checks
         if (!isset($data['taskId'], $data['userId']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
-        if (!is_numeric($data['taskId']), !is_numeric($data['userId']));
+        if (!is_numeric($data['taskId']) || !is_numeric($data['userId']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
         $db = $this->container->get('db');

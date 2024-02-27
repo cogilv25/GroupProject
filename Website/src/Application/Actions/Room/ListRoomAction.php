@@ -27,9 +27,6 @@ class ListRoomAction extends Action
 
         $data = $db->getRoomsInHousehold($houseId);
 
-        if(!$data)
-            return $this->createJsonResponse($this->response, ['message' => 'No rooms to list'], 500);
-
         return $this->createJsonResponse($this->response, $data);
     }
 }

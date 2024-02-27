@@ -7,6 +7,7 @@ USE `cleansync`;
 -- -----------------------------------------------------
 -- Table `cleansync`.`House`
 -- -----------------------------------------------------
+-- Disable fk checks as House and user reference one another
 SET FOREIGN_KEY_CHECKS = 0;
 CREATE TABLE `cleansync`.`House` (
   `houseId` INT NOT NULL AUTO_INCREMENT,

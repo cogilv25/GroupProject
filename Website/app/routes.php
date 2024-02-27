@@ -6,6 +6,7 @@ use App\Application\Actions\HouseHold;
 use App\Application\Actions\User;
 use App\Application\Actions\Room;
 use App\Application\Actions\Task;
+use App\Application\Actions\Rule;
 use App\Application\Actions\Schedule;
 
 use App\Application\Middleware\AuthenticationMiddleware;
@@ -104,10 +105,10 @@ return function (App $app) {
     {
         $group->group('/create', function (Group $createGroup)
             {
-                $group->post('/room_time', Rule\CreateRoomTimeRuleAction::class)->add(AuthenticationMiddleware::class);
-                $group->post('/task_time', Rule\CreateTaskTimeRuleAction::class)->add(AuthenticationMiddleware::class);
-                $group->post('/user_task', Rule\CreateUserTaskRuleAction::class)->add(AuthenticationMiddleware::class);
-                $group->post('/user_room', Rule\CreateUserRoomRuleAction::class)->add(AuthenticationMiddleware::class);
+                $createGroup->post('/room_time', Rule\CreateRoomTimeRuleAction::class)->add(AuthenticationMiddleware::class);
+                $createGroup->post('/task_time', Rule\CreateTaskTimeRuleAction::class)->add(AuthenticationMiddleware::class);
+                $createGroup->post('/user_task', Rule\CreateUserTaskRuleAction::class)->add(AuthenticationMiddleware::class);
+                $createGroup->post('/user_room', Rule\CreateUserRoomRuleAction::class)->add(AuthenticationMiddleware::class);
             });
         $group->post('/delete', Rule\DeleteRuleAction::class)->add(AuthenticationMiddleware::class);
         $group->get('/list', Rule\ListRuleAction::class)->add(AuthenticationMiddleware::class);

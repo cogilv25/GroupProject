@@ -27,9 +27,6 @@ class ListRuleAction extends Action
 
         $data = $db->getRulesInHousehold($houseId);
 
-        if(!$data)
-            return $this->createJsonResponse($this->response, ['message' => 'No rules to list'], 500);
-
         return $this->createJsonResponse($this->response, $data);
     }
 }

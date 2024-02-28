@@ -4,32 +4,33 @@ namespace App\Application\Actions;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use App\Application\Domain\DatabaseDomain;
+use Slim\Exception\HttpBadRequestException;
+use Slim\Exception\HttpUnauthorizedException;
+use Slim\Exception\HttpMethodNotAllowedException;
 
-abstract class Action
+//An action that can be performed by any logged in user who belongs to a house
+abstract class MemberAction extends Action
 {
 
-    protected ContainerInterface $container;
+    protected int $userId;
 
-    protected Request $request;
-
-    protected Response $response;
-
-    protected array $args;
-
-    protected DatabaseDomain $db;
-
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
-        $this->db = $container->get('db');
-    }
+    protected int $houseId;
 
     public function __invoke(Request $request, Response $response, array $args): Response
     {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
+
+        //Check if user is logged in.
+        $this->userId = $this->request->getAttribute('userId');
+        if($this->userId == 0)
+            throw new HttpMethodNotAllowedException($this->request, "You must be logged in to do that");
+
+        //Check if user belongs to a household.
+        $this->houseId = $this->db->getUserHousehold($this->userId);
+        if($this->houseId == false)
+            throw new HttpBadRequestException($this->request, "You are not a member of a Household");
 
         return $this->action();
     }

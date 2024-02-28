@@ -24,6 +24,13 @@ class AuthenticationMiddleware implements Middleware
 
     public function process(Request $request, RequestHandler $handler): Response
     {
+        $userId = 0;
+
+        if(isset($_SESSION['loggedIn']))
+            $userId = $_SESSION['loggedIn'];
+
+        $request = $request->withAttribute('userId', $userId);
+
         if($this->isUser($request))
         {
             $request = $request->withAttribute('loggedIn', ['userId' => $_SESSION['loggedIn'], 'admin' => $this->isAdmin($request)]);

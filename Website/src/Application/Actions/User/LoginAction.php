@@ -14,9 +14,8 @@ class LoginAction extends Action
 
     protected function action(): Response
     {
-        //Check if user is already logged in and if so redirect them
-        $loggedIn = $this->request->getAttribute('loggedIn');
-        if($loggedIn != false)
+        //Check if user is already logged in.
+        if($this->request->getAttribute('userId') != 0)
             throw new HttpMethodNotAllowedException($this->request, "Already logged in");
 
         $data = $this->request->getParsedBody();
@@ -34,10 +33,8 @@ class LoginAction extends Action
         if (!$email)
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
-        $db = $this->container->get('db');
-
         // Check user exists
-        $user = $db->getUserIdAndPasswordHash($email);
+        $user = $this->db->getUserIdAndPasswordHash($email);
         if (!$user)
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 

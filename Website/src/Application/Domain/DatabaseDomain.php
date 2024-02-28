@@ -30,6 +30,23 @@ class DatabaseDomain
         return $this->db;
     }
 
+    public function unsafeQuery(string $queryString)
+    {
+        return $this->db->query($queryString);
+    }
+
+    //Create household and add user as admin
+    public function createHousehold(int $userId) : bool
+    {
+        $query1 = "INSERT INTO `House` (`adminId`) VALUES (". $userId .")";
+
+        $subQuery = "SELECT `houseId` FROM `House` WHERE `adminId`=".$userId;
+        $query2 = "UPDATE `user` SET `House_houseId`=(". $subQuery .")  WHERE `userId`=" . $userId;
+
+        //If the first query succeeds return the result of the second otherwise false
+        return $this->db->query($query1) ? $this->db->query($query2) : false;
+    }
+
     public function getUserIdAndPasswordHash(string $email) : array | false
     {
         $query = $this->db->prepare("SELECT `userId`, `password` FROM `user` WHERE `email` = ?");
@@ -73,7 +90,21 @@ class DatabaseDomain
         return $result ? $id : false;
     }
 
-    public function getAdminHouse(int $adminId) : int | null
+    public function addUserToHousehold(int $userId, int $houseId) : bool
+    {
+        $subQuery = "SELECT `houseId` FROM `House` WHERE `houseId`=". $houseId;
+        $query = "UPDATE `user` SET `House_houseId`=(".$subQuery.") WHERE `userId`=".$userId;
+
+        return $this->db->query($query);
+    }
+
+    public function removeUserFromHousehold(int $userId, int $houseId) : bool
+    {
+        $query = "UPDATE `user` SET `House_houseId`=NULL WHERE `House_houseId`=".$houseId." AND `userId`=".$userId;
+        return $this->db->query($query);
+    }
+
+    public function getAdminHouse(int $adminId) : int | bool
     {
         $query = $this->db->prepare("SELECT `houseId` FROM `user` JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
         $query->bind_param("i", $adminId);
@@ -81,7 +112,7 @@ class DatabaseDomain
         $query->bind_result($houseId);
         $query->fetch();
         $query->close();
-        return $houseId;
+        return $houseId == null ? false : $houseId;
     }
 
     public function isUserAdmin(int $userId) : bool
@@ -232,6 +263,7 @@ class DatabaseDomain
         $query->bind_result($taskId, $name, $description);
         $data = null;
 
+        $data = [];
         while($query->fetch())
         {
             $data[$taskId] = ['name' => $name, 'description' => $description];
@@ -239,7 +271,7 @@ class DatabaseDomain
 
         $query->close();
 
-        return ($data != null) ? $data : false;
+        return $data;
     }
 
     private function expandDayToArray(string $day) : array
@@ -250,7 +282,7 @@ class DatabaseDomain
             array_push($days, 'Monday','Tuesday','Wednesday','Thursday','Friday');
             array_push($days, 'Saturday','Sunday');
         }
-        elseif($day = 'Weekdays')
+        elseif($day == 'Weekdays')
             array_push($days, 'Monday','Tuesday','Wednesday','Thursday','Friday');
         elseif($day == 'Weekends')
             array_push($days, 'Saturday','Sunday');
@@ -310,12 +342,13 @@ class DatabaseDomain
         $query->execute(); 
         $query->bind_result($scheduleId, $day, $begin, $end);
 
+        $data = [];
         while($query->fetch())
             $data[] = ['rowId' => $scheduleId, 'day' => $day, 'beginTimeslot' => $begin, 'endTimeslot' => $end];
 
         $query->close();
 
-        return isset($data) ? $data : false;
+        return $data;
     }
 
     public function getUserSchedulesInHousehold(int $houseId)
@@ -325,6 +358,7 @@ class DatabaseDomain
         $query->execute(); 
         $query->bind_result($userId, $forename, $surname);
 
+        $users = [];
         while($query->fetch())
         {
             $users[$userId] = ['forename' => $forename, 'surname' => $surname];
@@ -337,7 +371,7 @@ class DatabaseDomain
         }
 
 
-        return ($users != null) ? $users : false;
+        return $users;
     }
 
     //TODO: Delete Rota rows (currently isn't linked, might not be required..)
@@ -355,7 +389,7 @@ class DatabaseDomain
         $this->db->begin_transaction();
 
         //Makes all users who were in the Household homeless
-        $query = $this->db->prepare("UPDATE `user`SET `House_houseId`=null WHERE `House_houseId`=?");
+        $query = $this->db->prepare("UPDATE `user`SET `House_houseId`=NULL WHERE `House_houseId`=?");
         $query->bind_param("i", $houseId);
         $result = $query->execute();
         $query->close();
@@ -433,7 +467,7 @@ class DatabaseDomain
     public function deleteRule(int $houseId, int $ruleId) : bool
     {
         //Delete task from house
-        $query = $this->db->prepare("DELETE `Rule` FROM `Rule` JOIN `House` ON `Rule`.`houseId`= WHERE `ruleId`= ?");
+        $query = $this->db->prepare("DELETE FROM `Rule` WHERE `houseId`=? AND `ruleId`=?");
         $query->bind_param("ii", $houseId, $ruleId);
         $result = $query->execute();
         $query->close();

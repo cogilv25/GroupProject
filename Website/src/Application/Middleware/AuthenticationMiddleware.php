@@ -24,20 +24,19 @@ class AuthenticationMiddleware implements Middleware
 
     public function process(Request $request, RequestHandler $handler): Response
     {
-        $userId = 0;
+        if(session_status() == PHP_SESSION_NONE)
+            session_start();
 
+        $userId = 0;
         if(isset($_SESSION['loggedIn']))
             $userId = $_SESSION['loggedIn'];
 
         $request = $request->withAttribute('userId', $userId);
 
-        if($this->isUser($request))
-        {
-            $request = $request->withAttribute('loggedIn', ['userId' => $_SESSION['loggedIn'], 'admin' => $this->isAdmin($request)]);
-        }
-        else
-            $request = $request->withAttribute('loggedIn', false);
-
-        return $handler->handle($request);
+        $response = $handler->handle($request);
+        //Hopefully prevents random logouts which I think are caused by
+        // sessions not ending sometimes when an error occurs..
+        session_write_close();
+        return $response;
     }
 }

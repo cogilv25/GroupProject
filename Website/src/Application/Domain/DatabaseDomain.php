@@ -72,11 +72,11 @@ class DatabaseDomain
         $query = $this->db->prepare("SELECT `userId`, `password` FROM `user` WHERE `email` = ?");
         $query->bind_param("s", $email);
         $query->execute(); 
-        $query->bind_result($data['id'], $data['passwordHash']);
+        $query->bind_result($id, $hashedPassword);
         $query->fetch();
         $query->close();
 
-        return !$data ? false : $data;
+        return !isset($id) ? false : ['hashedPassword' => $hashedPassword, 'userId' => $id];
     }
 
     public function getUserId(string $email) : int | false
@@ -325,21 +325,67 @@ class DatabaseDomain
         return $days;
     }
 
-    public function createScheduleRows(int $userId, int $begin, int $end, string $day)
+    enum ScheduleType
+    {
+        case User;
+        case Task;
+        case Room;
+    }
+
+    //Check if the provided row overlaps with any other rows in the user schedule.
+    public function checkForScheduleCollisions(ScheduleType $t, int $t_id, string $day, int $begin, int $end)
+    {
+        switch ($t) {
+            case ScheduleType::User:
+            $table = "UserSchedule"; $column = "userId";
+                break;
+            case ScheduleType::Task:
+            $table = "TaskSchedule"; $column = "taskId";
+                break;
+            case ScheduleType::Room:
+            $table = "RoomSchedule"; $column = "roomId";
+                break;
+        }
+
+        // basically a 1D AABB algorithm in SQL + the extra check for if the new
+        // row fully encompassing a previously existing row.
+        // Note: choosing beginTimeslot is arbitrary we just need to count rows
+        $result = $this->db->query("SELECT `beginTimeslot` FROM `". $table ."` WHERE".
+            "`" . $column . "`=" . $t_id . " AND `day`=" . $day . " AND (".
+            "(`beginTimeslot` <= ". $begin ." AND `endTimeslot` >= ". $begin .") OR ". // Check for collision straddling begin
+            "(`beginTimeslot` <= ".  $end  ." AND `endTimeslot` >= ".  $end  .") OR ". // Check for collision straddling end
+            "(`beginTimeslot` >= ".  $begin  ." AND `endTimeslot` <= ". $end ."))"   );// Check for collision straddling full range
+
+        //Unreachable
+        if($result == false)
+            return false;
+
+        //We should get exactly 1 row
+        return ($result->num_rows == 1) ? true : false;
+    }
+
+    public function createUserScheduleRows(int $userId, int $begin, int $end, string $day)
     {
         $days = $this->expandDayToArray($day);
 
-        //Create/s new row/s in a users Schedule
+        //Create/s new row/s in a UserSchedule
         $this->db->begin_transaction();
         foreach ($days as &$day) {
-            $query = $this->db->prepare("INSERT INTO `Schedule` (`userId`, `day`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
+            $query = $this->db->prepare("INSERT INTO `UserSchedule` (`userId`, `day`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
             $query->bind_param("isii", $userId, $day, $begin, $end);
             $result = $query->execute();
             $query->close();
 
             if(!$result)
             {
-                $db->rollback();
+                $this->db->rollback();
+                return false;
+            }
+
+            //Check if our new row overlaps with any other rows and if so rollback
+            if(!$this->checkForScheduleCollisions(ScheduleType::User, $userId, $day, $begin, $end))
+            {
+                $this->db->rollback();
                 return false;
             }
         }
@@ -347,21 +393,40 @@ class DatabaseDomain
         return $this->db->commit();
     }
 
-    public function updateScheduleRow(int $userId, int $scheduleId, int $begin, int $end, string $day)
+
+
+    public function updateUserScheduleRow(int $userId, int $scheduleId, int $begin, int $end, string $day)
     {
-        //Update row in a users Schedule
-        $query = $this->db->prepare("UPDATE `Schedule` SET `day`=?, `beginTimeslot`=?, `endTimeslot`=? WHERE `userId`=? AND `scheduleId`=?");
+        //Start a transaction and update the row in ernest.
+        $this->db->begin_transaction();
+        $query = $this->db->prepare("UPDATE `UserSchedule` SET `day`=?, `beginTimeslot`=?, `endTimeslot`=? WHERE `userId`=? AND `scheduleId`=?");
         $query->bind_param("siiii", $day, $begin, $end, $userId, $scheduleId);
         $result = $query->execute();
         $query->close();
 
-        return $result;
+        //If the query fails rollback
+        if($result == false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        //Check if our new row overlaps with any other rows and if so rollback
+        if(!$this->checkForScheduleCollisions(ScheduleType::User, $userId, $day, $begin, $end))
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+
+        //Finally if all went well commit and return
+        return $this->db->commit();
     }
 
-    public function deleteScheduleRow(int $userId, int $scheduleId) : bool
+    public function deleteUserScheduleRow(int $userId, int $scheduleId) : bool
     {
-        //Delete row from a users Schedule
-        $query = $this->db->prepare("DELETE FROM `Schedule` WHERE `scheduleId`=(SELECT `scheduleId` FROM `Schedule` JOIN `user` ON `Schedule`.`userId`=`user`.`userId` WHERE `scheduleId`=? AND `userId`=?)");
+        //Delete row from a UserSchedule
+        $query = $this->db->prepare("DELETE FROM `UserSchedule` WHERE `scheduleId`=(SELECT `scheduleId` FROM `UserSchedule` JOIN `user` ON `UserSchedule`.`userId`=`user`.`userId` WHERE `scheduleId`=? AND `userId`=?)");
         $query->bind_param("ii", $scheduleId, $userId);
         $result = $query->execute();
         $query->close();
@@ -369,10 +434,10 @@ class DatabaseDomain
         return $result;
     }
 
-    public function deleteSchedule(int $userId) : bool
+    public function deleteUserSchedule(int $userId) : bool
     {
-        //Delete row from a users Schedule
-        $query = $this->db->prepare("DELETE FROM `Schedule` WHERE `userId`=?");
+        //Delete row from a users UserSchedule
+        $query = $this->db->prepare("DELETE FROM `UserSchedule` WHERE `userId`=?");
         $query->bind_param("i", $userId);
         $result = $query->execute();
         $query->close();
@@ -380,9 +445,9 @@ class DatabaseDomain
         return $result;
     }
 
-    public function getSchedule(int $userId)
+    public function getUserSchedule(int $userId)
     {
-        $query = $this->db->prepare("SELECT `scheduleId`, `day`, `beginTimeslot`,`endTimeslot` FROM `Schedule` WHERE `userId` = ?");
+        $query = $this->db->prepare("SELECT `scheduleId`, `day`, `beginTimeslot`,`endTimeslot` FROM `UserSchedule` WHERE `userId` = ?");
         $query->bind_param("i", $userId);
         $query->execute(); 
         $query->bind_result($scheduleId, $day, $begin, $end);
@@ -412,7 +477,7 @@ class DatabaseDomain
 
         foreach ($users as $id => $details)
         {
-            $users[$id]['schedule'] = $this->getSchedule($userId);
+            $users[$id]['schedule'] = $this->getUserSchedule($userId);
         }
 
 

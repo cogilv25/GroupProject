@@ -35,7 +35,7 @@ class LoginAction extends Action
 
         // Check user exists
         $user = $this->db->getUserIdAndPasswordHash($email);
-        if (!$user)
+        if ($user == false)
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
         //Authenticate Password

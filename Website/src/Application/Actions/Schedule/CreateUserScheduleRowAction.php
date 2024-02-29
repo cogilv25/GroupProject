@@ -10,8 +10,8 @@ use Slim\Exception\HttpUnauthorizedException;
 use Slim\Exception\HttpMethodNotAllowedException;
 
 
-//TODO: Check for Schedule Row collisions
-class CreateScheduleRowAction extends UserAction
+//TODO: Check for UserSchedule Row collisions
+class CreateUserScheduleRowAction extends UserAction
 {
 
     protected array $validDays = ['Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday','All','Weekdays','Weekends'];
@@ -32,9 +32,12 @@ class CreateScheduleRowAction extends UserAction
         $end = (int)$data['endTimeslot'];
         $day = $data['day'];
 
-        if(!$this->db->createScheduleRows($this->userId, $begin, $end, $day))
-            return $this->createJsonResponse($this->response, ['message' => 'Schedule Row creation failed']);
+        if($begin > $end)
+            throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
-        return $this->createJsonResponse($this->response, ['message' => 'Schedule Row created successfully']);
+        if(!$this->db->createUserScheduleRows($this->userId, $begin, $end, $day))
+            return $this->createJsonResponse($this->response, ['message' => 'User Schedule Row creation failed']);
+
+        return $this->createJsonResponse($this->response, ['message' => 'User Schedule Row created successfully']);
     }
 }

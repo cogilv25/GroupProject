@@ -10,8 +10,8 @@ use Slim\Exception\HttpUnauthorizedException;
 use Slim\Exception\HttpMethodNotAllowedException;
 
 
-//TODO: Check for Schedule Row collisions
-class UpdateScheduleRowAction extends UserAction
+//TODO: Check for UserSchedule Row collisions
+class UpdateUserScheduleRowAction extends UserAction
 {
 
     protected array $validDays = ['Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
@@ -34,9 +34,12 @@ class UpdateScheduleRowAction extends UserAction
         $end = (int)$data['endTimeslot'];
         $day = $data['day'];
 
-        if(!$this->db->updateScheduleRow($this->userId, $rowId, $begin, $end, $day))
-            return $this->createJsonResponse($this->response, ['message' => 'Schedule update failed']);
+        if($begin > $end)
+            throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
-        return $this->createJsonResponse($this->response, ['message' => 'Schedule updated successfully']);
+        if(!$this->db->updateUserScheduleRow($this->userId, $rowId, $begin, $end, $day))
+            return $this->createJsonResponse($this->response, ['message' => 'User Schedule update failed']);
+
+        return $this->createJsonResponse($this->response, ['message' => 'User Schedule updated successfully']);
     }
 }

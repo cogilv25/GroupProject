@@ -9,7 +9,7 @@ use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Exception\HttpMethodNotAllowedException;
 
-class DeleteScheduleRowAction extends UserAction
+class DeleteUserScheduleRowAction extends UserAction
 {
 
     protected function action(): Response
@@ -24,9 +24,9 @@ class DeleteScheduleRowAction extends UserAction
 
         $scheduleId = (int)$data['scheduleId'];
 
-        if(!$this->db->deleteScheduleRow($this->userId, $scheduleId))
-            return $this->createJsonResponse($this->response, ['message' => 'Schedule Row deletion failed']);
+        if(!$this->db->deleteUserScheduleRow($this->userId, $scheduleId))
+            return $this->createJsonResponse($this->response, ['message' => 'User Schedule Row deletion failed']);
 
-        return $this->createJsonResponse($this->response, ['message' => 'Schedule Row deleted successfully']);
+        return $this->createJsonResponse($this->response, ['message' => 'User Schedule Row deleted successfully']);
     }
 }

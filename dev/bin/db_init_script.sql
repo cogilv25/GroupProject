@@ -46,6 +46,7 @@ CREATE TABLE `cleansync`.`Room` (
   `name` VARCHAR(45),
   `houseId` INT NOT NULL,
   PRIMARY KEY (`roomId`),
+  CONSTRAINT `House_RoomName_Unique` UNIQUE(`name`,`houseId`),
   INDEX `fk_Room_House1_idx` (`houseId` ASC),
   CONSTRAINT `fk_Room_House1`
     FOREIGN KEY (`houseId`)
@@ -61,6 +62,7 @@ CREATE TABLE `cleansync`.`Task` (
   `description` VARCHAR(1000) NOT NULL,
   `houseId` INT NOT NULL,
   PRIMARY KEY (`taskId`),
+  CONSTRAINT `House_TaskName_Unique` UNIQUE(`name`,`houseId`),
   INDEX `fk_Task_Room1_idx` (`houseId` ASC),
   CONSTRAINT `fk_Task_House`
     FOREIGN KEY (`houseId`)
@@ -102,9 +104,51 @@ CREATE TABLE `cleansync`.`Rule` (
 
 
 -- -----------------------------------------------------
--- Table `cleansync`.`Schedule`
+-- Table `cleansync`.`RoomSchedule`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`Schedule` (
+CREATE TABLE `cleansync`.`RoomSchedule` (
+  `scheduleId` INT NOT NULL AUTO_INCREMENT,
+  -- begin to end range is inclusive
+  `beginTimeslot` INT NOT NULL,
+  `endTimeslot` INT NOT NULL,
+  `day` ENUM('Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+  `roomId` INT NOT NULL,
+  `houseId` INT NOT NULL,
+  PRIMARY KEY (`scheduleId`),
+  INDEX `fk_roomschedule_room_idx` (`roomId` ASC),
+  INDEX `fk_roomschedule_house_idx` (`houseId` ASC),
+  CONSTRAINT `fk_roomschedule_room`
+    FOREIGN KEY (`roomId`)
+    REFERENCES `cleansync`.`Room` (`roomId`),
+  CONSTRAINT `fk_roomschedule_house`
+    FOREIGN KEY (`houseId`)
+    REFERENCES `cleansync`.`House` (`houseId`));
+
+-- -----------------------------------------------------
+-- Table `cleansync`.`TaskSchedule`
+-- -----------------------------------------------------
+CREATE TABLE `cleansync`.`TaskSchedule` (
+  `scheduleId` INT NOT NULL AUTO_INCREMENT,
+  -- begin to end range is inclusive
+  `beginTimeslot` INT NOT NULL,
+  `endTimeslot` INT NOT NULL,
+  `day` ENUM('Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+  `taskId` INT NOT NULL,
+  `houseId` INT NOT NULL,
+  PRIMARY KEY (`scheduleId`),
+  INDEX `fk_taskschedule_task_idx` (`taskId` ASC),
+  INDEX `fk_taskschedule_house_idx` (`houseId` ASC),
+  CONSTRAINT `fk_taskschedule_task`
+    FOREIGN KEY (`taskId`)
+    REFERENCES `cleansync`.`Task` (`taskId`),
+  CONSTRAINT `fk_taskschedule_house`
+    FOREIGN KEY (`houseId`)
+    REFERENCES `cleansync`.`House` (`houseId`));
+
+-- -----------------------------------------------------
+-- Table `cleansync`.`UserSchedule`
+-- -----------------------------------------------------
+CREATE TABLE `cleansync`.`UserSchedule` (
   `scheduleId` INT NOT NULL AUTO_INCREMENT,
   -- begin to end range is inclusive
   `beginTimeslot` INT NOT NULL,
@@ -112,8 +156,8 @@ CREATE TABLE `cleansync`.`Schedule` (
   `day` ENUM('Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
   `userId` INT NOT NULL,
   PRIMARY KEY (`scheduleId`),
-  INDEX `fk_Schedule_user1_idx` (`userId` ASC),
-  CONSTRAINT `fk_Schedule_user1`
+  INDEX `fk_userschedule_user_idx` (`userId` ASC),
+  CONSTRAINT `fk_userschedule_user`
     FOREIGN KEY (`userId`)
     REFERENCES `cleansync`.`user` (`userId`));
 

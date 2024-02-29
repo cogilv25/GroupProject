@@ -61,14 +61,14 @@ return function (App $app) {
         return $response->withHeader('Location', '/')->withStatus(302);
     });
 
-    //Schedule Actions
+    //UserSchedule Actions
     $app->group('/schedule', function (Group $group)
     {
-        $group->post('/create_row', Schedule\CreateScheduleRowAction::class)->add(AuthenticationMiddleware::class);
-        $group->post('/update_row', Schedule\UpdateScheduleRowAction::class)->add(AuthenticationMiddleware::class);
-        $group->post('/delete_row', Schedule\DeleteScheduleRowAction::class)->add(AuthenticationMiddleware::class);
-        $group->get('/delete', Schedule\DeleteScheduleAction::class)->add(AuthenticationMiddleware::class);
-        $group->get('/list', Schedule\GetScheduleAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/create_row', Schedule\CreateUserScheduleRowAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/update_row', Schedule\UpdateUserScheduleRowAction::class)->add(AuthenticationMiddleware::class);
+        $group->post('/delete_row', Schedule\DeleteUserScheduleRowAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/delete', Schedule\DeleteUserScheduleAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/list', Schedule\GetUserScheduleAction::class)->add(AuthenticationMiddleware::class);
     });
 
     //HouseHold Actions
@@ -80,7 +80,7 @@ return function (App $app) {
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class)->add(AuthenticationMiddleware::class);
         $group->post('/remove', Household\RemoveUserHouseHoldAction::class)->add(AuthenticationMiddleware::class);
         $group->get('/list', Household\ListHouseholdAction::class)->add(AuthenticationMiddleware::class);
-        $group->get('/schedules', Schedule\GetHouseholdSchedulesAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/schedules', Schedule\GetHouseholdUserSchedulesAction::class)->add(AuthenticationMiddleware::class);
     });
 
     //Room Actions

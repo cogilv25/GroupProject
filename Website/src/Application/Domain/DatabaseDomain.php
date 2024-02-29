@@ -30,6 +30,26 @@ class DatabaseDomain
         return $this->db;
     }
 
+    public function disableForeignKeyChecks()
+    {
+        $this->db->query("SET FOREIGN_KEY_CHECKS = 0");
+    }
+
+    public function disableSafeUpdates()
+    {
+        $this->db->query("SET SQL_SAFE_UPDATES = 0");
+    }
+
+    public function enableForeignKeyChecks()
+    {
+        $this->db->query("SET FOREIGN_KEY_CHECKS = 1");
+    }
+
+    public function enableSafeUpdates()
+    {
+        $this->db->query("SET SQL_SAFE_UPDATES = 1");
+    }
+
     public function unsafeQuery(string $queryString)
     {
         return $this->db->query($queryString);
@@ -193,13 +213,20 @@ class DatabaseDomain
         return $result;
     }
 
-    public function deleteRoom(int $roomId, int $adminId) : bool
+    public function deleteRoom(int $roomId, int $houseId) : bool
     {
-        //Create new room in house
-        $query = $this->db->prepare("DELETE FROM `Room` WHERE `roomId`=(SELECT `roomId` FROM `Room` JOIN `House` ON `Room`.`houseId`=`House`.`houseId` WHERE `roomId`=? AND `adminId`=?)");
-        $query->bind_param("ii", $roomId, $adminId);
+        $queryString = "DELETE `Room`, `taskpoints`, `Rule` FROM `Room` ".
+            "LEFT JOIN `taskpoints` ON `Room`.`roomId`=`taskpoints`.`roomId` ".
+            "LEFT JOIN `Rule` ON `Rule`.`roomId`=`Room`.`roomId`".
+            "WHERE `Room`.`roomId`=? AND `Room`.`houseId`=?";
+
+        //Delete room from household
+        $this->disableForeignKeyChecks();
+        $query = $this->db->prepare($queryString);
+        $query->bind_param("ii", $roomId, $houseId);
         $result = $query->execute();
         $query->close();
+        $this->enableForeignKeyChecks();
 
         return $result;
     }
@@ -244,13 +271,20 @@ class DatabaseDomain
         return $result;
     }
 
-    public function deleteTask(int $taskId, int $adminId) : bool
+    public function deleteTask(int $taskId, int $houseId) : bool
     {
+        $queryString = "DELETE `Task`, `taskpoints`, `Rule` FROM `Task` ".
+            "LEFT JOIN `taskpoints` ON `Task`.`taskId`=`taskpoints`.`taskId` ".
+            "LEFT JOIN `Rule` ON `Rule`.`taskId`=`Task`.`taskId`".
+            "WHERE `Task`.`taskId`=? AND `Task`.`houseId`=?";
+
         //Delete task from house
-        $query = $this->db->prepare("DELETE FROM `Task` WHERE `taskId`=(SELECT `taskId` FROM `Task` JOIN `House` ON `Task`.`houseId`=`House`.`houseId` WHERE `taskId`=? AND `adminId`=?)");
-        $query->bind_param("ii", $taskId, $adminId);
+        $this->disableForeignKeyChecks();
+        $query = $this->db->prepare($queryString);
+        $query->bind_param("ii", $taskId, $houseId);
         $result = $query->execute();
         $query->close();
+        $this->enableForeignKeyChecks();
 
         return $result;
     }

@@ -24,7 +24,7 @@ class DeleteRoomAction extends AdminAction
 
         $roomId = (int)$data['roomId'];
 
-        if(!$this->db->deleteRoom($roomId, $this->adminId))
+        if(!$this->db->deleteRoom($roomId, $this->houseId))
             return $this->createJsonResponse($this->response, ['message' => 'Room deletion failed']);
 
         return $this->createJsonResponse($this->response, ['message' => 'Room deleted successfully']);

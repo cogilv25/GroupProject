@@ -122,18 +122,18 @@ CREATE TABLE `cleansync`.`Schedule` (
 -- Table `cleansync`.`taskPoints`
 -- -----------------------------------------------------
 CREATE TABLE `cleansync`.`taskPoints` (
-  `pointId` INT NOT NULL,
+  `pointId` INT NOT NULL AUTO_INCREMENT,
   `quantity` INT NOT NULL,
-  `Task_taskId` INT NOT NULL,
-  `Room_roomId` INT NOT NULL,
+  `taskId` INT NOT NULL,
+  `roomId` INT NOT NULL,
   PRIMARY KEY (`pointId`),
-  INDEX `fk_Rule_task2_idx` (`Task_taskId` ASC),
-  INDEX `fk_Rule_room2_idx` (`Room_roomId` ASC),
+  INDEX `fk_Rule_task2_idx` (`taskId` ASC),
+  INDEX `fk_Rule_room2_idx` (`roomId` ASC),
   CONSTRAINT `fk_Rule_task2`
-    FOREIGN KEY (`Task_taskId`)
+    FOREIGN KEY (`taskId`)
     REFERENCES `cleansync`.`Task` (`taskId`),
   CONSTRAINT `fk_Rule_room2`
-    FOREIGN KEY (`Room_roomId`)
+    FOREIGN KEY (`roomId`)
     REFERENCES `cleansync`.`Room` (`roomId`));
 
 

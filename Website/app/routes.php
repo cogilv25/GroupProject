@@ -67,6 +67,7 @@ return function (App $app) {
         $group->post('/create_row', Schedule\CreateScheduleRowAction::class)->add(AuthenticationMiddleware::class);
         $group->post('/update_row', Schedule\UpdateScheduleRowAction::class)->add(AuthenticationMiddleware::class);
         $group->post('/delete_row', Schedule\DeleteScheduleRowAction::class)->add(AuthenticationMiddleware::class);
+        $group->get('/delete', Schedule\DeleteScheduleAction::class)->add(AuthenticationMiddleware::class);
         $group->get('/list', Schedule\GetScheduleAction::class)->add(AuthenticationMiddleware::class);
     });
 

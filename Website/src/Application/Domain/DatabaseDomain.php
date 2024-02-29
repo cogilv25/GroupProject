@@ -369,6 +369,17 @@ class DatabaseDomain
         return $result;
     }
 
+    public function deleteSchedule(int $userId) : bool
+    {
+        //Delete row from a users Schedule
+        $query = $this->db->prepare("DELETE FROM `Schedule` WHERE `userId`=?");
+        $query->bind_param("i", $userId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
     public function getSchedule(int $userId)
     {
         $query = $this->db->prepare("SELECT `scheduleId`, `day`, `beginTimeslot`,`endTimeslot` FROM `Schedule` WHERE `userId` = ?");

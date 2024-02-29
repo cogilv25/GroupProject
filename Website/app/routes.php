@@ -52,6 +52,72 @@ return function (App $app) {
         return $renderer->render($response, 'Dashboard.php', $data);
     })->add(AuthenticationMiddleware::class);
 
+
+    $app->get('/admindashboard.php', function (Request $request, Response $response) {
+        $loggedIn = $request->getAttribute('loggedIn');
+        if(!$loggedIn)
+            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
+        $renderer = $this->get('renderer');
+        $db = $this->get('db');
+        $link = $db->getUserInviteLink($loggedIn['userId']);
+        if($link == false)
+            $link = "No Link";
+
+        $data = ['link' => $link];
+        return $renderer->render($response, 'admindashboard.php', $data);
+    })->add(AuthenticationMiddleware::class);
+
+
+    $app->get('/adminhousehold.php', function (Request $request, Response $response) {
+        $loggedIn = $request->getAttribute('loggedIn');
+        if(!$loggedIn)
+            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
+        $renderer = $this->get('renderer');
+        $db = $this->get('db');
+        $link = $db->getUserInviteLink($loggedIn['userId']);
+        if($link == false)
+            $link = "No Link";
+
+        $data = ['link' => $link];
+        return $renderer->render($response, 'adminhousehold.php', $data);
+    })->add(AuthenticationMiddleware::class);
+
+
+    
+
+    $app->get('/adminroom.php', function (Request $request, Response $response) {
+        $loggedIn = $request->getAttribute('loggedIn');
+        if(!$loggedIn)
+            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
+        $renderer = $this->get('renderer');
+        $db = $this->get('db');
+        $link = $db->getUserInviteLink($loggedIn['userId']);
+        if($link == false)
+            $link = "No Link";
+
+        $data = ['link' => $link];
+        return $renderer->render($response, 'adminroom.php', $data);
+    })->add(AuthenticationMiddleware::class);
+
+    $app->get('/adminTasks.php', function (Request $request, Response $response) {
+        $loggedIn = $request->getAttribute('loggedIn');
+        if(!$loggedIn)
+            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
+        $renderer = $this->get('renderer');
+        $db = $this->get('db');
+        $link = $db->getUserInviteLink($loggedIn['userId']);
+        if($link == false)
+            $link = "No Link";
+
+        $data = ['link' => $link];
+        return $renderer->render($response, 'adminTasks.php', $data);
+    })->add(AuthenticationMiddleware::class);
+
+
     //User Actions
     $app->post('/login', User\LoginAction::class)->add(AuthenticationMiddleware::class);
     $app->post('/signup', User\RegisterAction::class)->add(AuthenticationMiddleware::class);

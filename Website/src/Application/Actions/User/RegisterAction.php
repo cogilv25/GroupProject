@@ -14,9 +14,8 @@ class RegisterAction extends Action
 
     protected function action(): Response
     {
-        //Check if user is logged in and if so throw an Exception
-        $loggedIn = $this->request->getAttribute('loggedIn');
-        if($loggedIn != false)
+        //Check if user is logged in.
+        if($this->request->getAttribute('userId') != 0)
             throw new HttpMethodNotAllowedException($this->request, "Already logged in");
 
         $data = $this->request->getParsedBody();
@@ -32,10 +31,8 @@ class RegisterAction extends Action
         if (!$email)
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
-        $db = $this->container->get('db');
-
         // Check if email unavailable
-        $id = $db->getUserId($email);
+        $id = $this->db->getUserId($email);
         if ($id != false)
             throw new HttpBadRequestException($this->request, "Cannot create an account with that email address" . $id );
 
@@ -43,7 +40,7 @@ class RegisterAction extends Action
         $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
 
         //Insert new user into user table
-        $id = $db->createUser($data['forename'], $data['surname'], $email, $hashedPassword);
+        $id = $this->db->createUser($data['forename'], $data['surname'], $email, $hashedPassword);
 
         //TODO: Create Exception for unreachables
         if(!$id)

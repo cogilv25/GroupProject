@@ -5,6 +5,14 @@ namespace App\Application\Domain;
 use Psr\Container\ContainerInterface;
 use mysqli;
 
+
+enum ScheduleType
+{
+    case User;
+    case Task;
+    case Room;
+}
+
 //TODO: Once User Validation is implemented in actions houseId and userId will be known safe values so we can remove
 // some of the prepared queries making things a bit less.... big.
 //TODO: Just discovered Join Delete's so that might reduce the number of queries required here and there.
@@ -30,16 +38,53 @@ class DatabaseDomain
         return $this->db;
     }
 
+    public function disableForeignKeyChecks()
+    {
+        $this->db->query("SET FOREIGN_KEY_CHECKS = 0");
+    }
+
+    public function disableSafeUpdates()
+    {
+        $this->db->query("SET SQL_SAFE_UPDATES = 0");
+    }
+
+    public function enableForeignKeyChecks()
+    {
+        $this->db->query("SET FOREIGN_KEY_CHECKS = 1");
+    }
+
+    public function enableSafeUpdates()
+    {
+        $this->db->query("SET SQL_SAFE_UPDATES = 1");
+    }
+
+    public function unsafeQuery(string $queryString)
+    {
+        return $this->db->query($queryString);
+    }
+
+    //Create household and add user as admin
+    public function createHousehold(int $userId) : bool
+    {
+        $query1 = "INSERT INTO `House` (`adminId`) VALUES (". $userId .")";
+
+        $subQuery = "SELECT `houseId` FROM `House` WHERE `adminId`=".$userId;
+        $query2 = "UPDATE `user` SET `House_houseId`=(". $subQuery .")  WHERE `userId`=" . $userId;
+
+        //If the first query succeeds return the result of the second otherwise false
+        return $this->db->query($query1) ? $this->db->query($query2) : false;
+    }
+
     public function getUserIdAndPasswordHash(string $email) : array | false
     {
         $query = $this->db->prepare("SELECT `userId`, `password` FROM `user` WHERE `email` = ?");
         $query->bind_param("s", $email);
         $query->execute(); 
-        $query->bind_result($data['id'], $data['passwordHash']);
+        $query->bind_result($id, $hashedPassword);
         $query->fetch();
         $query->close();
 
-        return !$data ? false : $data;
+        return !isset($id) ? false : ['passwordHash' => $hashedPassword, 'id' => $id];
     }
 
     public function getUserId(string $email) : int | false
@@ -73,7 +118,41 @@ class DatabaseDomain
         return $result ? $id : false;
     }
 
-    public function getAdminHouse(int $adminId) : int | null
+    public function addUserToHousehold(int $userId, int $houseId) : bool
+    {
+        $subQuery = "SELECT `houseId` FROM `House` WHERE `houseId`=". $houseId;
+        $query = "UPDATE `user` SET `House_houseId`=(".$subQuery.") WHERE `userId`=".$userId;
+
+        return $this->db->query($query);
+    }
+
+    public function removeUserFromHousehold(int $userId, int $houseId) : bool
+    {
+        $this->db->begin_transaction();
+        $query = "UPDATE `user` SET `House_houseId`=NULL WHERE `House_houseId`=".$houseId." AND `userId`=".$userId;
+
+        if($this->db->query($query) == false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        //Remove any rules relating to the user, remember users have only one house
+        $query = "DELETE `User_Exempt_Room`, `User_Exempt_Task` FROM `user` ".
+        "LEFT JOIN `User_Exempt_Room` ON `User_Exempt_Room`.`userId`=`user`.`userId` ".
+        "LEFT JOIN `User_Exempt_Task` ON `User_Exempt_Task`.`userId`=`user`.`userId` ".
+        "WHERE `user`.`userId`=" . $userId;
+
+        if($this->db->query($query) == false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        return $this->db->commit();
+    }
+
+    public function getAdminHouse(int $adminId) : int | bool
     {
         $query = $this->db->prepare("SELECT `houseId` FROM `user` JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
         $query->bind_param("i", $adminId);
@@ -81,7 +160,7 @@ class DatabaseDomain
         $query->bind_result($houseId);
         $query->fetch();
         $query->close();
-        return $houseId;
+        return $houseId == null ? false : $houseId;
     }
 
     public function isUserAdmin(int $userId) : bool
@@ -162,13 +241,21 @@ class DatabaseDomain
         return $result;
     }
 
-    public function deleteRoom(int $roomId, int $adminId) : bool
+    public function deleteRoom(int $roomId, int $houseId) : bool
     {
-        //Create new room in house
-        $query = $this->db->prepare("DELETE FROM `Room` WHERE `roomId`=(SELECT `roomId` FROM `Room` JOIN `House` ON `Room`.`houseId`=`House`.`houseId` WHERE `roomId`=? AND `adminId`=?)");
-        $query->bind_param("ii", $roomId, $adminId);
+        $queryString = "DELETE `Room`, `taskpoints`, `User_Exempt_Room`, `RoomSchedule` FROM `Room` ".
+            "LEFT JOIN `taskpoints` ON `Room`.`roomId`=`taskpoints`.`roomId` ".
+            "LEFT JOIN `User_Exempt_Room` ON `User_Exempt_Room`.`roomId`=`Room`.`roomId`".
+            "LEFT JOIN `RoomSchedule` ON `RoomSchedule`.`roomId`=`Room`.`roomId`".
+            "WHERE `Room`.`roomId`=? AND `Room`.`houseId`=?";
+
+        //Delete room from household
+        $this->disableForeignKeyChecks();
+        $query = $this->db->prepare($queryString);
+        $query->bind_param("ii", $roomId, $houseId);
         $result = $query->execute();
         $query->close();
+        $this->enableForeignKeyChecks();
 
         return $result;
     }
@@ -213,13 +300,21 @@ class DatabaseDomain
         return $result;
     }
 
-    public function deleteTask(int $taskId, int $adminId) : bool
+    public function deleteTask(int $taskId, int $houseId) : bool
     {
+        $queryString = "DELETE `Task`, `taskpoints`, `User_Exempt_Task`, `TaskSchedule` FROM `Task` ".
+            "LEFT JOIN `taskpoints` ON `Task`.`taskId`=`taskpoints`.`taskId` ".
+            "LEFT JOIN `User_Exempt_Task` ON `User_Exempt_Task`.`taskId`=`Task`.`taskId`".
+            "LEFT JOIN `TaskSchedule` ON `TaskSchedule`.`taskId`=`Task`.`taskId`".
+            "WHERE `Task`.`taskId`=? AND `Task`.`houseId`=?";
+
         //Delete task from house
-        $query = $this->db->prepare("DELETE FROM `Task` WHERE `taskId`=(SELECT `taskId` FROM `Task` JOIN `House` ON `Task`.`houseId`=`House`.`houseId` WHERE `taskId`=? AND `adminId`=?)");
-        $query->bind_param("ii", $taskId, $adminId);
+        $this->disableForeignKeyChecks();
+        $query = $this->db->prepare($queryString);
+        $query->bind_param("ii", $taskId, $houseId);
         $result = $query->execute();
         $query->close();
+        $this->enableForeignKeyChecks();
 
         return $result;
     }
@@ -232,6 +327,7 @@ class DatabaseDomain
         $query->bind_result($taskId, $name, $description);
         $data = null;
 
+        $data = [];
         while($query->fetch())
         {
             $data[$taskId] = ['name' => $name, 'description' => $description];
@@ -239,7 +335,7 @@ class DatabaseDomain
 
         $query->close();
 
-        return ($data != null) ? $data : false;
+        return $data;
     }
 
     private function expandDayToArray(string $day) : array
@@ -250,7 +346,7 @@ class DatabaseDomain
             array_push($days, 'Monday','Tuesday','Wednesday','Thursday','Friday');
             array_push($days, 'Saturday','Sunday');
         }
-        elseif($day = 'Weekdays')
+        elseif($day == 'Weekdays')
             array_push($days, 'Monday','Tuesday','Wednesday','Thursday','Friday');
         elseif($day == 'Weekends')
             array_push($days, 'Saturday','Sunday');
@@ -259,21 +355,61 @@ class DatabaseDomain
         return $days;
     }
 
-    public function createScheduleRows(int $userId, int $begin, int $end, string $day)
+    //Check if the provided row overlaps with any other rows in the schedule.
+    //can be used for Task, Room and User Schedules
+    public function checkForScheduleCollisions(ScheduleType $t, int $t_id, string $day, int $begin, int $end)
+    {
+        switch ($t) {
+            case ScheduleType::User:
+            $table = "UserSchedule"; $column = "userId";
+                break;
+            case ScheduleType::Task:
+            $table = "TaskSchedule"; $column = "taskId";
+                break;
+            case ScheduleType::Room:
+            $table = "RoomSchedule"; $column = "roomId";
+                break;
+        }
+
+        // basically a 1D AABB algorithm in SQL + the extra check for if the new
+        // row fully encompassing a previously existing row.
+        // Note: choosing beginTimeslot is arbitrary we just need to count rows
+        $result = $this->db->query("SELECT `beginTimeslot` FROM `". $table ."` WHERE".
+            "`" . $column . "`=" . $t_id . " AND `day`='" . $day . "' AND (".
+            "(`beginTimeslot` <= ". $begin ." AND `endTimeslot` >= ". $begin .") OR ". // Check for collision straddling begin
+            "(`beginTimeslot` <= ".  $end  ." AND `endTimeslot` >= ".  $end  .") OR ". // Check for collision straddling end
+            "(`beginTimeslot` >= ".  $begin  ." AND `endTimeslot` <= ". $end ."))"   );// Check for collision straddling full range
+
+        //Unreachable
+        if($result == false)
+            return false;
+
+        //We should get exactly 1 row
+        return ($result->num_rows == 1) ? true : false;
+    }
+
+    public function createUserScheduleRows(int $userId, int $begin, int $end, string $day)
     {
         $days = $this->expandDayToArray($day);
 
-        //Create/s new row/s in a users Schedule
+        //Create/s new row/s in a UserSchedule
         $this->db->begin_transaction();
         foreach ($days as &$day) {
-            $query = $this->db->prepare("INSERT INTO `Schedule` (`userId`, `day`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
+            $query = $this->db->prepare("INSERT INTO `UserSchedule` (`userId`, `day`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
             $query->bind_param("isii", $userId, $day, $begin, $end);
             $result = $query->execute();
             $query->close();
 
             if(!$result)
             {
-                $db->rollback();
+                $this->db->rollback();
+                return false;
+            }
+
+            //Check if our new row overlaps with any other rows and if so rollback
+            if(!$this->checkForScheduleCollisions(ScheduleType::User, $userId, $day, $begin, $end))
+            {
+                $this->db->rollback();
                 return false;
             }
         }
@@ -281,21 +417,40 @@ class DatabaseDomain
         return $this->db->commit();
     }
 
-    public function updateScheduleRow(int $userId, int $scheduleId, int $begin, int $end, string $day)
+
+
+    public function updateUserScheduleRow(int $userId, int $scheduleId, int $begin, int $end, string $day)
     {
-        //Update row in a users Schedule
-        $query = $this->db->prepare("UPDATE `Schedule` SET `day`=?, `beginTimeslot`=?, `endTimeslot`=? WHERE `userId`=? AND `scheduleId`=?");
+        //Start a transaction and update the row in ernest.
+        $this->db->begin_transaction();
+        $query = $this->db->prepare("UPDATE `UserSchedule` SET `day`=?, `beginTimeslot`=?, `endTimeslot`=? WHERE `userId`=? AND `scheduleId`=?");
         $query->bind_param("siiii", $day, $begin, $end, $userId, $scheduleId);
         $result = $query->execute();
         $query->close();
 
-        return $result;
+        //If the query fails rollback
+        if($result == false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        //Check if our new row overlaps with any other rows and if so rollback
+        if(!$this->checkForScheduleCollisions(ScheduleType::User, $userId, $day, $begin, $end))
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+
+        //Finally if all went well commit and return
+        return $this->db->commit();
     }
 
-    public function deleteScheduleRow(int $userId, int $scheduleId) : bool
+    public function deleteUserScheduleRow(int $userId, int $scheduleId) : bool
     {
-        //Delete row from a users Schedule
-        $query = $this->db->prepare("DELETE FROM `Schedule` WHERE `scheduleId`=(SELECT `scheduleId` FROM `Schedule` JOIN `user` ON `Schedule`.`userId`=`user`.`userId` WHERE `scheduleId`=? AND `userId`=?)");
+        //Delete row from a UserSchedule
+        $query = $this->db->prepare("DELETE FROM `UserSchedule` WHERE `scheduleId`=(SELECT `scheduleId` FROM `UserSchedule` JOIN `user` ON `UserSchedule`.`userId`=`user`.`userId` WHERE `scheduleId`=? AND `userId`=?)");
         $query->bind_param("ii", $scheduleId, $userId);
         $result = $query->execute();
         $query->close();
@@ -303,19 +458,31 @@ class DatabaseDomain
         return $result;
     }
 
-    public function getSchedule(int $userId)
+    public function deleteUserSchedule(int $userId) : bool
     {
-        $query = $this->db->prepare("SELECT `scheduleId`, `day`, `beginTimeslot`,`endTimeslot` FROM `Schedule` WHERE `userId` = ?");
+        //Delete row from a users UserSchedule
+        $query = $this->db->prepare("DELETE FROM `UserSchedule` WHERE `userId`=?");
+        $query->bind_param("i", $userId);
+        $result = $query->execute();
+        $query->close();
+
+        return $result;
+    }
+
+    public function getUserSchedule(int $userId)
+    {
+        $query = $this->db->prepare("SELECT `scheduleId`, `day`, `beginTimeslot`,`endTimeslot` FROM `UserSchedule` WHERE `userId` = ?");
         $query->bind_param("i", $userId);
         $query->execute(); 
         $query->bind_result($scheduleId, $day, $begin, $end);
 
+        $data = [];
         while($query->fetch())
             $data[] = ['rowId' => $scheduleId, 'day' => $day, 'beginTimeslot' => $begin, 'endTimeslot' => $end];
 
         $query->close();
 
-        return isset($data) ? $data : false;
+        return $data;
     }
 
     public function getUserSchedulesInHousehold(int $houseId)
@@ -325,6 +492,7 @@ class DatabaseDomain
         $query->execute(); 
         $query->bind_result($userId, $forename, $surname);
 
+        $users = [];
         while($query->fetch())
         {
             $users[$userId] = ['forename' => $forename, 'surname' => $surname];
@@ -333,29 +501,36 @@ class DatabaseDomain
 
         foreach ($users as $id => $details)
         {
-            $users[$id]['schedule'] = $this->getSchedule($userId);
+            $users[$id]['schedule'] = $this->getUserSchedule($userId);
         }
 
 
-        return ($users != null) ? $users : false;
+        return $users;
     }
 
     //TODO: Delete Rota rows (currently isn't linked, might not be required..)
     public function deleteHousehold(int $houseId) : bool
     {
          //If there is an issue with this, god help me!
-        $queryString = "DELETE `Room`, `Task`, `Rule`, `House`, `Task_has_user`, `taskPoints` FROM `House` LEFT JOIN ".
-        "`Task` ON `House`.`houseId`=`Task`.`houseId` LEFT JOIN `Room` ON `House`.`houseId`=`Room`.`houseId` LEFT JOIN ".
-        "`user` ON `House`.`houseId`=`user`.`House_houseId` LEFT JOIN `Task_has_user` ON `Task_has_user`.`userId`=".
-        "`user`.`userId` LEFT JOIN `Rule` ON `Rule`.`userId`=`user`.`userId` OR `Rule`.`taskId`=`Task`.`taskId` OR ".
-        "`Rule`.`roomId`=`Room`.`roomId` LEFT JOIN `taskPoints` ON `taskPoints`.`Task_taskId`=`Task`.`taskId` WHERE ".
-        "`House`.`houseId`=?";
+        $queryString = "DELETE `Room`, `Task`, `House`, `Task_has_user`, ".
+        "`taskPoints`, `RoomSchedule`, `TaskSchedule`, `User_Exempt_Room`, ".
+        "`User_Exempt_Task` ".
+        "FROM `House` LEFT JOIN `Task` ON `House`.`houseId`=`Task`.`houseId`".
+        "LEFT JOIN `Room` ON `House`.`houseId`=`Room`.`houseId` ".
+        "LEFT JOIN `user` ON `House`.`houseId`=`user`.`House_houseId` ".
+        "LEFT JOIN `Task_has_user` ON `Task_has_user`.`userId`=`user`.`userId` ".
+        "LEFT JOIN `TaskSchedule` ON `TaskSchedule`.`houseId`=`House`.`houseId`".
+        "LEFT JOIN `RoomSchedule` ON `RoomSchedule`.`houseId`=`House`.`houseId`".
+        "LEFT JOIN `User_Exempt_Task` ON `User_Exempt_Task`.`houseId`=`House`.`houseId`".
+        "LEFT JOIN `User_Exempt_Room` ON `User_Exempt_Room`.`houseId`=`House`.`houseId`".
+        "LEFT JOIN `taskPoints` ON `taskPoints`.`taskId`=`Task`.`taskId` ".
+        "WHERE `House`.`houseId`=?";
 
         //Begin a transaction so we can rollback if anything goes wrong
         $this->db->begin_transaction();
 
         //Makes all users who were in the Household homeless
-        $query = $this->db->prepare("UPDATE `user`SET `House_houseId`=null WHERE `House_houseId`=?");
+        $query = $this->db->prepare("UPDATE `user`SET `House_houseId`=NULL WHERE `House_houseId`=?");
         $query->bind_param("i", $houseId);
         $result = $query->execute();
         $query->close();
@@ -389,7 +564,7 @@ class DatabaseDomain
     public function createUserRoomRule(int $houseId, $userId, $roomId) : bool
     {
         //Create new user_room rule in house
-        $query = $this->db->prepare("INSERT INTO `Rule` (`houseId`, `userId`, `roomId`) VALUES (?, ?, ?)");
+        $query = $this->db->prepare("INSERT INTO `User_Exempt_Room` (`houseId`, `userId`, `roomId`) VALUES (?, ?, ?)");
         $query->bind_param("iii", $houseId, $userId, $roomId);
         $result = $query->execute();
         $query->close();
@@ -397,32 +572,66 @@ class DatabaseDomain
         return $result;
     }
 
-    public function createTaskTimeRule(int $houseId, $taskId, $begin, $end) : bool
+    public function createTaskTimeRule(int $houseId, $taskId, $day, $begin, $end) : bool
     {
-        //Create new task_time rule in house
-        $query = $this->db->prepare("INSERT INTO `Rule` (`houseId`, `taskId`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
-        $query->bind_param("iiii", $houseId, $taskId, $begin, $end);
+        //Start a transaction and update the row in ernest.
+        $this->db->begin_transaction();
+        $query = $this->db->prepare("INSERT INTO `TaskSchedule` (`houseId`,`taskId`, `day`, `beginTimeslot`, `endTimeslot`) VALUES (?,?,?,?,?)");
+        $query->bind_param("iisii", $houseId, $taskId, $day, $begin, $end);
         $result = $query->execute();
         $query->close();
 
-        return $result;
+        //If the query fails rollback
+        if($result == false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        //Check if our new row overlaps with any other rows and if so rollback
+        if(!$this->checkForScheduleCollisions(ScheduleType::Task, $taskId, $day, $begin, $end))
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+
+        //Finally if all went well commit and return
+        return $this->db->commit();
     }
 
-    public function createRoomTimeRule(int $houseId, $roomId, $begin, $end) : bool
+    public function createRoomTimeRule(int $houseId, $roomId, $day, $begin, $end) : bool
     {
-        //Create new room_time rule in house
-        $query = $this->db->prepare("INSERT INTO `Rule` (`houseId`, `roomId`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
-        $query->bind_param("iiii", $houseId, $roomId, $begin, $end);
+        //Start a transaction and update the row in ernest.
+        $this->db->begin_transaction();
+        $query = $this->db->prepare("INSERT INTO `RoomSchedule` (`houseId`,`roomId`, `day`, `beginTimeslot`, `endTimeslot`) VALUES (?,?,?,?,?)");
+        $query->bind_param("iisii", $houseId, $roomId, $day, $begin, $end);
         $result = $query->execute();
         $query->close();
 
-        return $result;
+        //If the query fails rollback
+        if($result == false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        //Check if our new row overlaps with any other rows and if so rollback
+        if(!$this->checkForScheduleCollisions(ScheduleType::Room, $roomId, $day, $begin, $end))
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+
+        //Finally if all went well commit and return
+        return $this->db->commit();
     }
 
     public function createUserTaskRule(int $houseId, $userId, $taskId) : bool
     {
         //Create new user_task rule in house
-        $query = $this->db->prepare("INSERT INTO `Rule` (`houseId`, `userId`, `taskId`) VALUES (?, ?, ?)");
+        $query = $this->db->prepare("INSERT INTO `User_Exempt_Task` (`houseId`, `userId`, `taskId`) VALUES (?, ?, ?)");
         $query->bind_param("iii", $houseId, $userId, $taskId);
         $result = $query->execute();
         $query->close();
@@ -430,11 +639,29 @@ class DatabaseDomain
         return $result;
     }
 
-    public function deleteRule(int $houseId, int $ruleId) : bool
+    public function deleteRule(int $houseId, int $ruleType, int $ruleId) : bool
     {
-        //Delete task from house
-        $query = $this->db->prepare("DELETE FROM `Rule` WHERE `houseId`=? AND `ruleId`=?");
-        $query->bind_param("ii", $houseId, $ruleId);
+        $idColumn = "scheduleId";
+        switch($ruleType)
+        {
+            case 1:
+                $table = "RoomSchedule";
+                break;
+            case 2:
+                $table = "TaskSchedule";
+                break;
+            case 3:
+                $table = "User_Exempt_Room";
+                $idColumn = "UERId";
+                break;
+            case 4:
+                $table = "User_Exempt_Task";
+                $idColumn = "UETId";
+                break;
+        }
+
+        $query = $this->db->prepare("DELETE FROM `". $table ."` WHERE `". $idColumn ."`=? AND `houseId`=?");
+        $query->bind_param("ii", $ruleId, $houseId);
         $result = $query->execute();
         $query->close();
 
@@ -443,60 +670,37 @@ class DatabaseDomain
 
     public function getRulesInHousehold(int $houseId) : array | bool
     {
-        $query = $this->db->prepare("SELECT `ruleId`, `userId`, `taskId`, `roomId`, `beginTimeslot`, `endTimeslot` FROM `Rule` WHERE `houseId` = ?");
-        $query->bind_param("i", $houseId);
-        $query->execute(); 
-        $query->bind_result($ruleId, $userId, $taskId, $roomId, $begin, $end);
-
+        $tables = ["RoomSchedule" => "scheduleId", "TaskSchedule" => "scheduleId",
+        "User_Exempt_Room" => "UERId", "User_Exempt_Task" => "UETId"];
         $rules = [];
-        while($query->fetch())
+
+        $result = $this->db->query("SELECT `scheduleId`, `roomId`, `day`, `beginTimeslot`, `endTimeslot` FROM `RoomSchedule` WHERE `houseId`=" . $houseId);
+
+        while($row = $result->fetch_row())
         {
-            if($userId == null)
-            {
-                if($taskId == null)
-                {
-                    //Room_Time Rule
-                    $rules[1][$ruleId] = ['roomId' => $roomId, 'beginTimeslot' => $begin, 'endTimeslot' => $end];
-                }
-                elseif($roomId == null)
-                {
-                    //Task_Time Rule
-                    $rules[2][$ruleId] = ['taskId' => $taskId, 'beginTimeslot' => $begin, 'endTimeslot' => $end];
-                }
-                else
-                {
-                    //Unreachable, TODO: Unreachable Errors
-                    $query->close();
-                    return false;
-                }
-            }
-            elseif($begin == null)
-            {
-                if($taskId == null)
-                {
-                    //User_Room Rule
-                    $rules[3][$ruleId] = ['userId' => $userId, 'roomId' => $roomId];
-                }
-                elseif($roomId == null)
-                {
-                    //User_Task Rule
-                    $rules[4][$ruleId] = ['userId' => $userId, 'taskId' => $taskId];
-                }
-                else
-                {
-                    //Unreachable, TODO: Unreachable Errors
-                    $query->close();
-                    return false;
-                }
-            }
-            else
-            {
-                //Unreachable, TODO: Unreachable Errors
-                $query->close();
-                return false;
-            }
+            $rules["Schedules"]["Rooms"][] = ['roomId' => $row[1], $row[2] => ['id'=>$row[0],'beginTimeslot'=>$row[3],'endTimeslot'=>$row[4]]];
         }
-        $query->close();
+
+        $result = $this->db->query("SELECT `scheduleId`, `taskId`, `day`, `beginTimeslot`, `endTimeslot` FROM `TaskSchedule` WHERE `houseId`=" . $houseId);
+
+        while($row = $result->fetch_row())
+        {
+            $rules["Schedules"]["Tasks"][] = ['taskId' => $row[1], $row[2] => ['id'=>$row[0],'beginTimeslot'=>$row[3],'endTimeslot'=>$row[4]]];
+        }
+
+        $result = $this->db->query("SELECT `UERId`, `roomId`, `userId` FROM `User_Exempt_Room` WHERE `houseId`=" . $houseId);
+
+        while($row = $result->fetch_row())
+        {
+            $rules["Rules"]["User_Exempt_Room"][] = ['id'=>$row[0], 'roomId' => $row[1], 'userId'=>$row[2]];
+        }
+
+        $result = $this->db->query("SELECT `UETId`, `taskId`, `userId` FROM `User_Exempt_Task` WHERE `houseId`=" . $houseId);
+
+        while($row = $result->fetch_row())
+        {
+            $rules["Rules"]["User_Exempt_Task"][] = ['id'=>$row[0], 'taskId' => $row[1], 'userId'=>$row[2]];
+        }
 
         return $rules;
     }

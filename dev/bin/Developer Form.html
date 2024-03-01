@@ -219,6 +219,7 @@
         <form action="http://cleansync.com/rule/create/room_time" method="post">
             <label>Create Room Time Restriction Rule</label>
             <input name="roomId" value="1">
+            <input name="day" value="Monday">
             <input name="beginTimeslot" value="24">
             <input name="endTimeslot" value="27">
             <button style="width: 50px;" type="submit">Go</button>
@@ -227,6 +228,7 @@
         <form action="http://cleansync.com/rule/create/task_time" method="post">
             <label>Create Task Time Restriction Rule</label>
             <input name="taskId" value="1">
+            <input name="day" value="Monday">
             <input name="beginTimeslot" value="24">
             <input name="endTimeslot" value="27">
             <button style="width: 50px;" type="submit">Go</button>
@@ -248,6 +250,7 @@
 
         <form action="http://cleansync.com/rule/delete" method="post">
             <label>Delete Rule</label>
+            <input name="ruleType" value="1">
             <input name="ruleId" value="1">
             <button style="width: 50px;" type="submit">Go</button>
         </form>

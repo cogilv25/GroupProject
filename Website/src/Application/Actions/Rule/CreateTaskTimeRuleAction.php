@@ -18,7 +18,7 @@ class CreateTaskTimeRuleAction extends AdminAction
         $data = $this->request->getParsedBody();
 
         // Validation checks
-        if (!isset($data['taskId'], $data['beginTimeslot'], $data['endTimeslot']))
+        if (!isset($data['taskId'], $data['beginTimeslot'], $data['endTimeslot'], $data['day']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
         if (!is_numeric($data['taskId']) || !is_numeric($data['beginTimeslot']) || !is_numeric($data['endTimeslot']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
@@ -26,8 +26,9 @@ class CreateTaskTimeRuleAction extends AdminAction
         $taskId = $data['taskId'];
         $begin = $data['beginTimeslot'];
         $end = $data['endTimeslot'];
+        $day = $data['day'];
 
-        if(!$this->db->createTaskTimeRule($this->houseId, $taskId, $begin, $end))
+        if(!$this->db->createTaskTimeRule($this->houseId, $taskId, $day, $begin, $end))
             return $this->createJsonResponse($this->response, ['message' => 'Rule creation failed']);
 
         return $this->createJsonResponse($this->response, ['message' => 'Rule created successfully']);

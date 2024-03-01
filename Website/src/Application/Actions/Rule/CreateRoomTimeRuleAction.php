@@ -17,7 +17,7 @@ class CreateRoomTimeRuleAction extends AdminAction
         $data = $this->request->getParsedBody();
 
         // Validation checks
-        if (!isset($data['roomId'], $data['beginTimeslot'], $data['endTimeslot']))
+        if (!isset($data['roomId'], $data['beginTimeslot'], $data['endTimeslot'], $data['day']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
         if (!is_numeric($data['roomId']) || !is_numeric($data['beginTimeslot']) || !is_numeric($data['endTimeslot']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
@@ -25,8 +25,9 @@ class CreateRoomTimeRuleAction extends AdminAction
         $roomId = $data['roomId'];
         $begin = $data['beginTimeslot'];
         $end = $data['endTimeslot'];
+        $day = $data['day'];
 
-        if(!$this->db->createRoomTimeRule($this->houseId, $roomId, $begin, $end))
+        if(!$this->db->createRoomTimeRule($this->houseId, $roomId, $day, $begin, $end))
             return $this->createJsonResponse($this->response, ['message' => 'Rule creation failed']);
 
         return $this->createJsonResponse($this->response, ['message' => 'Rule created successfully']);

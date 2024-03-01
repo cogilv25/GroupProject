@@ -102,6 +102,74 @@ CREATE TABLE `cleansync`.`Rule` (
     FOREIGN KEY (`taskId`)
     REFERENCES `cleansync`.`Task` (`taskId`));
 
+-- -----------------------------------------------------
+-- Table `cleansync`.`User_Exempt_Task`
+-- -----------------------------------------------------
+CREATE TABLE `cleansync`.`User_Exempt_Task` (
+  `UETId` INT NOT NULL AUTO_INCREMENT,
+  `houseId` INT NOT NULL,
+  `userId` INT NOT NULL,
+  `taskId` INT NOT NULL,
+  PRIMARY KEY (`UETId`),
+  CONSTRAINT `user_exempt_task_unique` UNIQUE(`userId`,`taskId`),
+  INDEX `fk_user_exempt_task_user_idx` (`userId` ASC),
+  INDEX `fk_user_exempt_task_task_idx` (`taskId` ASC),
+  INDEX `fk_user_exempt_task_house_idx` (`houseId` ASC),
+  CONSTRAINT `fk_user_exempt_task_user`
+    FOREIGN KEY (`userId`)
+    REFERENCES `cleansync`.`user` (`userId`),
+  CONSTRAINT `fk_user_exempt_task_house`
+    FOREIGN KEY (`houseId`)
+    REFERENCES `cleansync`.`House` (`houseId`),
+  CONSTRAINT `fk_user_exempt_task_task`
+    FOREIGN KEY (`taskId`)
+    REFERENCES `cleansync`.`Task` (`taskId`));
+
+-- -----------------------------------------------------
+-- Table `cleansync`.`User_Exempt_Room`
+-- -----------------------------------------------------
+CREATE TABLE `cleansync`.`User_Exempt_Room` (
+  `UERId` INT NOT NULL AUTO_INCREMENT,
+  `houseId` INT NOT NULL,
+  `userId` INT NOT NULL,
+  `roomId` INT NOT NULL,
+  PRIMARY KEY (`UERId`),
+  CONSTRAINT `user_exempt_room_unique` UNIQUE(`userId`,`roomId`),
+  INDEX `fk_user_exempt_room_user_idx` (`userId` ASC),
+  INDEX `fk_user_exempt_room_room_idx` (`roomId` ASC),
+  INDEX `fk_user_exempt_room_house_idx` (`houseId` ASC),
+  CONSTRAINT `fk_user_exempt_room_user`
+    FOREIGN KEY (`userId`)
+    REFERENCES `cleansync`.`user` (`userId`),
+  CONSTRAINT `fk_user_exempt_room_house`
+    FOREIGN KEY (`houseId`)
+    REFERENCES `cleansync`.`House` (`houseId`),
+  CONSTRAINT `fk_user_exempt_room_room`
+    FOREIGN KEY (`roomId`)
+    REFERENCES `cleansync`.`Room` (`roomId`));
+
+-- -----------------------------------------------------
+-- Table `cleansync`.`Room_Has_Task`
+-- -----------------------------------------------------
+CREATE TABLE `cleansync`.`Room_Has_Task` (
+  `RHTId` INT NOT NULL AUTO_INCREMENT,
+  `houseId` INT NOT NULL,
+  `roomId` INT NOT NULL,
+  `taskId` INT NOT NULL,
+  PRIMARY KEY (`RHTId`),
+  CONSTRAINT `room_has_task_unique` UNIQUE(`roomId`,`taskId`),
+  INDEX `fk_room_has_task_room_idx` (`roomId` ASC),
+  INDEX `fk_room_has_task_task_idx` (`taskId` ASC),
+  INDEX `fk_room_has_task_house_idx` (`houseId` ASC),
+  CONSTRAINT `fk_room_has_task_room`
+    FOREIGN KEY (`roomId`)
+    REFERENCES `cleansync`.`room` (`roomId`),
+  CONSTRAINT `fk_room_has_task_house`
+    FOREIGN KEY (`houseId`)
+    REFERENCES `cleansync`.`House` (`houseId`),
+  CONSTRAINT `fk_room_has_task_task`
+    FOREIGN KEY (`taskId`)
+    REFERENCES `cleansync`.`Task` (`taskId`));
 
 -- -----------------------------------------------------
 -- Table `cleansync`.`RoomSchedule`

@@ -10,29 +10,51 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js" crossorigin="anonymous"></script>    
-
 </head>
 <body>
+    <div class="off-canvas-wrapper">
+      <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+        <div class="off-canvas position-left reveal-for-large" id="sidenav" data-off-canvas data-position="left">
+            <div class="grid-x grid-padding-x">
+                <div class="cell small-12 text-center">
+                    <a id="logo">CleanSync</a>
+                </div>
+                <div class="cell">
+                    <ul class="vertical menu ">
+                      <li><a class="navlink" href="/">Home</a></li>
+                      <li><a class="navlink" href="admindashboard.php">Admin Dashboard</a></li>
+                      <li><a class="navlink" href="notifications">Notifications</a></li>
+                      <li><a class="navlink" href="rules">Rules</a></li>
+                      <li><a class="navlink" href="#">Tasks</a></li>
+                      <a class="navlink" data-open="exampleModal">HouseHold</a>
+                      <li><a class="navlink" href="schedule">Schedule</a></li>
+                      <li><a class="navlink" href="#">Rooms</a></li>
+                      <li><a class="navlink" href="profile">Profile</a></li>
+                      <li><a class="navlink" href="settings">Settings</a></li>
+                      <li><a class="navlink" href="/logout">Logout</a></li>
+                  </ul>
+                </div>
+            </div>
+        </div>
 
-    <div class="sidenav">
-        <a id="logo">CleanSync</a>
-        <a class="navlink" href="#">Home</a>
-        <hr id="sidehr">
-        <a class="navlink" href="/notifications">Notifications</a>
-        <a class="navlink" href="/rules">Rules</a>
-        <a class="navlink" href="/tasks">Tasks</a>
-        <a class="navlink" data-open="exampleModal">HouseHold</a>
-        <!--Maybe household Admins can only see rooms not too sure yet -->
-        <a class="navlink" href="/rooms">Rooms</a>
-        <a class="navlink" href="">Profile</a>
-        <a class="navlink" href="">Settings</a>
-        <a class="navlink" href="/logout">Logout</a>
-        <a class="navlink button" id="inviteButton">Invite</a>
+          <div class="off-canvas-content" data-off-canvas-content>
+              <div class="title-bar hide-for-large">
+                  <div class="title-bar-left">
+                      <button class="menu-icon" type="button" data-open="sidenav"></button>
+                      <span class="title-bar-title">CleanSync</span>
+                  </div>
+                </div>
+                <div id="main-content" class="grid-x grid-margin-x small-up-1 medium-up-3 large-up-4">
+
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="main">
 
-    </div>
+
+
+
     <?php include 'householdModal.html'; ?>
     <!--Invite members to household via this universal link -->
     <div class="reveal" id="inviteModal" data-reveal>
@@ -57,7 +79,12 @@
             </div>
         </div>
     </div>
+
+
     <script src="/Javascript/dashboard.js"></script>
+<script>
+    $(document).foundation();
+</script>
 
 </body>
 </html> 

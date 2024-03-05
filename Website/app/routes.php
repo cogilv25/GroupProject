@@ -53,11 +53,16 @@ return function (App $app) {
 
         $renderer = $this->get('renderer');
         $db = $this->get('db');
-        $link = $db->getUserInviteLink($userId);
-        if($link == false)
-            $link = "No Link";
+        $data = $db->getUserHouseAndAdminStatus($userId);
+        if($data === false)
+            return $renderer->render($response, 'adminroom.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
 
-        $data = ['link' => $link];
+        $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
+        $houseId = $data[0];
+
+        $data = $db->getHouseholdRoomDetails($houseId);
+        $data['currentUser'] = $user;
+
         return $renderer->render($response, 'adminroom.php', $data);
     });
 
@@ -68,11 +73,16 @@ return function (App $app) {
 
         $renderer = $this->get('renderer');
         $db = $this->get('db');
-        $link = $db->getUserInviteLink($userId);
-        if($link == false)
-            $link = "No Link";
+        $data = $db->getUserHouseAndAdminStatus($userId);
+        if($data === false)
+            return $renderer->render($response, 'adminroom.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
 
-        $data = ['link' => $link];
+        $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
+        $houseId = $data[0];
+
+        $data = $db->getHouseholdTaskDetails($houseId);
+        $data['currentUser'] = $user;
+
         return $renderer->render($response, 'adminTasks.php', $data);
     });
 
@@ -125,6 +135,7 @@ return function (App $app) {
         $group->post('/remove', Household\RemoveUserHouseHoldAction::class);
         $group->get('/list', Household\ListHouseholdAction::class);
         $group->get('/schedules', Schedule\GetHouseholdUserSchedulesAction::class);
+        $group->get('/gen_rota', Household\RotaGenAction::class);
     });
 
     //Room Actions

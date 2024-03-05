@@ -2,7 +2,7 @@
 
 //No Longer needed but it's maybe nice to have as a reminder of what the input data looks like..?
 
-/*$currentUser = ['isAdmin' => true, 'userId' => 1 ];
+/*$currentUser = ['isAdmin' => true, 'userId' => 1, 'homeless' => false];
 $users = [
     ['userId' => 1, 'forename' => 'User', 'surname' => '1', 'role' => 'admin', 'email' => 'user1@example.com'],
     ['userId' => 5, 'forename' => 'User', 'surname' => '2', 'role' => 'moderator', 'email' => 'user2@example.com'],

@@ -52,7 +52,6 @@
                 <div class="cell">
                     <ul class="vertical menu ">
                       <li><a class="navlink" href="/">Home</a></li>
-                      <li><a class="navlink" href="admindashboard.php">Admin Dashboard</a></li>
                       <li><a class="navlink" href="notifications">Notifications</a></li>
                       <li><a class="navlink" href="rules">Rules</a></li>
                       <li><a id="loadTasks" class="navlink" href="#">Tasks</a></li>

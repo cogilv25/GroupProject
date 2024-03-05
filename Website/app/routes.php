@@ -25,47 +25,22 @@ return function (App $app) {
         return $response;
     });
 
-    //TODO: Single page logic
    $app->map(['GET', 'POST'], '/', function (Request $request, Response $response) {
-        $renderer = $this->get('renderer'); 
+        $renderer = $this->get('renderer');
 
         $userId = $request->getAttribute('userId');
         if($userId==0)
             return $renderer->render($response, 'Authpage.html');
         else
-            return $response->withHeader('Location', '/Dashboard.php')->withStatus(302);
-    });
+        {
+            $db = $this->get('db');
+            $link = $db->getUserInviteLink($userId);
 
-
-    $app->get('/Dashboard.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $link = $db->getUserInviteLink($userId);
-        if($link == false)
-            $link = "No Link";
-
-        $data = ['link' => $link];
-        return $renderer->render($response, 'Dashboard.php', $data);
-    });
-
-
-    $app->get('/admindashboard.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $link = $db->getUserInviteLink($userId);
-        if($link == false)
-            $link = "No Link";
-
-        $data = ['link' => $link];
-        return $renderer->render($response, 'admindashboard.php', $data);
+            if($link == false)
+                return $renderer->render($response, 'Dashboard.php', ['link' => "No Link"]);
+            else
+                return $renderer->render($response, 'admindashboard.php', ['link' => $link]);
+        }
     });
 
 

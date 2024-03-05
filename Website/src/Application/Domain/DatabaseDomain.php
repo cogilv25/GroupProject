@@ -571,6 +571,21 @@ class DatabaseDomain
         return $users;
     }
 
+    public function getUserSchedulesFlat(int $houseId)
+    {
+        $query = "SELECT `User`.`userId`, `day`, `beginTimeslot`,`endTimeslot` FROM `UserSchedule` ". 
+        "JOIN `User` ON `User`.`userId`=`UserSchedule`.`userId` ".
+        "WHERE `House_houseId`=" . $houseId;
+
+        $result = $this->db->query($query);
+
+        $flatSchedules = [];
+        while($row = $result->fetch_row())
+            $flatSchedules[] = $row;
+
+        return $flatSchedules;
+    }
+
     //TODO: Delete Rota rows (currently isn't linked, might not be required..)
     public function deleteHousehold(int $houseId) : bool
     {
@@ -767,6 +782,30 @@ class DatabaseDomain
 
         return $rules;
     }
+
+    public function getValidUserRoomTaskCombinations(int $houseId)
+    {
+        //This query gets all tasks in all rooms for all users where:
+        // - The task can be performed in the room (RHT)
+        // - The user is not exempt from the task (UET IS NULL)
+        // - The user is not exempt from the room (UER IS NULL)
+        $query = "SELECT `user`.`userId`, RHT.`roomId`, RHT.`taskId` FROM `User` ".
+        "JOIN `room_has_task` RHT ON `user`.`House_houseId`=`houseId` ".
+        "LEFT JOIN `user_exempt_task` UET ON UET.`taskId`=RHT.`taskId` AND UET.`userId`=`user`.`userId` ".
+        "LEFT JOIN `user_exempt_room` UER ON UER.`roomId`=RHT.`roomId` AND UER.`userId`=`user`.`userId` ".
+        "WHERE UER.`UERId` IS NULL AND UET.`UETId` IS NULL AND `user`.`House_houseId`=" . $houseId;
+
+        $result = $this->db->query($query);
+
+        $validRoomTaskUsers = [];
+        while($row = $result->fetch_row())
+        {
+            $validRoomTaskUsers[] = $row;
+        }
+
+        return $validRoomTaskUsers;
+    }
+
 }
 
 ?>

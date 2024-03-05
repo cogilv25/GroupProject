@@ -119,7 +119,7 @@ $(document).ready(function() {
     $('#loadHousehold').click(function(e) {
         e.preventDefault(); // Prevent the default link behavior
         $.ajax({
-            url: 'adminhousehold.php', // Path to your household.php file
+            url: 'household', // Path to your household.php file
             type: 'GET', // GET method to fetch data
             success: function(response) {
                 // Insert the fetched content into the 'household-content' div

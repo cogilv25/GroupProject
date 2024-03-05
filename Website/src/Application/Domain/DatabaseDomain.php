@@ -152,6 +152,19 @@ class DatabaseDomain
         return $this->db->commit();
     }
 
+    public function getUserHouseAndAdminStatus(int $userId)
+    {
+        $query = $this->db->prepare("SELECT `House_houseId`,`houseId` FROM `user` LEFT JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
+        $query->bind_param("i", $userId);
+        $query->execute(); 
+        $query->bind_result($houseId, $adminHouseId);
+        $query->fetch();
+        $query->close();
+        if(!isset($houseId))
+            return false;
+        return [$houseId, $adminHouseId != null];
+    }
+
     public function getAdminHouse(int $adminId) : int | bool
     {
         $query = $this->db->prepare("SELECT `houseId` FROM `user` JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
@@ -203,15 +216,16 @@ class DatabaseDomain
         if($result!=true)
             return false;
 
-        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname` FROM `user` WHERE `House_houseId` = ?");
+        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname`, `email` FROM `user` WHERE `House_houseId` = ?");
         $query->bind_param("i", $houseId);
         $query->execute(); 
-        $query->bind_result($userId, $forename, $surname);
+        $query->bind_result($userId, $forename, $surname, $email);
 
+        //TODO: @MultipleAdmins
         while($query->fetch())
         {
-            $role = $userId == $adminId ? "Admin" : "Member";
-            $data[$userId] = ['forename' => $forename, 'surname' => $surname, 'role' => $role];
+            $role = $userId == $adminId ? "admin" : "member";
+            $data[$userId] = ['forename' => $forename, 'surname' => $surname, 'role' => $role, 'email' => $email];
         }
 
         $query->close();

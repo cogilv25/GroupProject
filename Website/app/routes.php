@@ -25,7 +25,9 @@ return function (App $app) {
         return $response;
     });
 
-   $app->map(['GET', 'POST'], '/', function (Request $request, Response $response) {
+    //Serves the login page for visitors, the dashboard for logged in members and
+    //    the admin dashboard for logged in admins
+    $app->map(['GET', 'POST'], '/', function (Request $request, Response $response) {
         $renderer = $this->get('renderer');
 
         $userId = $request->getAttribute('userId');
@@ -42,24 +44,6 @@ return function (App $app) {
                 return $renderer->render($response, 'admindashboard.php', ['link' => $link]);
         }
     });
-
-
-    $app->get('/adminhousehold.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $link = $db->getUserInviteLink($userId);
-        if($link == false)
-            $link = "No Link";
-
-        $data = ['link' => $link];
-        return $renderer->render($response, 'adminhousehold.php', $data);
-    });
-
-
     
 
     $app->get('/adminroom.php', function (Request $request, Response $response) {
@@ -115,6 +99,25 @@ return function (App $app) {
     //HouseHold Actions
     $app->group('/household', function (Group $group)
     {
+        $group->get('', function(Request $request, Response $response) {
+            $renderer = $this->get('renderer');
+            $userId = $request->getAttribute('userId');
+            if($userId==0)
+                return $response->withHeader('Location', '/')->withStatus(302);
+
+            $db = $this->get('db');
+            $data = $db->getUserHouseAndAdminStatus($userId);
+            if($data === false)
+                return $renderer->render($response, 'household.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
+
+            $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
+            $houseId = $data[0];
+
+            $data = $db->getUsersInHousehold($houseId);
+
+
+            return $renderer->render($response, 'household.php', ['users' => $data, 'currentUser' => $user]);
+        });
         $group->get('/create', HouseHold\CreateHouseHoldAction::class);
         $group->get('/join/{id}', HouseHold\JoinHouseHoldAction::class);
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);

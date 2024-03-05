@@ -292,6 +292,55 @@ class DatabaseDomain
         return $data;
     }
 
+    public function getHouseholdTaskDetails(int $houseId)
+    {
+        $query = "SELECT `room`.`roomId`, `room`.`name`, `task`.`taskId`, `task`.`name`, `task`.`description`, `RHTId` ".
+        "FROM `room` JOIN `task` ON `task`.`houseId`=`room`.`houseId` ". 
+        "LEFT JOIN `room_has_task` ON (`room`.`roomId` = `room_has_task`.`roomId` ".
+        "AND `task`.`taskId`=`room_has_task`.`taskId`) WHERE `room`.`houseId`=". $houseId;
+
+        $result = $this->db->query($query);       
+
+        if($result == false)
+            return $result;
+
+        $details = ['rooms' => [], 'tasks' => []];
+        while($row = $result->fetch_row())
+        {
+            $details['tasks'][$row[2]]['name'] = $row[3];
+            $details['tasks'][$row[2]]['description'] = $row[4];
+            $details['tasks'][$row[2]]['rooms'][$row[0]] = (bool)($row[5] != null);
+
+            $details['rooms'][$row[0]] = $row[1];
+        }
+
+        return $details;
+    }
+
+    public function getHouseholdRoomDetails(int $houseId)
+    {
+        $query = "SELECT `room`.`roomId`, `room`.`name`, `task`.`taskId`, `task`.`name`, `RHTId` ".
+        "FROM `room` JOIN `task` ON `task`.`houseId`=`room`.`houseId` ". 
+        "LEFT JOIN `room_has_task` ON (`room`.`roomId` = `room_has_task`.`roomId` ".
+        "AND `task`.`taskId`=`room_has_task`.`taskId`) WHERE `room`.`houseId`=". $houseId;
+
+        $result = $this->db->query($query);       
+
+        if($result == false)
+            return $result;
+
+        $details = ['rooms' => [], 'tasks' => []];
+        while($row = $result->fetch_row())
+        {
+            $details['rooms'][$row[0]]['name'] = $row[1];
+            $details['rooms'][$row[0]]['tasks'][$row[2]] = (bool)($row[4] != null);
+
+            $details['tasks'][$row[2]] = $row[3];
+        }
+
+        return $details;
+    }
+
     public function createTask(int $houseId, string $name, string $description) : bool
     {
         //Create new task in house
@@ -515,7 +564,7 @@ class DatabaseDomain
 
         foreach ($users as $id => $details)
         {
-            $users[$id]['schedule'] = $this->getUserSchedule($userId);
+            $users[$id]['schedule'] = $this->getUserSchedule($id);
         }
 
 

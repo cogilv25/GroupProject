@@ -53,7 +53,6 @@
                         <button class="button " style="margin-left: 10px;">Update</button>
                         <button class="button alert " style="margin-left: 10px;">Delete Link</button>
                     </li>
-                    <!-- Add more tasks and rooms as needed -->
                 </ul>
             </div>
         </div>
@@ -76,7 +75,6 @@
                         <button class="button alert" style="margin-left: 10px;">Delete Room</button>
 
                     </li>
-                    <!-- Add more tasks and rooms as needed -->
                 </ul>
             </div>
         </div>

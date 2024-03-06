@@ -23,3 +23,15 @@
   font-weight:bolder;
   font-size:13px;
 }
+.menu a {
+  color: black;
+}
+
+.navlink {
+  color:black;
+
+}
+.navlink:hover {
+  color:black ;
+  
+}

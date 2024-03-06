@@ -102,6 +102,36 @@ return function (App $app) {
         return $renderer->render($response, 'adminroom.php', $data);
     });
 
+    $app->get('/rules.php', function (Request $request, Response $response) {
+        $userId = $request->getAttribute('userId');
+        if($userId==0)
+            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
+        $renderer = $this->get('renderer');
+        $db = $this->get('db');
+        $link = $db->getUserInviteLink($userId);
+        if($link == false)
+            $link = "No Link";
+
+        $data = ['link' => $link];
+        return $renderer->render($response, 'rules.php', $data);
+    });
+    $app->get('/addrule.php', function (Request $request, Response $response) {
+        $userId = $request->getAttribute('userId');
+        if($userId==0)
+            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
+        $renderer = $this->get('renderer');
+        $db = $this->get('db');
+        $link = $db->getUserInviteLink($userId);
+        if($link == false)
+            $link = "No Link";
+
+        $data = ['link' => $link];
+        return $renderer->render($response, 'addrule.php', $data);
+    });
+
+
     $app->get('/adminTasks.php', function (Request $request, Response $response) {
         $userId = $request->getAttribute('userId');
         if($userId==0)
@@ -117,6 +147,20 @@ return function (App $app) {
         return $renderer->render($response, 'adminTasks.php', $data);
     });
 
+    $app->get('/adminRules.php', function (Request $request, Response $response) {
+        $userId = $request->getAttribute('userId');
+        if($userId==0)
+            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
+        $renderer = $this->get('renderer');
+        $db = $this->get('db');
+        $link = $db->getUserInviteLink($userId);
+        if($link == false)
+            $link = "No Link";
+
+        $data = ['link' => $link];
+        return $renderer->render($response, 'adminRules.php', $data);
+    });
 
     //User Actions
     $app->post('/login', User\LoginAction::class);

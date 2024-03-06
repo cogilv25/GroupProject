@@ -1,3 +1,27 @@
+<?php 
+/*
+$rulesData = [
+    [
+        'Members' => 'Test 1',
+        'RuleName' => 'No hoovering at 15:00',
+        'TypeOfRule' => 'User + Task',
+    ],
+    // Add more rules as needed
+    [
+        'Members' => 'Test 2',
+        'RuleName' => 'No cooking after 22:00',
+        'TypeOfRule' => 'User + Room',
+    ],
+];
+
+Example Data:
+$adminruleData = [
+    ['userId' => 1, 'rulename' => 'No hoovering at 15:00', 'TypeOfRule' => 'User + Task']
+];
+*/
+?>
+
+
 <div class="cell small-12" style="width: 100%;">
     <div class="add-task-button-container">
         <button class="button" id="addTaskButton">Add Rule</button>

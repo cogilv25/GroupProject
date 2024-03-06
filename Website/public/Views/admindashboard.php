@@ -14,6 +14,9 @@
 </head>
 <body>
 <style>
+  body,  html {
+    height:100vh;
+  }
 #sidenav, .navlink {
   background-color: #468F8B;
   color: black;
@@ -30,14 +33,53 @@
   border:solid 2px black;
   margin: 5px;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-            transition: 0.3s;
-            border-radius: 5px;
+  transition: 0.3s;
+  border-radius: 5px;
 }
 .custombtn {
   margin-bottom: 1rem !important;
   color:black !important;
   font-weight:bolder;
   font-size:13px;
+}
+
+.table-wrapper {
+    width: 90%; /* Adjust this value to control the width of the table */
+    margin: auto; /* Centers the table wrapper within its parent */
+    overflow-x: auto; /* Adds a scrollbar if the table overflows */
+}
+
+.custom-table {
+    border: 2px solid black;
+    width: 100%; /* Makes the table take up the full width of its wrapper */
+}
+
+.custom-table th, .custom-table td {
+    border-right: 1px solid black;
+    border-collapse: collapse;
+}
+
+.custom-table th:last-child, .custom-table td:last-child {
+    border-right: none;
+}
+
+#addTaskButton {
+    /* Button styles */
+    padding-right: 20px;
+
+}
+
+@media screen and (max-width: 640px) {
+    .custom-table th, .custom-table td {
+        border-right: none;
+    }
+}
+
+.add-task-button-container {
+    text-align: right;
+    padding-top: 15px;
+    margin-right:150px;
+     /* Adjust the space between the button and the table */
 }
   </style>
   <body>
@@ -53,11 +95,11 @@
                     <ul class="vertical menu ">
                       <li><a class="navlink" href="/">Home</a></li>
                       <li><a class="navlink" href="notifications">Notifications</a></li>
-                      <li><a class="navlink" href="rules">Rules</a></li>
-                      <li><a id="loadTasks" class="navlink" href="#">Tasks</a></li>
-                      <li><a id="loadHousehold" class="navlink" href="#">HouseHold</a></li>
-                      <li><a class="navlink" href="schedule">Schedule</a></li>
-                      <li><a id="loadRooms" class="navlink" href="#">Rooms</a></li>
+                      <li><a id="loadRules"  class="navlink" >Rules</a></li>
+                      <li><a id="loadTasks" class="navlink" >Tasks</a></li>
+                      <li><a id="loadHousehold" class="navlink" >HouseHold</a></li>
+                      <li><a class="navlink">Schedule</a></li>
+                      <li><a id="loadRooms" class="navlink">Rooms</a></li>
                       <li><a class="navlink" href="profile">Profile</a></li>
                       <li><a class="navlink" href="settings">Settings</a></li>
                       <li><a class="navlink" href="/logout">Logout</a></li>
@@ -65,15 +107,14 @@
                 </div>
             </div>
         </div>
-
-          <div class="off-canvas-content" data-off-canvas-content>
-              <div class="title-bar hide-for-large">
-                  <div class="title-bar-left">
-                      <button class="menu-icon" type="button" data-open="sidenav"></button>
-                      <span class="title-bar-title">CleanSync</span>
-                  </div>
-              </div>
-              <div id="main-content" class="grid-x grid-margin-x small-up-1 medium-up-3 large-up-4">
+        <div class="off-canvas-content" data-off-canvas-content>
+            <div class="title-bar hide-for-large">
+                <div class="title-bar-left">
+                    <button class="menu-icon" type="button" data-open="sidenav"></button>
+                    <span class="title-bar-title">CleanSync</span>
+                </div>
+            </div>
+          <div id="main-content" class="grid-x grid-margin-x small-up-1 medium-up-3 large-up-4">
                 <div class="cell">
                   <div class="card" >
                     <div class="card-section">
@@ -120,6 +161,22 @@ $(document).ready(function() {
         e.preventDefault(); // Prevent the default link behavior
         $.ajax({
             url: 'household', // Path to your household.php file
+            type: 'GET', // GET method to fetch data
+            success: function(response) {
+                // Insert the fetched content into the 'household-content' div
+                $('#main-content').html(response);
+            },
+            error: function(xhr, status, error) {
+                // Handle any errors
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    });
+
+    $('#loadRules').click(function(e) {
+        e.preventDefault(); // Prevent the default link behavior
+        $.ajax({
+            url: 'adminRules.php', // Path to your household.php file
             type: 'GET', // GET method to fetch data
             success: function(response) {
                 // Insert the fetched content into the 'household-content' div

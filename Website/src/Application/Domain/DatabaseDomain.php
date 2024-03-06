@@ -152,6 +152,19 @@ class DatabaseDomain
         return $this->db->commit();
     }
 
+    public function getUserHouseAndAdminStatus(int $userId)
+    {
+        $query = $this->db->prepare("SELECT `House_houseId`,`houseId` FROM `user` LEFT JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
+        $query->bind_param("i", $userId);
+        $query->execute(); 
+        $query->bind_result($houseId, $adminHouseId);
+        $query->fetch();
+        $query->close();
+        if(!isset($houseId))
+            return false;
+        return [$houseId, $adminHouseId != null];
+    }
+
     public function getAdminHouse(int $adminId) : int | bool
     {
         $query = $this->db->prepare("SELECT `houseId` FROM `user` JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
@@ -203,15 +216,16 @@ class DatabaseDomain
         if($result!=true)
             return false;
 
-        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname` FROM `user` WHERE `House_houseId` = ?");
+        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname`, `email` FROM `user` WHERE `House_houseId` = ?");
         $query->bind_param("i", $houseId);
         $query->execute(); 
-        $query->bind_result($userId, $forename, $surname);
+        $query->bind_result($userId, $forename, $surname, $email);
 
+        //TODO: @MultipleAdmins
         while($query->fetch())
         {
-            $role = $userId == $adminId ? "Admin" : "Member";
-            $data[$userId] = ['forename' => $forename, 'surname' => $surname, 'role' => $role];
+            $role = $userId == $adminId ? "admin" : "member";
+            $data[$userId] = ['forename' => $forename, 'surname' => $surname, 'role' => $role, 'email' => $email];
         }
 
         $query->close();
@@ -276,6 +290,55 @@ class DatabaseDomain
         $query->close();
 
         return $data;
+    }
+
+    public function getHouseholdTaskDetails(int $houseId)
+    {
+        $query = "SELECT `room`.`roomId`, `room`.`name`, `task`.`taskId`, `task`.`name`, `task`.`description`, `RHTId` ".
+        "FROM `room` JOIN `task` ON `task`.`houseId`=`room`.`houseId` ". 
+        "LEFT JOIN `room_has_task` ON (`room`.`roomId` = `room_has_task`.`roomId` ".
+        "AND `task`.`taskId`=`room_has_task`.`taskId`) WHERE `room`.`houseId`=". $houseId;
+
+        $result = $this->db->query($query);       
+
+        if($result == false)
+            return $result;
+
+        $details = ['rooms' => [], 'tasks' => []];
+        while($row = $result->fetch_row())
+        {
+            $details['tasks'][$row[2]]['name'] = $row[3];
+            $details['tasks'][$row[2]]['description'] = $row[4];
+            $details['tasks'][$row[2]]['rooms'][$row[0]] = (bool)($row[5] != null);
+
+            $details['rooms'][$row[0]] = $row[1];
+        }
+
+        return $details;
+    }
+
+    public function getHouseholdRoomDetails(int $houseId)
+    {
+        $query = "SELECT `room`.`roomId`, `room`.`name`, `task`.`taskId`, `task`.`name`, `RHTId` ".
+        "FROM `room` JOIN `task` ON `task`.`houseId`=`room`.`houseId` ". 
+        "LEFT JOIN `room_has_task` ON (`room`.`roomId` = `room_has_task`.`roomId` ".
+        "AND `task`.`taskId`=`room_has_task`.`taskId`) WHERE `room`.`houseId`=". $houseId;
+
+        $result = $this->db->query($query);       
+
+        if($result == false)
+            return $result;
+
+        $details = ['rooms' => [], 'tasks' => []];
+        while($row = $result->fetch_row())
+        {
+            $details['rooms'][$row[0]]['name'] = $row[1];
+            $details['rooms'][$row[0]]['tasks'][$row[2]] = (bool)($row[4] != null);
+
+            $details['tasks'][$row[2]] = $row[3];
+        }
+
+        return $details;
     }
 
     public function createTask(int $houseId, string $name, string $description) : bool
@@ -501,11 +564,26 @@ class DatabaseDomain
 
         foreach ($users as $id => $details)
         {
-            $users[$id]['schedule'] = $this->getUserSchedule($userId);
+            $users[$id]['schedule'] = $this->getUserSchedule($id);
         }
 
 
         return $users;
+    }
+
+    public function getUserSchedulesFlat(int $houseId)
+    {
+        $query = "SELECT `User`.`userId`, `day`, `beginTimeslot`,`endTimeslot` FROM `UserSchedule` ". 
+        "JOIN `User` ON `User`.`userId`=`UserSchedule`.`userId` ".
+        "WHERE `House_houseId`=" . $houseId;
+
+        $result = $this->db->query($query);
+
+        $flatSchedules = [];
+        while($row = $result->fetch_row())
+            $flatSchedules[] = $row;
+
+        return $flatSchedules;
     }
 
     //TODO: Delete Rota rows (currently isn't linked, might not be required..)
@@ -704,6 +782,30 @@ class DatabaseDomain
 
         return $rules;
     }
+
+    public function getValidUserRoomTaskCombinations(int $houseId)
+    {
+        //This query gets all tasks in all rooms for all users where:
+        // - The task can be performed in the room (RHT)
+        // - The user is not exempt from the task (UET IS NULL)
+        // - The user is not exempt from the room (UER IS NULL)
+        $query = "SELECT `user`.`userId`, RHT.`roomId`, RHT.`taskId` FROM `User` ".
+        "JOIN `room_has_task` RHT ON `user`.`House_houseId`=`houseId` ".
+        "LEFT JOIN `user_exempt_task` UET ON UET.`taskId`=RHT.`taskId` AND UET.`userId`=`user`.`userId` ".
+        "LEFT JOIN `user_exempt_room` UER ON UER.`roomId`=RHT.`roomId` AND UER.`userId`=`user`.`userId` ".
+        "WHERE UER.`UERId` IS NULL AND UET.`UETId` IS NULL AND `user`.`House_houseId`=" . $houseId;
+
+        $result = $this->db->query($query);
+
+        $validRoomTaskUsers = [];
+        while($row = $result->fetch_row())
+        {
+            $validRoomTaskUsers[] = $row;
+        }
+
+        return $validRoomTaskUsers;
+    }
+
 }
 
 ?>

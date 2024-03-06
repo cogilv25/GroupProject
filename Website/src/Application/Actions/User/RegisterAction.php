@@ -24,11 +24,18 @@ class RegisterAction extends Action
         if (!(isset($data['password'], $data['email'], $data['forename'], $data['surname'], $data['confirmPassword'])))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
+        //TODO: Enforce more robust passwords
         if (strlen($data['password']) < 8 || $data['password'] !== $data['confirmPassword'])
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
         $email = filter_var($data['email'], FILTER_VALIDATE_EMAIL);
         if (!$email)
+            throw new HttpBadRequestException($this->request, "Invalid form data submitted");
+
+        //Pre-database string length validation to give users useful errors
+        //TODO: The useful error messages... @ErrorHandling
+        //TODO: Maybe insert [blank] if forename/surname not provided to prevent weird interface bugs?
+        if(strlen($email)>64 || strlen($data['forename'])>32 || strlen($data['surname'])>32)
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
         // Check if email unavailable

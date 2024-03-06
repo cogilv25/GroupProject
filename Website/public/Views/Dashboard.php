@@ -20,25 +20,25 @@
                     <a id="logo">CleanSync</a>
                 </div>
                 <div class="cell">
-                    <ul class="vertical menu" data-accordion-menu>
-                        <li><a class="navlink" href="/">Home</a></li>
-                        <li><a class="navlink" href="admindashboard.php">Admin Dashboard</a></li>
-                        <li><a class="navlink" href="notifications">Notifications</a></li>
-                        <li>
+                    <ul class="vertical menu ">
+                      <li><a class="navlink" href="/">Home</a></li>
+                      <li><a class="navlink" href="notifications">Notifications</a></li>
+                      <li>
                             <a class="navlink">Rules</a>
                             <ul class="menu vertical nested">
                                 <li><a class="navlink" href="rules.php">View All Rules</a></li>
                                 <li><a class="navlink" href="addrule.php">Add Rule</a></li>
                             </ul>
                         </li>
-                        <li><a class="navlink" href="#">Tasks</a></li>
-                        <a class="navlink" data-open="exampleModal">HouseHold</a>
-                        <li><a class="navlink" href="schedule">Schedule</a></li>
-                        <li><a class="navlink" href="#">Rooms</a></li>
-                        <li><a class="navlink" href="profile">Profile</a></li>
-                        <li><a class="navlink" href="settings">Settings</a></li>
-                        <li><a class="navlink" href="/logout">Logout</a></li>
-                    </ul>
+                        <li><
+                      <li><a class="navlink" href="#">Tasks</a></li>
+                      <li><a id="loadHousehold" class="navlink" href="#">HouseHold</a></li>
+                      <li><a class="navlink" href="schedule">Schedule</a></li>
+                      <li><a class="navlink" href="#">Rooms</a></li>
+                      <li><a class="navlink" href="profile">Profile</a></li>
+                      <li><a class="navlink" href="settings">Settings</a></li>
+                      <li><a class="navlink" href="/logout">Logout</a></li>
+                  </ul>
                 </div>
             </div>
         </div>
@@ -86,7 +86,28 @@
 
     <script src="/Javascript/dashboard.js"></script>
 <script>
+
+$(document).ready(function() {
     $(document).foundation();
+
+    // Listen for click event on the link with ID 'loadHousehold'
+    $('#loadHousehold').click(function(e) {
+        e.preventDefault(); // Prevent the default link behavior
+        $.ajax({
+            url: 'household', // Path to your household.php file
+            type: 'GET', // GET method to fetch data
+            success: function(response) {
+                // Insert the fetched content into the 'household-content' div
+                $('#main-content').html(response);
+            },
+            error: function(xhr, status, error) {
+                // Handle any errors
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    });
+    
+});
 </script>
 
 </body>

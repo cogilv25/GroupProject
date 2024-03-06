@@ -94,7 +94,6 @@
                 <div class="cell">
                     <ul class="vertical menu ">
                       <li><a class="navlink" href="/">Home</a></li>
-                      <li><a class="navlink" href="admindashboard.php">Admin Dashboard</a></li>
                       <li><a class="navlink" href="notifications">Notifications</a></li>
                       <li><a id="loadRules"  class="navlink" >Rules</a></li>
                       <li><a id="loadTasks" class="navlink" >Tasks</a></li>
@@ -161,7 +160,7 @@ $(document).ready(function() {
     $('#loadHousehold').click(function(e) {
         e.preventDefault(); // Prevent the default link behavior
         $.ajax({
-            url: 'adminhousehold.php', // Path to your household.php file
+            url: 'household', // Path to your household.php file
             type: 'GET', // GET method to fetch data
             success: function(response) {
                 // Insert the fetched content into the 'household-content' div

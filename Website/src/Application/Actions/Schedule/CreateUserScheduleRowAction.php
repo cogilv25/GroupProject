@@ -32,7 +32,9 @@ class CreateUserScheduleRowAction extends UserAction
         $end = (int)$data['endTimeslot'];
         $day = $data['day'];
 
-        if($begin > $end)
+        //Pre-database timeslot range validation to give users useful errors
+        //TODO: The useful error messages... @ErrorHandling
+        if($begin < 0 || $end < 0 || $begin>95 || $end>95 || $begin>$end)
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
         if(!$this->db->createUserScheduleRows($this->userId, $begin, $end, $day))

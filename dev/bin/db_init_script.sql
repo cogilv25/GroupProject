@@ -12,7 +12,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 CREATE TABLE `cleansync`.`House` (
   `houseId` INT NOT NULL AUTO_INCREMENT,
   `adminId` INT NOT NULL,
-  `roomCounter` INT,
   PRIMARY KEY (`houseId`),
   INDEX `fk_House_user_idx` (`adminId` ASC),
   CONSTRAINT `fk_house_user`
@@ -23,12 +22,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- -----------------------------------------------------
 -- Table `cleansync`.`user`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`user` (
+CREATE TABLE `cleansync`.`User` (
   `userId` INT NOT NULL AUTO_INCREMENT,
-  `forename` VARCHAR(45) NOT NULL,
-  `surname` VARCHAR(45) NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
-  `password` VARCHAR(255) NOT NULL,
+  `forename` VARCHAR(32) NOT NULL,
+  `surname` VARCHAR(32) NOT NULL,
+  `email` VARCHAR(64) NOT NULL,
+  `password` VARCHAR(256) NOT NULL,
   `House_houseId` INT,
   `personalPoints` INT,
   PRIMARY KEY (`userId`),
@@ -43,7 +42,7 @@ CREATE TABLE `cleansync`.`user` (
 -- -----------------------------------------------------
 CREATE TABLE `cleansync`.`Room` (
   `roomId` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45),
+  `name` VARCHAR(32),
   `houseId` INT NOT NULL,
   PRIMARY KEY (`roomId`),
   CONSTRAINT `House_RoomName_Unique` UNIQUE(`name`,`houseId`),
@@ -58,8 +57,8 @@ CREATE TABLE `cleansync`.`Room` (
 -- -----------------------------------------------------
 CREATE TABLE `cleansync`.`Task` (
   `taskId` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NOT NULL,
-  `description` VARCHAR(1000) NOT NULL,
+  `name` VARCHAR(32) NOT NULL,
+  `description` VARCHAR(1024) NOT NULL,
   `houseId` INT NOT NULL,
   PRIMARY KEY (`taskId`),
   CONSTRAINT `House_TaskName_Unique` UNIQUE(`name`,`houseId`),
@@ -68,39 +67,6 @@ CREATE TABLE `cleansync`.`Task` (
     FOREIGN KEY (`houseId`)
     REFERENCES `cleansync`.`House` (`houseId`));
 
-
--- -----------------------------------------------------
--- Table `cleansync`.`Rule`
--- -----------------------------------------------------
--- Four types:
--- A user does not perform a certain task
--- A task is restricted from certain timeslots
--- A room is inaccessible during certain timeslots
--- A user does not clean in a certain room
--- -----------------------------------------------------
-CREATE TABLE `cleansync`.`Rule` (
-  `ruleId` INT NOT NULL AUTO_INCREMENT,
-  `houseId` INT NOT NULL,
-  `beginTimeslot` INT,
-  `endTimeslot` INT,
-  `userId` INT,
-  `taskId` INT,
-  `roomId` INT,
-  PRIMARY KEY (`ruleId`),
-  INDEX `fk_Rule_user1_idx` (`userId` ASC),
-  INDEX `fk_Rule_Task1_idx` (`taskId` ASC),
-  CONSTRAINT `fk_Rule_user1`
-    FOREIGN KEY (`userId`)
-    REFERENCES `cleansync`.`user` (`userId`),
-  CONSTRAINT `fk_Rule_house1`
-    FOREIGN KEY (`houseId`)
-    REFERENCES `cleansync`.`House` (`houseId`),
-  CONSTRAINT `fk_Rule_room1`
-    FOREIGN KEY (`roomId`)
-    REFERENCES `cleansync`.`Room` (`roomId`),
-  CONSTRAINT `fk_Rule_Task1`
-    FOREIGN KEY (`taskId`)
-    REFERENCES `cleansync`.`Task` (`taskId`));
 
 -- -----------------------------------------------------
 -- Table `cleansync`.`User_Exempt_Task`
@@ -260,6 +226,13 @@ CREATE TABLE `cleansync`.`Rota` (
 -- -----------------------------------------------------
 -- Table `cleansync`.`Task_has_user`
 -- -----------------------------------------------------
+-- TODO: Rename to something like job_has_user or just
+--     rota and get rid of existing rota table.
+--
+-- TODO: should we be using day + timeslots? it would
+--     make detecting collisions easier if we allow
+--     manual modification of the rota post generation.
+-- -----------------------------------------------------
 CREATE TABLE `cleansync`.`Task_has_user` (
   `taskId` INT NOT NULL,
   `roomId` INT NOT NULL,
@@ -285,4 +258,3 @@ CREATE TABLE `cleansync`.`Task_has_user` (
   CONSTRAINT `fk_Task_has_user_Rota1`
     FOREIGN KEY (`rotaId`)
     REFERENCES `cleansync`.`Rota` (`rotaId`));
-    

@@ -22,6 +22,12 @@ class UpdateTaskAction extends AdminAction
         if (strlen($data['name']) < 2 || !is_numeric($data['taskId']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
+
+        //Pre-database string length validation to give users useful errors
+        //TODO: The useful error messages... @ErrorHandling
+        if(strlen($data['name'])>32 || strlen($data['description'])>1024)
+            throw new HttpBadRequestException($this->request, "Invalid form data submitted");
+
         //Perform Action
         if(!$this->db->updateTask($this->houseId, (int)$data['taskId'], $data['name'], $data['description']))
             return $this->createJsonResponse($this->response, ['message' => 'Task update failed']);

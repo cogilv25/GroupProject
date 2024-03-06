@@ -21,6 +21,11 @@ class UpdateRoomAction extends AdminAction
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
         if (strlen($data['name']) < 2 || !is_numeric($data['roomId']))
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
+        
+        //Pre-database string length validation to give users useful errors
+        //TODO: The useful error messages... @ErrorHandling
+        if(strlen($data['name'])>32)
+            throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
         $roomId = (int)$data['roomId'];
 

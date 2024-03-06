@@ -33,10 +33,6 @@ class AuthenticationMiddleware implements Middleware
 
         $request = $request->withAttribute('userId', $userId);
 
-        $response = $handler->handle($request);
-        //Hopefully prevents random logouts which I think are caused by
-        // sessions not ending sometimes when an error occurs..
-        session_write_close();
-        return $response;
+        return $handler->handle($request);
     }
 }

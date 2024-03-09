@@ -112,7 +112,7 @@ TODO:   When a room is created it probably makes sense for the backend to pass b
                         <button class="button" style="margin-left: 10px;">Update</button>
                         <button class="button alert" style="margin-left: 10px;">Delete Link</button>
                     </li>
-                    <?php } 
+            <?php } 
                             } 
                               }  ?>
                 </ul>
@@ -133,6 +133,7 @@ TODO:   When a room is created it probably makes sense for the backend to pass b
                         <button class="button alert" style="margin-left: 10px;">Delete Room</button>
 
                     </li>
+
                 <?php } ?>
                 </ul>
             </div>

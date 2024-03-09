@@ -2,7 +2,7 @@
 
 ## Details
 
-**Date:** 12.02.2024  
+**Date:** 22.02.2024  
 **Time:** 1.30pm
 
 ## Attendance

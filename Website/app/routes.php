@@ -129,6 +129,7 @@ return function (App $app) {
             return $renderer->render($response, 'household.php', ['users' => $data, 'currentUser' => $user]);
         });
         $group->get('/create', HouseHold\CreateHouseHoldAction::class);
+        //TODO: Unique codes for household join links
         $group->get('/join/{id}', HouseHold\JoinHouseHoldAction::class);
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);

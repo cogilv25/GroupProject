@@ -1,8 +1,8 @@
 <?php
 
-//No Longer needed but it's maybe nice to have as a reminder of what the input data looks like..?
+//TODO: Proper Schema
 
-/*$currentUser = ['isAdmin' => true, 'userId' => 1, 'homeless' => false];
+/*$currentUser = ['role' => 1, 2, or 3, 'userId' => 1, 'homeless' => false];
 $users = [
     ['userId' => 1, 'forename' => 'User', 'surname' => '1', 'role' => 'admin', 'email' => 'user1@example.com'],
     ['userId' => 5, 'forename' => 'User', 'surname' => '2', 'role' => 'moderator', 'email' => 'user2@example.com'],
@@ -13,7 +13,18 @@ $users = [
 
 //TODO: A view for the homeless
 if($currentUser['homeless']==true)
-    echo "<div class='cell'><div class='card'><div class='card-section'><a href='/household/create'>You have no home do you want to make one?</a></div></div></div>";
+{
+?>
+    <div class='cell'>
+        <div class='card'>
+            <div class='card-section'>
+                You have no home do you want to make one?
+                <button id="createHousehold" class=" custombtn success button" type="button">Create Household</a>
+            </div>
+        </div>
+    </div>
+<?php
+}
 else
 {
 
@@ -29,14 +40,13 @@ if($currentUser['isAdmin']) //Admin view
                     <p>Role: <?= htmlspecialchars($user['role']) ?></p>
                     <p>Email: <?= htmlspecialchars($user['email']) ?></p>
                     <?php if ($user['role'] == 'admin'): ?>
-                    <button type="button" class="custombtn alert button">Leave House</button>
-                    <?php elseif ($user['role'] == 'moderator'): ?>
+                    <button id="deleteHousehold" type="button" class="custombtn alert button">Delete House</button>
+                    <?php else: ?>
                         <button type="button" class=" custombtn alert button">Kick from house</button>
                     <?php endif; ?>
                     <?php if ($user['role'] == 'member'): ?>
-                        <button type="button" class="custombtn alert button">Kick from house</button>
                     <button type="button" class=" custombtn success button">Give Moderator privileges</button>
-                    <?php else: ?>
+                    <?php elseif ($user['role'] == 'moderator'): ?>
                         <button type="button" class="custombtn alert button">Demote to member</button>
                     <?php endif; ?>
                 </div>
@@ -56,11 +66,10 @@ else //Non-admin view
                     <p>Role: <?= htmlspecialchars($user['role']) ?></p>
 
                     <?php
-                    //TODO: I added the currentUser as input from Slim thinking
-                    //        you could use it to let the user leave the house? 
-                    //if ($user['userId'] == currentUser['userId']): ?>
-                    <!-- <button type="button" class="custombtn alert button">Leave House</button> -->
-                    <?php //endif ?>
+                    // Allow the user to leave the house, only for non-admins
+                    if ($user['userId'] == $currentUser['userId']){ ?>
+                    <button id="leaveHousehold" type="button" class="custombtn alert button">Leave House</button>
+                    <?php } ?>
                 </div>
             </div>
         </div>
@@ -69,3 +78,92 @@ else //Non-admin view
 }
 }
 ?>
+
+<script>
+    $('#createHousehold').click(function(e) {
+        e.preventDefault(); // Prevent the default link behavior
+        $.ajax({
+            url: 'household/create', // Path to your household.php file
+            type: 'GET', // GET method to fetch data
+            success: function(response) {
+                // Get the updated page
+                //TODO: We could probably just update it ourselves but this is the fast and dirty way!
+                console.log(response.message);
+                $.ajax({
+                    url: 'household', // Path to your household.php file
+                    type: 'GET', // GET method to fetch data
+                    success: function(response) {
+                        // Insert the fetched content into the 'household-content' div
+                        $('#main-content').html(response);
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle any errors
+                        console.error("Error: " + status + " " + error);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                // Handle any errors
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    });
+
+    $('#leaveHousehold').click(function(e) {
+        e.preventDefault(); // Prevent the default link behavior
+        $.ajax({
+            url: 'household/leave', // Path to your household.php file
+            type: 'GET', // GET method to fetch data
+            success: function(response) {
+                // Get the updated page
+                //TODO: We could probably just update it ourselves but this is the fast and dirty way!
+                console.log(response.message);
+                $.ajax({
+                    url: 'household', // Path to your household.php file
+                    type: 'GET', // GET method to fetch data
+                    success: function(response) {
+                        // Insert the fetched content into the 'household-content' div
+                        $('#main-content').html(response);
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle any errors
+                        console.error("Error: " + status + " " + error);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                // Handle any errors
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    });
+
+    $('#deleteHousehold').click(function(e) {
+        e.preventDefault(); // Prevent the default link behavior
+        $.ajax({
+            url: 'household/delete', // Path to your household.php file
+            type: 'GET', // GET method to fetch data
+            success: function(response) {
+                // Get the updated page
+                //TODO: We could probably just update it ourselves but this is the fast and dirty way!
+                console.log(response.message);
+                $.ajax({
+                    url: 'household', // Path to your household.php file
+                    type: 'GET', // GET method to fetch data
+                    success: function(response) {
+                        // Insert the fetched content into the 'household-content' div
+                        $('#main-content').html(response);
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle any errors
+                        console.error("Error: " + status + " " + error);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                // Handle any errors
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    });
+</script>

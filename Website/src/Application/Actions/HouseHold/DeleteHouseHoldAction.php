@@ -20,6 +20,6 @@ class DeleteHouseHoldAction extends AdminAction
         if($result == false)
             return $this->createJsonResponse($this->response, ["message" => "Failed to delete House"], 500);
 
-        return $this->createJsonResponse($this->response, ["message" => "Deleted house successfully"]);
+        return $this->createJsonSuccessResponse($this->response, "Deleted house successfully");
     }
 }

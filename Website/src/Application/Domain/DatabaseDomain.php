@@ -17,6 +17,7 @@ enum ScheduleType
 // some of the prepared queries making things a bit less.... big.
 //TODO: Just discovered Join Delete's so that might reduce the number of queries required here and there.
 //TODO: Full implementation
+//TODO: Return newly created records Id's where not uniquely linked to the user (as in a user only has one of these).
 class DatabaseDomain
 {
 	private mysqli $db;
@@ -225,7 +226,7 @@ class DatabaseDomain
         while($query->fetch())
         {
             $role = $userId == $adminId ? "admin" : "member";
-            $data[$userId] = ['forename' => $forename, 'surname' => $surname, 'role' => $role, 'email' => $email];
+            $data[$userId] = ['userId' => $userId, 'forename' => $forename, 'surname' => $surname, 'role' => $role, 'email' => $email];
         }
 
         $query->close();

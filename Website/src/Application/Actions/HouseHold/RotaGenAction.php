@@ -104,7 +104,8 @@ class RotaGenAction extends AdminAction
             $capacityJobSchedule[$job][0] = [0,95];
         }
 
-        $status['status'] = 'success';
+        $success = true;
+        $errors = [];
 
 
         // Sort the jobList and userEligibleJob arrays by the number of users eligible for the 
@@ -260,12 +261,13 @@ class RotaGenAction extends AdminAction
             if($jobAssigned) continue;
 
             //If we didn't get the job assigned to someone then we can have a good moan!
-            $status['status'] = 'error';
-            $status['messages'][] = "Couldn't assign task: ".$job['task']." in room: " . $job['room']. " to any user";
+            $errors[] = "Couldn't assign task: " . $job['task'] . " in room: " . $job['room'] . " to any user";
         }
 
-        
-        $status['rota'] = $rota;
-        return $this->createJsonResponse($this->response, $usersEligibleJob);
+        // $errors can either be an array of strings or false to indicate there are no errors.
+        if(count($errors) < 1 )
+            $errors = false;
+
+        return $this->createJsonDataResponse($this->response, $rota, $errors);
     }
 }

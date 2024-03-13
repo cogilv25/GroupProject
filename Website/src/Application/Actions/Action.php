@@ -36,25 +36,20 @@ abstract class Action
 
     abstract protected function action(): Response;
 
-    //500 for generic errors, otherwise should be specified
-    protected function createJsonErrorResponse(Response $response, $data, int $statusCode = 500): Response
+    // TODO: Rename when redundant code removed
+    protected function createJsonSuccessResponse(Response $response, string $message, int $statusCode = 200): Response
     {
+        $data = ['statusCode' => $statusCode, 'message' => $message];
         $response->getBody()->write(json_encode($data,JSON_PRETTY_PRINT));
 
         return $response->withHeader('Content-Type', 'application/json');
     }
 
-    protected function createJsonSuccessResponse(Response $response, $message): Response
-    {
-        $data = ['statusCode' => 200, 'message' => $message];
-        $response->getBody()->write(json_encode($data,JSON_PRETTY_PRINT));
-
-        return $response->withHeader('Content-Type', 'application/json');
-    }
-
-    protected function createJsonDataResponse(Response $response, $data, int $statusCode = 200): Response
+    protected function createJsonDataResponse(Response $response, $data, array | string | bool $errorMessageList, int $statusCode = 200): Response
     {
         $responseData = ['statusCode' => $statusCode, 'data' => $data];
+        if($errorMessageList !== false)
+            $responseData['errors'] = $errorMessageList;
         $response->getBody()->write(json_encode($responseData,JSON_PRETTY_PRINT));
 
         return $response->withHeader('Content-Type', 'application/json');

@@ -21,9 +21,9 @@ class CreateHouseHoldAction extends UserAction
         //Otherwise create a new household
         $result = $this->db->createHousehold($this->userId);
         if(!$result)
-            return $this->createJsonSuccessResponse($this->response, "message" => "Failed to create House", 500);
+            return $this->createJsonResponse($this->response, "Failed to create House", 500);
 
-        return $this->createJsonSuccessResponse($this->response, "Created house successfully");
+        return $this->createJsonResponse($this->response, "Created house successfully");
     }
 }
  

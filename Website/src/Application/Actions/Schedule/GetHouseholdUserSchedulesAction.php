@@ -15,6 +15,6 @@ class GetHouseholdUserSchedulesAction extends AdminAction
     protected function action(): Response
     {
         $data = $this->db->getUserSchedulesInHousehold($this->houseId);
-        return $this->createJsonResponse($this->response, $data);
+        return $this->createJsonDataResponse($this->response, $data, false);
     }
 }

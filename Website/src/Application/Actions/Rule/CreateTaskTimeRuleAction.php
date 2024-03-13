@@ -33,10 +33,10 @@ class CreateTaskTimeRuleAction extends AdminAction
         if($begin < 0 || $end < 0 || $begin>95 || $end>95 || $begin>$end)
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
+        $id = $this->db->createTaskTimeRule($this->houseId, $taskId, $day, $begin, $end);
+        if($id === false)
+            return $this->createJsonResponse($this->response, 'Rule creation failed', 500);
 
-        if(!$this->db->createTaskTimeRule($this->houseId, $taskId, $day, $begin, $end))
-            return $this->createJsonResponse($this->response, ['message' => 'Rule creation failed']);
-
-        return $this->createJsonResponse($this->response, ['message' => 'Rule created successfully']);
+        return $this->createJsonDataResponse($this->response, $id, false);
     }
 }

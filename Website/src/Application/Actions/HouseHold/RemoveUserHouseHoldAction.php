@@ -27,8 +27,8 @@ class RemoveUserHouseHoldAction extends AdminAction
         $result = $this->db->removeUserFromHousehold($memberId, $this->houseId);
 
         if(!$result)
-            return $this->createJsonResponse($this->response, ["message" => "Failed to remove user from House"], 500);
+            return $this->createJsonResponse($this->response, "Failed to remove user from House", 500);
 
-        return $this->createJsonResponse($this->response, ["message" => "Removed user from house successfully"]);
+        return $this->createJsonResponse($this->response, "Removed user from house successfully");
     }
 }

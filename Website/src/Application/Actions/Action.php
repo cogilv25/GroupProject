@@ -37,7 +37,7 @@ abstract class Action
     abstract protected function action(): Response;
 
     // TODO: Rename when redundant code removed
-    protected function createJsonSuccessResponse(Response $response, string $message, int $statusCode = 200): Response
+    protected function createJsonResponse(Response $response, string $message, int $statusCode = 200): Response
     {
         $data = ['statusCode' => $statusCode, 'message' => $message];
         $response->getBody()->write(json_encode($data,JSON_PRETTY_PRINT));
@@ -53,14 +53,5 @@ abstract class Action
         $response->getBody()->write(json_encode($responseData,JSON_PRETTY_PRINT));
 
         return $response->withHeader('Content-Type', 'application/json');
-    }
-
-    // Function to create a json response
-    //TODO: Redundant, remove once all code has been updated to new functions
-    protected function createJsonResponse(Response $response, $data, int $statusCode = 200): Response
-    {
-        $response->getBody()->write(json_encode($data,JSON_PRETTY_PRINT));
-
-        return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
     }
 }

@@ -41,8 +41,8 @@ class UpdateUserScheduleRowAction extends UserAction
 
 
         if(!$this->db->updateUserScheduleRow($this->userId, $rowId, $begin, $end, $day))
-            return $this->createJsonResponse($this->response, ['message' => 'User Schedule update failed']);
+            return $this->createJsonResponse($this->response, 'User Schedule update failed');
 
-        return $this->createJsonResponse($this->response, ['message' => 'User Schedule updated successfully']);
+        return $this->createJsonResponse($this->response, 'User Schedule updated successfully');
     }
 }

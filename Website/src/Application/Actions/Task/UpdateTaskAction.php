@@ -30,8 +30,8 @@ class UpdateTaskAction extends AdminAction
 
         //Perform Action
         if(!$this->db->updateTask($this->houseId, (int)$data['taskId'], $data['name'], $data['description']))
-            return $this->createJsonResponse($this->response, ['message' => 'Task update failed']);
+            return $this->createJsonResponse($this->response, 'Task update failed');
 
-        return $this->createJsonResponse($this->response, ['message' => 'Task updated successfully']);
+        return $this->createJsonResponse($this->response, 'Task updated successfully');
     }
 }

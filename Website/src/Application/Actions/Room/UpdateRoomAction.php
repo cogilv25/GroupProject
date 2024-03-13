@@ -30,8 +30,8 @@ class UpdateRoomAction extends AdminAction
         $roomId = (int)$data['roomId'];
 
         if(!$this->db->updateRoom($this->houseId, $roomId, $data['name']))
-            return $this->createJsonResponse($this->response, ['message' => 'Room update failed']);
+            return $this->createJsonResponse($this->response, 'Room update failed');
 
-        return $this->createJsonResponse($this->response, ['message' => 'Room updated successfully']);
+        return $this->createJsonResponse($this->response, 'Room updated successfully');
     }
 }

@@ -15,6 +15,6 @@ class ListTaskAction extends MemberAction
     protected function action(): Response
     {
         $data = $this->db->getTasksInHousehold($this->houseId);
-        return $this->createJsonResponse($this->response, $data);
+        return $this->createJsonDataResponse($this->response, $data, false);
     }
 }

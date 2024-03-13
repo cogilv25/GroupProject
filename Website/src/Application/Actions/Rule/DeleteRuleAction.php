@@ -26,8 +26,8 @@ class DeleteRuleAction extends AdminAction
         $ruleType = (int)$data['ruleType'];
 
         if(!$this->db->deleteRule($this->houseId, $ruleType, $ruleId))
-            return $this->createJsonResponse($this->response, ['message' => 'Rule deletion failed']);
+            return $this->createJsonResponse($this->response, 'Rule deletion failed');
 
-        return $this->createJsonResponse($this->response, ['message' => 'Rule deleted successfully']);
+        return $this->createJsonResponse($this->response, 'Rule deleted successfully');
     }
 }

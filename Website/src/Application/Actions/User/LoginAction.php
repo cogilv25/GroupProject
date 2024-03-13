@@ -45,6 +45,6 @@ class LoginAction extends Action
         // Creates Session called Logged In with the value of the userId
         $_SESSION['loggedIn'] = $user['id'];
         // Returns a Json response 
-        return $this->createJsonResponse($this->response, ['message' => 'Login was successful']);
+        return $this->createJsonResponse($this->response, 'Login was successful');
     }
 }

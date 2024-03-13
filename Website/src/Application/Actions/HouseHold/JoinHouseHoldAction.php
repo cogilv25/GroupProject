@@ -23,8 +23,8 @@ class JoinHouseHoldAction extends UserAction
         $result = $this->db->addUserToHousehold($this->userId, $inviteId);
         
         if(!$result)
-            return $this->createJsonResponse($this->response, ["message" => "Failed to join House"], 500);
+            return $this->createJsonResponse($this->response, "Failed to join House", 500);
 
-        return $this->createJsonResponse($this->response, ["message" => "Joined house successfully"]);
+        return $this->createJsonResponse($this->response, "Joined house successfully");
     }
 }

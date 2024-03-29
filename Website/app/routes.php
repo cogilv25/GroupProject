@@ -143,6 +143,20 @@ return function (App $app) {
     //UserSchedule Actions
     $app->group('/schedule', function (Group $group)
     {
+        $group->get('/page', function (Request $request, Response $response)
+        {
+            //Prepare data
+            $userId = $request->getAttribute('userId');
+            if($userId == 0)
+                return $response->withHeader('Location', '/')->withStatus(302);
+            $renderer = $this->get('renderer');
+            return $renderer->render($response, 'schedule.php');
+        });
+        $group->get('/script', function (Request $request, Response $response)
+        {
+            $renderer = $this->get('renderer');
+            return $renderer->render($response, 'scheduleScript.php');
+        });
         $group->post('/create_row', Schedule\CreateUserScheduleRowAction::class);
         $group->post('/update_row', Schedule\UpdateUserScheduleRowAction::class);
         $group->post('/delete_row', Schedule\DeleteUserScheduleRowAction::class);
@@ -153,7 +167,7 @@ return function (App $app) {
     //HouseHold Actions
     $app->group('/household', function (Group $group)
     {
-        $group->get('', function(Request $request, Response $response) {
+        $group->get('/page', function(Request $request, Response $response) {
             $renderer = $this->get('renderer');
             $userId = $request->getAttribute('userId');
             if($userId==0)

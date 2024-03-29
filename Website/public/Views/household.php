@@ -2,7 +2,8 @@
 
 //TODO: Proper Schema
 
-/*$currentUser = ['role' => 1, 2, or 3, 'userId' => 1, 'homeless' => false];
+/* new, not implemented -> $currentUser = ['role' => 1, 2, or 3, 'userId' => 1, 'homeless' => false];
+                current -> $currentUser = ['isAdmin' => true, 'userId' => 1, 'homeless' => false];
 $users = [
     ['userId' => 1, 'forename' => 'User', 'surname' => '1', 'role' => 'admin', 'email' => 'user1@example.com'],
     ['userId' => 5, 'forename' => 'User', 'surname' => '2', 'role' => 'moderator', 'email' => 'user2@example.com'],

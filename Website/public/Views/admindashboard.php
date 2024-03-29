@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="/CSS/dashboard.css"> 
     <link rel="stylesheet" href="/CSS/householdModal.css">
+    <link rel="stylesheet" href="/CSS/scheduleTimeRangeControl.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js" crossorigin="anonymous"></script>    
@@ -98,7 +99,7 @@
                       <li><a id="loadRules"  class="navlink" >Rules</a></li>
                       <li><a id="loadTasks" class="navlink" >Tasks</a></li>
                       <li><a id="loadHousehold" class="navlink" >HouseHold</a></li>
-                      <li><a class="navlink">Schedule</a></li>
+                      <li><a id="loadSchedule" class="navlink">Schedule</a></li>
                       <li><a id="loadRooms" class="navlink">Rooms</a></li>
                       <li><a class="navlink" href="profile">Profile</a></li>
                       <li><a class="navlink" href="settings">Settings</a></li>
@@ -160,7 +161,7 @@ $(document).ready(function() {
     $('#loadHousehold').click(function(e) {
         e.preventDefault(); // Prevent the default link behavior
         $.ajax({
-            url: 'household', // Path to your household.php file
+            url: 'household/page', // Path to your household.php file
             type: 'GET', // GET method to fetch data
             success: function(response) {
                 // Insert the fetched content into the 'household-content' div
@@ -173,10 +174,12 @@ $(document).ready(function() {
         });
     });
 
-    $('#loadRules').click(function(e) {
+    
+     // Listen for click event on the link with ID 'loadHousehold'
+    $('#loadSchedule').click(function(e) {
         e.preventDefault(); // Prevent the default link behavior
         $.ajax({
-            url: 'adminRules.php', // Path to your household.php file
+            url: 'schedule/page', // Path to your household.php file
             type: 'GET', // GET method to fetch data
             success: function(response) {
                 // Insert the fetched content into the 'household-content' div
@@ -209,6 +212,22 @@ $(document).ready(function() {
         e.preventDefault(); // Prevent the default link behavior
         $.ajax({
             url: 'adminTasks.php', // Path to your household.php file
+            type: 'GET', // GET method to fetch data
+            success: function(response) {
+                // Insert the fetched content into the 'household-content' div
+                $('#main-content').html(response);
+            },
+            error: function(xhr, status, error) {
+                // Handle any errors
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    });
+
+    $('#loadRules').click(function(e) {
+        e.preventDefault(); // Prevent the default link behavior
+        $.ajax({
+            url: 'adminRules.php', // Path to your household.php file
             type: 'GET', // GET method to fetch data
             success: function(response) {
                 // Insert the fetched content into the 'household-content' div

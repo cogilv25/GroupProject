@@ -96,11 +96,11 @@
                     <ul class="vertical menu ">
                       <li><a class="navlink" href="/">Home</a></li>
                       <li><a class="navlink" href="notifications">Notifications</a></li>
-                      <li><a id="loadRules"  class="navlink" >Rules</a></li>
-                      <li><a id="loadTasks" class="navlink" >Tasks</a></li>
-                      <li><a id="loadHousehold" class="navlink" >HouseHold</a></li>
-                      <li><a id="loadSchedule" class="navlink">Schedule</a></li>
-                      <li><a id="loadRooms" class="navlink">Rooms</a></li>
+                      <li><a class="navlink" href="rule">Rules</a></li>
+                      <li><a class="navlink" href="task">Tasks</a></li>
+                      <li><a class="navlink" href="household" >HouseHold</a></li>
+                      <li><a class="navlink" href="schedule">Schedule</a></li>
+                      <li><a class="navlink" href="room">Rooms</a></li>
                       <li><a class="navlink" href="profile">Profile</a></li>
                       <li><a class="navlink" href="settings">Settings</a></li>
                       <li><a class="navlink" href="/logout">Logout</a></li>
@@ -116,6 +116,15 @@
                 </div>
             </div>
           <div id="main-content" class="grid-x grid-margin-x small-up-1 medium-up-3 large-up-4">
+            <?php 
+                if(isset($page))
+                {
+                    if($page !== false)
+                        include($page);
+                }
+                else
+                {
+            ?>
                 <div class="cell">
                   <div class="card" >
                     <div class="card-section">
@@ -148,101 +157,22 @@
                     </div>
                   </div>
                 </div>
+                <?php
+                }   
+                ?>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-$(document).ready(function() {
-    $(document).foundation();
-
-    // Listen for click event on the link with ID 'loadHousehold'
-    $('#loadHousehold').click(function(e) {
-        e.preventDefault(); // Prevent the default link behavior
-        $.ajax({
-            url: 'household/page', // Path to your household.php file
-            type: 'GET', // GET method to fetch data
-            success: function(response) {
-                // Insert the fetched content into the 'household-content' div
-                $('#main-content').html(response);
-            },
-            error: function(xhr, status, error) {
-                // Handle any errors
-                console.error("Error: " + status + " " + error);
-            }
-        });
-    });
-
-    
-     // Listen for click event on the link with ID 'loadHousehold'
-    $('#loadSchedule').click(function(e) {
-        e.preventDefault(); // Prevent the default link behavior
-        $.ajax({
-            url: 'schedule/page', // Path to your household.php file
-            type: 'GET', // GET method to fetch data
-            success: function(response) {
-                // Insert the fetched content into the 'household-content' div
-                $('#main-content').html(response);
-            },
-            error: function(xhr, status, error) {
-                // Handle any errors
-                console.error("Error: " + status + " " + error);
-            }
-        });
-    });
-
-    $('#loadRooms').click(function(e) {
-        e.preventDefault(); // Prevent the default link behavior
-        $.ajax({
-            url: 'adminroom.php', // Path to your household.php file
-            type: 'GET', // GET method to fetch data
-            success: function(response) {
-                // Insert the fetched content into the 'household-content' div
-                $('#main-content').html(response);
-            },
-            error: function(xhr, status, error) {
-                // Handle any errors
-                console.error("Error: " + status + " " + error);
-            }
-        });
-    });
-
-    $('#loadTasks').click(function(e) {
-        e.preventDefault(); // Prevent the default link behavior
-        $.ajax({
-            url: 'adminTasks.php', // Path to your household.php file
-            type: 'GET', // GET method to fetch data
-            success: function(response) {
-                // Insert the fetched content into the 'household-content' div
-                $('#main-content').html(response);
-            },
-            error: function(xhr, status, error) {
-                // Handle any errors
-                console.error("Error: " + status + " " + error);
-            }
-        });
-    });
-
-    $('#loadRules').click(function(e) {
-        e.preventDefault(); // Prevent the default link behavior
-        $.ajax({
-            url: 'adminRules.php', // Path to your household.php file
-            type: 'GET', // GET method to fetch data
-            success: function(response) {
-                // Insert the fetched content into the 'household-content' div
-                $('#main-content').html(response);
-            },
-            error: function(xhr, status, error) {
-                // Handle any errors
-                console.error("Error: " + status + " " + error);
-            }
-        });
-    });
-
-
-});
-</script>
-
+    <script>
+    <?php 
+        if(isset($script))
+        {
+            if($script !== false)
+                include($script);
+        }
+    ?>
+    </script>
 </body>
 </html> 

@@ -44,42 +44,8 @@ return function (App $app) {
                 return $renderer->render($response, 'admindashboard.php', ['link' => $link]);
         }
     });
-    
 
-    $app->get('/adminroom.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $data = $db->getUserHouseAndAdminStatus($userId);
-        if($data === false)
-            return $renderer->render($response, 'adminroom.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
-
-        $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
-        $houseId = $data[0];
-
-        $data = $db->getHouseholdRoomDetails($houseId);
-        $data['currentUser'] = $user;
-
-        return $renderer->render($response, 'adminroom.php', $data);
-    });
-
-    $app->get('/rules.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $link = $db->getUserInviteLink($userId);
-        if($link == false)
-            $link = "No Link";
-
-        $data = ['link' => $link];
-        return $renderer->render($response, 'rules.php', $data);
-    });
+    //TODO: Could this just be part of the rule page?
     $app->get('/addrule.php', function (Request $request, Response $response) {
         $userId = $request->getAttribute('userId');
         if($userId==0)
@@ -95,42 +61,6 @@ return function (App $app) {
         return $renderer->render($response, 'addrule.php', $data);
     });
 
-
-    $app->get('/adminTasks.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $data = $db->getUserHouseAndAdminStatus($userId);
-        if($data === false)
-            return $renderer->render($response, 'adminroom.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
-
-        $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
-        $houseId = $data[0];
-
-        $data = $db->getHouseholdTaskDetails($houseId);
-        $data['currentUser'] = $user;
-
-        return $renderer->render($response, 'adminTasks.php', $data);
-    });
-
-    $app->get('/adminRules.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $link = $db->getUserInviteLink($userId);
-        if($link == false)
-            $link = "No Link";
-
-        $data = ['link' => $link];
-        return $renderer->render($response, 'adminRules.php', $data);
-    });
-
     //User Actions
     $app->post('/login', User\LoginAction::class);
     $app->post('/signup', User\RegisterAction::class);
@@ -143,19 +73,18 @@ return function (App $app) {
     //UserSchedule Actions
     $app->group('/schedule', function (Group $group)
     {
-        $group->get('/page', function (Request $request, Response $response)
+        $group->get('', function (Request $request, Response $response)
         {
             //Prepare data
             $userId = $request->getAttribute('userId');
             if($userId == 0)
                 return $response->withHeader('Location', '/')->withStatus(302);
+
+            $page = "schedule.php";
+            $script = "Javascript/schedule.js";//"scheduleScript.js";
             $renderer = $this->get('renderer');
-            return $renderer->render($response, 'schedule.php');
-        });
-        $group->get('/script', function (Request $request, Response $response)
-        {
-            $renderer = $this->get('renderer');
-            return $renderer->render($response, 'scheduleScript.php');
+
+            return $renderer->render($response, 'admindashboard.php', ['page' => $page, 'script' => $script]);
         });
         $group->post('/create_row', Schedule\CreateUserScheduleRowAction::class);
         $group->post('/update_row', Schedule\UpdateUserScheduleRowAction::class);
@@ -167,7 +96,7 @@ return function (App $app) {
     //HouseHold Actions
     $app->group('/household', function (Group $group)
     {
-        $group->get('/page', function(Request $request, Response $response) {
+        $group->get('', function(Request $request, Response $response) {
             $renderer = $this->get('renderer');
             $userId = $request->getAttribute('userId');
             if($userId==0)
@@ -176,15 +105,17 @@ return function (App $app) {
             $db = $this->get('db');
             $data = $db->getUserHouseAndAdminStatus($userId);
             if($data === false)
-                return $renderer->render($response, 'household.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
+                return $renderer->render($response, 'admindashboard.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
 
             $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
+            $page = "household.php";
+            $script = false;
             $houseId = $data[0];
 
             $data = $db->getUsersInHousehold($houseId);
 
 
-            return $renderer->render($response, 'household.php', ['users' => $data, 'currentUser' => $user]);
+            return $renderer->render($response, 'admindashboard.php', ['page' => $page, 'script' => $script, 'users' => $data, 'currentUser' => $user]);
         });
         $group->get('/create', HouseHold\CreateHouseHoldAction::class);
         //TODO: Unique codes for household join links
@@ -200,6 +131,27 @@ return function (App $app) {
     //Room Actions
     $app->group('/room', function (Group $group)
     {
+        $group->get('', function(Request $request, Response $response) {
+            $userId = $request->getAttribute('userId');
+            if($userId==0)
+                throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
+            $renderer = $this->get('renderer');
+            $db = $this->get('db');
+            $data = $db->getUserHouseAndAdminStatus($userId);
+            if($data === false)
+                return $renderer->render($response, 'adminroom.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
+
+            $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
+            $houseId = $data[0];
+
+            $data = $db->getHouseholdRoomDetails($houseId);
+            $data['currentUser'] = $user;
+            $data['page'] = 'adminroom.php';
+            $data['script'] = false;
+
+            return $renderer->render($response, 'admindashboard.php', $data);
+        });
         $group->post('/create', Room\CreateRoomAction::class);
         $group->post('/update', Room\UpdateRoomAction::class);
         $group->post('/delete', Room\DeleteRoomAction::class);
@@ -209,6 +161,27 @@ return function (App $app) {
     //Task Actions
     $app->group('/task', function (Group $group)
     {
+        $group->get('', function(Request $request, Response $response) {
+
+            $userId = $request->getAttribute('userId');
+            if($userId==0)
+                throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
+            $renderer = $this->get('renderer');
+            $db = $this->get('db');
+            $data = $db->getUserHouseAndAdminStatus($userId);
+            if($data === false)
+                return $renderer->render($response, 'adminTasks.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
+
+            $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
+            $houseId = $data[0];
+            $data = $db->getHouseholdTaskDetails($houseId);
+            $data['currentUser'] = $user;
+            $data['page'] = 'adminTasks.php';
+            $data['script'] = false;
+
+            return $renderer->render($response, 'admindashboard.php', $data);
+        });
         $group->post('/create', Task\CreateTaskAction::class);
         $group->post('/update', Task\UpdateTaskAction::class);
         $group->post('/delete', Task\DeleteTaskAction::class);
@@ -218,6 +191,23 @@ return function (App $app) {
     //Rule Actions
     $app->group('/rule', function (Group $group)
     {
+        $group->get('', function(Request $request, Response $response) {
+            $userId = $request->getAttribute('userId');
+            if($userId==0)
+                throw new HttpUnauthorizedException($request, "You must be logged in to do that");
+
+            $renderer = $this->get('renderer');
+            $db = $this->get('db');
+            $link = $db->getUserInviteLink($userId);
+            if($link == false)
+                $link = "No Link";
+
+            $data = ['link' => $link];
+            $data['page'] = 'adminRules.php';
+            $data['script'] = false;
+
+            return $renderer->render($response, 'admindashboard.php', $data);
+        });
         $group->group('/create', function (Group $createGroup)
             {
                 $createGroup->post('/room_time', Rule\CreateRoomTimeRuleAction::class);

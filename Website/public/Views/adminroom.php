@@ -1,20 +1,20 @@
-<!-- Input schema 
+<?php/* Input schema 
 
-{value} donates a value from the database
+{value} denotes a value from the database
 
-$currentUser =
+$currentUser =>
 [
-    'homeless' = {userHasHome}, // Boolean
-    'userId' = {userId},
-    'isAdmin' = {userIsAdmin} // Boolean
+    'homeless' => {userHasHome}, // Boolean
+    'userId' => {userId},
+    'isAdmin' => {userIsAdmin} // Boolean
 ]
 
 $tasks =
 [
-    {taskId1} = {taskName1},
-    {taskId2} = {taskName2},
-    {taskId3} = {taskName3},
-    {taskId4} = {taskName4},
+    {taskId1} => {taskName1},
+    {taskId2} => {taskName2},
+    {taskId3} => {taskName3},
+    {taskId4} => {taskName4},
 ]
 
 $rooms =
@@ -55,7 +55,7 @@ TODO:   Need to figure out how create, delete, update works for room_has_task ru
 TODO:   When a room is created it probably makes sense for the backend to pass back
         the new id on success and the frontend can just insert it where it's needed? 
         We could also just send the whole page again but I think this might get slow
-        if there are more than a handful of users..                                   -->
+        if there are more than a handful of users..                                   */?>
 
          <div class="cell small-12 medium-6 large-auto">
             <!-- Room Name and Input Button -->
@@ -89,7 +89,9 @@ TODO:   When a room is created it probably makes sense for the backend to pass b
                     <fieldset class="fieldset">
                         <legend>Assign Tasks</legend>
                         <?php foreach($rooms[array_key_first($rooms)]['tasks'] as $taskId => $value){?>
-                        <input id="<?=$taskId?>" type="checkbox" <?=$value ? "checked" : ""?>><label for="<?=$taskId?>"><?=$tasks[$taskId]?></label><br>
+                            <input id="<?=$taskId?>" type="checkbox" <?=$value ? "checked" : ""?>>
+                            <label for="<?=$taskId?>"> <?=$tasks[$taskId]?> </label>
+                            <br>
                         <?php } ?>
                     </fieldset>
                 </div>

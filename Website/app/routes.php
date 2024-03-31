@@ -148,7 +148,7 @@ return function (App $app) {
             $data = $db->getHouseholdRoomDetails($houseId);
             $data['currentUser'] = $user;
             $data['page'] = 'adminroom.php';
-            $data['script'] = false;
+            $data['script'] = "Javascript/room.js";
 
             return $renderer->render($response, 'admindashboard.php', $data);
         });
@@ -156,6 +156,7 @@ return function (App $app) {
         $group->post('/update', Room\UpdateRoomAction::class);
         $group->post('/delete', Room\DeleteRoomAction::class);
         $group->get('/data', Room\ListRoomAction::class);
+        $group->post('/update_tasks', Room\UpdateTasksAction::class);
     });
 
     //Task Actions
@@ -178,7 +179,7 @@ return function (App $app) {
             $data = $db->getHouseholdTaskDetails($houseId);
             $data['currentUser'] = $user;
             $data['page'] = 'adminTasks.php';
-            $data['script'] = false;
+            $data['script'] = "Javascript/task.js";
 
             return $renderer->render($response, 'admindashboard.php', $data);
         });
@@ -186,6 +187,7 @@ return function (App $app) {
         $group->post('/update', Task\UpdateTaskAction::class);
         $group->post('/delete', Task\DeleteTaskAction::class);
         $group->get('/data', Task\ListTaskAction::class);
+        $group->post('/update_rooms', Task\UpdateRoomsAction::class);
     });
 
     //Rule Actions

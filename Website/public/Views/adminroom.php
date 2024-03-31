@@ -1,4 +1,4 @@
-<?php/* Input schema 
+<?php /* Input schema 
 
 {value} denotes a value from the database
 
@@ -55,7 +55,7 @@ TODO:   Need to figure out how create, delete, update works for room_has_task ru
 TODO:   When a room is created it probably makes sense for the backend to pass back
         the new id on success and the frontend can just insert it where it's needed? 
         We could also just send the whole page again but I think this might get slow
-        if there are more than a handful of users..                                   */?>
+        if there are more than a handful of users..                                   */ ?>
 
          <div class="cell small-12 medium-6 large-auto">
             <!-- Room Name and Input Button -->
@@ -68,7 +68,7 @@ TODO:   When a room is created it probably makes sense for the backend to pass b
             </div>
             <div class="grid-x grid-padding-x align-middle">
                 <div class="cell small-12">
-                <button class="button" type="button"  style="margin-top: 1.5rem; width:100%;">Add</button>
+                <button id="addButton" class="button" type="button" style="margin-top: 1.5rem; width:100%;">Add</button>
                 </div>
             </div>
             <!-- Select Room -->
@@ -87,10 +87,10 @@ TODO:   When a room is created it probably makes sense for the backend to pass b
             <div class="grid-x grid-padding-x align-middle">
                 <div class="cell small-12">
                     <fieldset class="fieldset">
-                        <legend>Assign Tasks</legend>
+                        <legend>Assigned Tasks</legend>
                         <?php foreach($rooms[array_key_first($rooms)]['tasks'] as $taskId => $value){?>
-                            <input id="<?=$taskId?>" type="checkbox" <?=$value ? "checked" : ""?>>
-                            <label for="<?=$taskId?>"> <?=$tasks[$taskId]?> </label>
+                            <input id="assignedCheckbox<?=$taskId?>" type="checkbox" <?=$value ? "checked" : ""?>>
+                            <label for="assignedCheckbox<?=$taskId?>"> <?=$tasks[$taskId]?> </label>
                             <br>
                         <?php } ?>
                     </fieldset>
@@ -98,41 +98,22 @@ TODO:   When a room is created it probably makes sense for the backend to pass b
             </div>
             <div class="grid-x grid-padding-x align-middle">
                 <div class="cell small-12">
-                <button class="button" type="button"  style="margin-top: 1.5rem; width:100%;">Assign Room to Task</button>
+                <button id="updateAssignedTasksButton" class="button" type="button"  style="margin-top: 1.5rem; width:100%;">Update</button>
                 </div>
             </div>
-
-        <div class="cell small-12 medium-6 large-4">
-            <div class="callout" style="height: 100%;">
-                <h5>What rooms have tasks</h5>
-                <ul>
-                    <?php foreach ($rooms as $roomId => $room) { 
-                        foreach ($room['tasks'] as $taskId => $taskRequired) { 
-                            if($taskRequired){                                  ?>
-                    <li>
-                        <?=$room['name']?> + <?=$tasks[$taskId]?>
-                        <button class="button" style="margin-left: 10px;">Update</button>
-                        <button class="button alert" style="margin-left: 10px;">Delete Link</button>
-                    </li>
-            <?php } 
-                            } 
-                              }  ?>
-                </ul>
-            </div>
-        </div>
 
         </div>
 
         <div class="cell small-12 medium-6 large-4">
             <div class="callout" style="height: 100%;">
                 <h5>Room</h5>
-                <ul>
+                <ul id="roomList">
                     <?php foreach ($rooms as $roomId => $room) 
                     { ?>
                     <li>
                         <?=$room['name']?>
-                        <button class="button " style="margin-left: 10px;">Update</button>
-                        <button class="button alert" style="margin-left: 10px;">Delete Room</button>
+                        <!-- <button class="button " style="margin-left: 10px;">Update</button> -->
+                        <button id="deleteRoomButton<?=$roomId?>" class="button alert" style="margin-left: 10px;">Delete Room</button>
 
                     </li>
 

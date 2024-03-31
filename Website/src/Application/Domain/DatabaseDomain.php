@@ -250,6 +250,7 @@ class DatabaseDomain
 
     public function deleteRoom(int $roomId, int $houseId) : bool
     {
+        //TODO: Delete affected Room_Has_Task entries.
         $queryString = "DELETE `Room`, `taskpoints`, `User_Exempt_Room`, `RoomSchedule` FROM `Room` ".
             "LEFT JOIN `taskpoints` ON `Room`.`roomId`=`taskpoints`.`roomId` ".
             "LEFT JOIN `User_Exempt_Room` ON `User_Exempt_Room`.`roomId`=`Room`.`roomId`".
@@ -717,6 +718,24 @@ class DatabaseDomain
         $query->close();
 
         return $result ? $this->db->insert_id : false;
+    }
+
+    public function createRoomHasTaskEntry(int $houseId, int $roomId, int $taskId) : bool
+    {
+        // If the room and task ids are not for the correct house, although this shouldn't happen,
+        //   they won't be used by the rest of the application.
+        $query = "INSERT INTO `room_has_task` (`houseId`,`roomId`,`taskId`) VALUES (" .
+            $houseId . ", " . $roomId . ", " . $taskId .")";
+        return $this->db->query($query);
+    }
+
+    public function deleteRoomHasTaskEntry(int $houseId, int $roomId, int $taskId) : bool
+    {
+        // Including houseId in the query prevents nefarious requests from deleting arbitrary
+        //   household's room_has_task entries.
+        $query = "DELETE FROM `room_has_task` WHERE `houseId`=" . $houseId . " AND `roomId`= " .
+        $roomId . " AND `taskId`=" . $taskId;
+        return $this->db->query($query);
     }
 
     public function getRulesInHousehold(int $houseId) : array | bool

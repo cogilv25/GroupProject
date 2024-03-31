@@ -50,14 +50,14 @@ $tasks =
             <div class="grid-x grid-padding-x align-middle">
                 <div class="cell small-12">
                     <label for="TaskName">Task Name</label>
-                    <input type="text" id="TaskName" placeholder="Enter Task Name">
-                    <label for="TaskDesc">Task Name</label>
-                    <input type="text" id="TaskDesc" placeholder="Enter Task description">
+                    <input type="text" id="taskName" placeholder="Enter Task Name">
+                    <label for="TaskDesc">Task Description</label>
+                    <input type="text" id="taskDescription" placeholder="Enter Task description">
                 </div>
             </div>
             <div class="grid-x grid-padding-x align-middle">
                 <div class="cell small-12">
-                <button class="button" type="button"  style="margin-top: 1.5rem; width:100%;">Add</button>
+                <button id="addButton" class="button" type="button"  style="margin-top: 1.5rem; width:100%;">Add</button>
                 </div>
             </div>
             <!-- Select Room -->
@@ -76,11 +76,11 @@ $tasks =
             <div class="grid-x grid-padding-x align-middle">
                 <div class="cell small-12">
                     <fieldset class="fieldset">
-                        <legend>Assign Rooms</legend>
+                        <legend>Assigned Rooms</legend>
                         <!--loop for room and change id to have room id -->
                         <?php foreach($tasks[array_key_first($tasks)]['rooms'] as $roomId => $value){ ?>
-                            <input id="<?="room".$roomId?>" type="checkbox" <?=$value?"checked":""?>>
-                            <label for="<?="room".$roomId?>"> <?=$rooms[$roomId]?> </label>
+                            <input id="assignedCheckbox<?=$roomId?>" type="checkbox" <?=$value?"checked":""?>>
+                            <label for="assignedCheckbox<?=$roomId?>"> <?=$rooms[$roomId]?> </label>
                             <br>
                         <?php } ?>
                     </fieldset>
@@ -88,30 +88,7 @@ $tasks =
             </div>
             <div class="grid-x grid-padding-x align-middle">
                 <div class="cell small-12">
-                <button class="button" type="button"  style="margin-top: 1.5rem; width:100%;">Assign Room to task</button>
-                </div>
-            </div>
-
-
-            <div class="cell small-12 medium-6 large-4">
-                <div class="callout" style="height: 100%;">
-                    <h5>Whats Task has a room</h5>
-                    <ul>
-                        <?php foreach($tasks as $taskId => $task)
-                        {
-                            foreach($task['rooms'] as $roomId => $required)
-                            {
-                                if($required)
-                                {
-                            ?>
-                            <li>
-                            <?=$task['name']?> in <?=$rooms[$roomId]?>
-                            <br>
-                            <button class="button " style="margin-left: 10px;">Update</button>
-                            <button class="button alert" style="margin-left: 10px;">Delete Link</button>
-                            </li>
-                        <?php }}}?>
-                    </ul>
+                <button id="updateAssignedRoomsButton" class="button" type="button"  style="margin-top: 1.5rem; width:100%;">Update</button>
                 </div>
             </div>
 
@@ -119,15 +96,15 @@ $tasks =
 
         <!-- Right Section - Rooms List -->
         <div class="cell small-12 medium-6 large-4">
-            <div class="callout" style="height: 100%;">
+            <div id="taskList" class="callout" style="height: 100%;">
                 <h5>Tasks  List</h5>
                 <ul>
                     <?php foreach($tasks as $taskId => $task){?>
                     <li>
                         <?=$task['name']?>
                         <br>
-                        <button class="button " style="margin-left: 10px;">Update</button>
-                        <button class="button alert" style="margin-left: 10px;">Delete </button>
+                        <!-- <button class="button " style="margin-left: 10px;">Update</button> -->
+                        <button id="deleteTaskButton<?=$taskId?>" class="button alert" style="margin-left: 10px;">Delete </button>
 
                     </li>
                 <?php } ?>

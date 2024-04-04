@@ -9,8 +9,8 @@ let taskRoomsOld = [];
 
 //TODO: added descs list but not integrated, add splices and creations where needed.
 //TODO: Split static and dynamic js to allow browsers to cache the static parts.
-//TODO: The generated js is a lot bigger than neccessary as it fills
-//        the arrays one item at a time rather than just creating the
+//TODO: The generated js is a lot bigger than neccessary as it fills the arrays
+//        one item at a time rather than just creating the full array in one line.
 
 <?php
 	$i = 0;

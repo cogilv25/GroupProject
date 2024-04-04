@@ -12,6 +12,8 @@ $users = [
 ];*/
 
 
+//TODO: Promote and Kick button functionallity
+
 //TODO: A view for the homeless
 if($currentUser['homeless']==true)
 {
@@ -43,12 +45,12 @@ if($currentUser['isAdmin']) //Admin view
                     <?php if ($user['role'] == 'admin'): ?>
                     <button id="deleteHousehold" type="button" class="custombtn alert button">Delete House</button>
                     <?php else: ?>
-                        <button type="button" class=" custombtn alert button">Kick from house</button>
+                        <button type="button" class=" custombtn alert button">Kick</button>
                     <?php endif; ?>
                     <?php if ($user['role'] == 'member'): ?>
-                    <button type="button" class=" custombtn success button">Give Moderator privileges</button>
+                    <button type="button" class=" custombtn success button">Promote</button>
                     <?php elseif ($user['role'] == 'moderator'): ?>
-                        <button type="button" class="custombtn alert button">Demote to member</button>
+                        <button type="button" class="custombtn alert button">Demote</button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -79,7 +81,7 @@ else //Non-admin view
 }
 }
 ?>
-
+<!-- TODO: Move script to a seperate file and include with php -->
 <script>
     $('#createHousehold').click(function(e) {
         e.preventDefault(); // Prevent the default link behavior

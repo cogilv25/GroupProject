@@ -49,7 +49,7 @@ We discussed what tasks should be added to the next sprint. It was pointed out t
 
 ### Review of Backlog
 
-We had a review of the backlog to bring up useful ideas people may have had. It was brought up that although multi admin support was brought up and agreed on in the past it was never added to the backlog. A difficult problem for the frontend design of the application is the rota view for admins as they need to be able to see the final rota's of all users and all rooms, and the schedule's of all users and all rooms as well as being able to adjust things if necessary while the system has to prevent them breaching any rules as they adjust the rota. Due to the amount of data involved an approximation of a solution has not been suggested before, however, a simple solution now suggested is to have 2 tabs for selecting between schedules and rotas then 2 tabs for selecting between users and rooms and finally n tabs/selections in a dropdown for selecting the specific user or room and then the output view can essentially be a full screen view of the data requested. This solution does not allow combining views but is a reasonable first approximation.
+We had a review of the backlog to bring up useful ideas people may have had. It was brought up that although multi admin support was brought up and agreed on in the past it was never added to the backlog. A difficult problem for the frontend design of the application is the rota view for admins as they need to be able to see the final rota's of all users and all rooms, and the schedule's of all users and all rooms as well as being able to adjust things if necessary while the system has to prevent them breaching any rules as they adjust the rota. Due to the amount of data involved an approximation of a solution has not been suggested before, however, a simple solution now suggested is to have 2 tabs for selecting between schedules and rotas then 2 tabs for selecting between users and rooms and finally n tabs/selections in a dropdown for selecting the specific user or room and then the output view can essentially be a full screen view of the data requested. This solution does not allow combining views but seems like a reasonable first approximation.
 
 **Decision:** The following tasks were added to the backlog:
 
@@ -61,7 +61,7 @@ We had a review of the backlog to bring up useful ideas people may have had. It 
 
 1. **All Members:** Follow the [Contribution Guide](https://www.github.com/cogilv25/blob/main/Documentation/Contribute.md) to complete tasks from the Asana Board.
 2. **Calum:** Populate Backlog and To-Do columns on the Asana board.
-4. **Calum:** Complete meeting minutes for this meeting.
+3. **Calum:** Complete meeting minutes for this meeting.
 
 ## Other Business
 - Meeting day changed back to Thursday, it has been changed around due to scheduling issues for a few weeks but can go back to normal now.

@@ -1,6 +1,6 @@
 <div class="container">
 <?php
-	$currentUser = ['isAdmin' => false, 'userId' => 1, 'forename' => 'Calum', 'surname' => 'Lindsay'];
+	$currentUser = ['role' => 'member', 'userId' => 1, 'forename' => 'Calum', 'surname' => 'Lindsay'];
 	$tasks = [ 1 => ['name' => "Hoovering"], 2 => ['name' => "Dusting"]];
 	$rooms = [ 1 => ['name' => "Living Room"], 2 => ['name' => "Kitchen"]];
 	//require "scheduleTimeRangeControl.html";
@@ -26,7 +26,7 @@
 	<div class="three-lists-container">
         <div class="list-container">
         	<h3> Users </h3>
-        	<?php if(!$currentUser['isAdmin']) { ?>
+        	<?php if($currentUser['role'] == 'member') { ?>
             	<button onclick="showUserSchedule(<?=$currentUser['userId']?>);" class ="list-item"> Me </button>
             <?php } else {
             	foreach($users as $userId => $user) { ?>

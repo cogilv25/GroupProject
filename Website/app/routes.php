@@ -103,11 +103,11 @@ return function (App $app) {
                 return $response->withHeader('Location', '/')->withStatus(302);
 
             $db = $this->get('db');
-            $data = $db->getUserHouseAndAdminStatus($userId);
+            $data = $db->getUserHouseAndRole($userId);
             if($data === false)
                 return $renderer->render($response, 'admindashboard.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
 
-            $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
+            $user = ['userId' => $userId, 'role' => $data[1], 'homeless' => false ];
             $page = "household.php";
             $script = false;
             $houseId = $data[0];
@@ -123,6 +123,8 @@ return function (App $app) {
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);
         $group->post('/remove', Household\RemoveUserHouseHoldAction::class);
+        $group->post('/promote', Household\PromoteUserHouseHoldAction::class);
+        $group->post('/demote', Household\DemoteUserHouseHoldAction::class);
         $group->get('/data', Household\ListHouseholdAction::class);
         $group->get('/schedules', Schedule\GetHouseholdUserSchedulesAction::class);
         $group->get('/gen_rota', Household\RotaGenAction::class);
@@ -138,11 +140,11 @@ return function (App $app) {
 
             $renderer = $this->get('renderer');
             $db = $this->get('db');
-            $data = $db->getUserHouseAndAdminStatus($userId);
+            $data = $db->getUserHouseAndRole($userId);
             if($data === false)
                 return $renderer->render($response, 'adminroom.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
 
-            $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
+            $user = ['userId' => $userId, 'role' => $data[1], 'homeless' => false ];
             $houseId = $data[0];
 
             $data = $db->getHouseholdRoomDetails($houseId);
@@ -170,11 +172,11 @@ return function (App $app) {
 
             $renderer = $this->get('renderer');
             $db = $this->get('db');
-            $data = $db->getUserHouseAndAdminStatus($userId);
+            $data = $db->getUserHouseAndRole($userId);
             if($data === false)
                 return $renderer->render($response, 'adminTasks.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
 
-            $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
+            $user = ['userId' => $userId, 'role' => $data[1], 'homeless' => false ];
             $houseId = $data[0];
             $data = $db->getHouseholdTaskDetails($houseId);
             $data['currentUser'] = $user;

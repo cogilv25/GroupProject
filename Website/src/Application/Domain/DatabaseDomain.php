@@ -118,12 +118,24 @@ class DatabaseDomain
         return $this->db->query($query);
     }
 
-    public function removeUserFromHousehold(int $userId, int $houseId) : bool
+    public function removeUserFromHousehold(int $userId, int $houseId, int $adminLevel) : bool
     {
-        $this->db->begin_transaction();
-        $query = "UPDATE `user` SET `House_houseId`= NULL WHERE `House_houseId`=".$houseId." AND `userId`=".$userId;
+        //Owner can delete anyone except themselves
+        $query = "UPDATE `user` SET `House_houseId`= NULL WHERE `House_houseId`=".$houseId." AND `userId`=".$userId . 
+        " AND NOT `role`='owner'";
 
-        if($this->db->query($query) == false)
+        if($adminLevel == 1)
+            $query .= " AND NOT `role`='admin'";
+
+        $this->db->begin_transaction();
+
+        if($result = $this->db->query($query) == false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        if($this->db->affected_rows < 1)
         {
             $this->db->rollback();
             return false;
@@ -144,7 +156,7 @@ class DatabaseDomain
         return $this->db->commit();
     }
 
-    public function getUserHouseAndAdminStatus(int $userId)
+    public function getUserHouseAndRole(int $userId)
     {
         $query = $this->db->prepare("SELECT `House_houseId`,`role` FROM `user` WHERE `userId` = ?");
         $query->bind_param("i", $userId);
@@ -154,14 +166,25 @@ class DatabaseDomain
         $query->close();
         if(!isset($houseId))
             return false;
-        return [$houseId, $role == 'owner'];
+        return [$houseId, $role];
     }
 
     public function getAdminHouse(int $adminId) : int | bool
     {
-        //TODO: @MultiAdmin
-        $query = $this->db->prepare("SELECT `House_houseId` FROM `user` WHERE `userId` = ? AND `role`='owner'");
+        $query = $this->db->prepare("SELECT `House_houseId` FROM `user` WHERE `userId` = ? AND (`role`='owner' OR `role`='admin')");
         $query->bind_param("i", $adminId);
+        $query->execute(); 
+        $query->bind_result($houseId);
+        $query->fetch();
+        $query->close();
+        if($query->num_rows < 1) return false;
+        return $houseId;
+    }
+
+    public function getOwnerHouse(int $ownerId) : int | bool
+    {
+        $query = $this->db->prepare("SELECT `House_houseId` FROM `user` WHERE `userId` = ? AND `role`='owner'");
+        $query->bind_param("i", $ownerId);
         $query->execute(); 
         $query->bind_result($houseId);
         $query->fetch();
@@ -171,7 +194,19 @@ class DatabaseDomain
 
     public function isUserAdmin(int $userId) : bool
     {
-        return $this->getAdminHouse($userId) == null ? false : true;
+        return ($this->getAdminHouse($userId) != false);
+    }
+
+    public function promoteUser(int $houseId, int $userId) : bool
+    {
+        return $this->db->query("UPDATE `user` SET `role`='admin' WHERE ".
+        "`House_houseId`=" . $houseId . " AND `userId`=" . $userId);
+    }
+
+    public function demoteUser(int $houseId, int $userId) : bool
+    {
+        return $this->db->query("UPDATE `user` SET `role`='member' WHERE ".
+        "`House_houseId`=" . $houseId . " AND `userId`=" . $userId);
     }
 
     public function getUserInviteLink(int $userId) : string | false

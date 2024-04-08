@@ -16,6 +16,9 @@ abstract class AdminAction extends Action
 
     protected int | bool $houseId;
 
+    // 1 == admin, 0 == owner
+    protected int $adminLevel;
+
     public function __invoke(Request $request, Response $response, array $args): Response
     {
         $this->request = $request;
@@ -28,9 +31,13 @@ abstract class AdminAction extends Action
             throw new HttpMethodNotAllowedException($this->request, "You must be logged in to do that");
 
         //Get the house this user admins, incidentally checks if the user is an admin
-        $this->houseId = $this->db->getAdminHouse($this->adminId);
-        if($this->houseId == false)
+        $result = $this->db->getUserHouseAndRole($this->adminId);
+
+        if($result[1] == 'member')
             throw new HttpMethodNotAllowedException($this->request, "You must be a house admin to do that");
+
+        $this->houseId = $result[0];
+        $this->adminLevel = $result[1] == 'admin' ? 1 : 0;
 
         return $this->action();
     }

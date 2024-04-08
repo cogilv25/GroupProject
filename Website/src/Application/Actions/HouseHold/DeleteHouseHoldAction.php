@@ -9,7 +9,7 @@ use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Exception\HttpMethodNotAllowedException;
 
-class DeleteHouseHoldAction extends AdminAction
+class DeleteHouseHoldAction extends OwnerAction
 {
 
     protected function action(): Response

@@ -18,9 +18,12 @@ class JoinHouseHoldAction extends UserAction
         if(!is_numeric($this->args['id']))
             throw new HttpBadRequestException($this->request, "Invalid invite link");
 
-        $inviteId = (int)$this->args['id'];
+        $houseId = (int)$this->args['id'];
+        $inviteLink = $this->args['uuid'];
 
-        $result = $this->db->addUserToHousehold($this->userId, $inviteId);
+        $result = $this->db->validateInviteLink($houseId, $inviteLink);
+
+        $result = $this->db->addUserToHousehold($this->userId, $houseId);
         
         if(!$result)
             return $this->createJsonResponse($this->response, "Failed to join House", 500);

@@ -104,6 +104,7 @@
                       <li><a class="navlink" href="profile">Profile</a></li>
                       <li><a class="navlink" href="settings">Settings</a></li>
                       <li><a class="navlink" href="/logout">Logout</a></li>
+                      <li><a id="inviteButton" class="navlink">Invite Link</a></li>
                   </ul>
                 </div>
             </div>
@@ -165,6 +166,29 @@
     </div>
 </div>
 
+<div class="reveal" id="inviteModal" data-reveal>
+    <div class="grid-x grid-padding-x align-center">
+        <div class="cell small-12 medium-12 large-12">
+            <h2>Invite Household Members</h2>
+            <p>Household Universal Link to allow members to join.</p>
+            <form>
+                <div class="grid-x grid-padding-x align-middle">
+                    <div class="cell auto urlstyle">
+                        <!-- -->
+                        <p><a id="invitationUrl"><?=$link?></a></p>
+                    </div>
+                    <div class="cell shrink">
+                        <button type="button" class="button primary">Copy</button>
+                    </div>
+                </div>
+            </form>
+            <button class="close-button" data-close aria-label="Close modal" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+</div>
+
     <script>
     <?php 
         if(isset($script))
@@ -173,6 +197,11 @@
                 include($script);
         }
     ?>
+    $(document).foundation();
+    $('#inviteButton').on('click', function(e) {
+        e.preventDefault(); // Prevent the default behavior of the link
+        $('#inviteModal').foundation('open');
+    });
     </script>
 </body>
 </html> 

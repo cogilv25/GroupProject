@@ -64,16 +64,15 @@ class DatabaseDomain
         return $this->db->query($queryString);
     }
 
-    //Create household and add user as admin
+    //Create household making the user the owner
     public function createHousehold(int $userId) : bool
     {
-        $query1 = "INSERT INTO `House` (`adminId`) VALUES (". $userId .")";
+        $result = $this->db->query("INSERT INTO `House` VALUES ()");
+        $id = $this->db->insert_id;
 
-        $subQuery = "SELECT `houseId` FROM `House` WHERE `adminId`=".$userId;
-        $query2 = "UPDATE `user` SET `House_houseId`=(". $subQuery .")  WHERE `userId`=" . $userId;
+        if(!$result) return false;
 
-        //If the first query succeeds return the result of the second otherwise false
-        return $this->db->query($query1) ? $this->db->query($query2) : false;
+        return $this->db->query("UPDATE `user` SET `House_houseId`=". $id .", `role`='owner' WHERE `userId`=" . $userId);
     }
 
     public function getUserIdAndPasswordHash(string $email) : array | false
@@ -122,7 +121,7 @@ class DatabaseDomain
     public function removeUserFromHousehold(int $userId, int $houseId) : bool
     {
         $this->db->begin_transaction();
-        $query = "UPDATE `user` SET `House_houseId`=NULL WHERE `House_houseId`=".$houseId." AND `userId`=".$userId;
+        $query = "UPDATE `user` SET `House_houseId`= NULL WHERE `House_houseId`=".$houseId." AND `userId`=".$userId;
 
         if($this->db->query($query) == false)
         {
@@ -147,20 +146,21 @@ class DatabaseDomain
 
     public function getUserHouseAndAdminStatus(int $userId)
     {
-        $query = $this->db->prepare("SELECT `House_houseId`,`houseId` FROM `user` LEFT JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
+        $query = $this->db->prepare("SELECT `House_houseId`,`role` FROM `user` WHERE `userId` = ?");
         $query->bind_param("i", $userId);
         $query->execute(); 
-        $query->bind_result($houseId, $adminHouseId);
+        $query->bind_result($houseId, $role);
         $query->fetch();
         $query->close();
         if(!isset($houseId))
             return false;
-        return [$houseId, $adminHouseId != null];
+        return [$houseId, $role == 'owner'];
     }
 
     public function getAdminHouse(int $adminId) : int | bool
     {
-        $query = $this->db->prepare("SELECT `houseId` FROM `user` JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
+        //TODO: @MultiAdmin
+        $query = $this->db->prepare("SELECT `House_houseId` FROM `user` WHERE `userId` = ? AND `role`='owner'");
         $query->bind_param("i", $adminId);
         $query->execute(); 
         $query->bind_result($houseId);
@@ -176,12 +176,30 @@ class DatabaseDomain
 
     public function getUserInviteLink(int $userId) : string | false
     {
-        $houseId = $this->getAdminHouse($userId);
-        if($houseId == null)
-            return false;
+        $result = $this->db->query("SELECT `houseId`, `invite_link`, `role` FROM `user` JOIN ".
+            "`house` on `House_houseId`=`houseId` WHERE `userId`=" . $userId);
+
+        if($result === false) return false;
+
+        $row = $result->fetch_row();
+        $role = $row[2];
+        if($role == 'member') return false;
+
+        $houseId = $row[0];
+        $inviteLink = $row[1];
 
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-        return $protocol . "://" . $_SERVER['HTTP_HOST'] . "/household/join/" . $houseId;
+        return $protocol . "://" . $_SERVER['HTTP_HOST'] . "/household/join/" . $houseId . "/" . $inviteLink;
+    }
+
+    public function validateInviteLink(int $houseId, string $inviteLink)
+    {
+        $result = $this->db->query("SELECT `houseId` FROM `house` WHERE `houseId`=" . $houseId .
+                                   " AND `invite_link`='" . $inviteLink . "'");
+
+        if($result === false) return false;
+
+        return ($result->num_rows > 0) ? true : false;
     }
 
     public function getUserHousehold(int $userId) : int | false
@@ -198,26 +216,13 @@ class DatabaseDomain
 
     public function getUsersInHousehold(int $houseId)
     {
-        $query = $this->db->prepare("SELECT `adminId` FROM `House` WHERE `houseId` = ?");
+        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname`, `email`, `role` FROM `user` WHERE `House_houseId` = ?");
         $query->bind_param("i", $houseId);
         $query->execute(); 
-        $query->bind_result($adminId);
-        $result = $query->fetch();
-        $query->close();
+        $query->bind_result($userId, $forename, $surname, $email, $role);
 
-        //Fails if $houseId is not a valid id
-        if($result!=true)
-            return false;
-
-        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname`, `email` FROM `user` WHERE `House_houseId` = ?");
-        $query->bind_param("i", $houseId);
-        $query->execute(); 
-        $query->bind_result($userId, $forename, $surname, $email);
-
-        //TODO: @MultipleAdmins
         while($query->fetch())
         {
-            $role = $userId == $adminId ? "admin" : "member";
             $data[$userId] = ['userId' => $userId, 'forename' => $forename, 'surname' => $surname, 'role' => $role, 'email' => $email];
         }
 

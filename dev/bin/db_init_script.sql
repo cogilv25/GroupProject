@@ -11,12 +11,8 @@ USE `cleansync`;
 SET FOREIGN_KEY_CHECKS = 0;
 CREATE TABLE `cleansync`.`House` (
   `houseId` INT NOT NULL AUTO_INCREMENT,
-  `adminId` INT NOT NULL,
-  PRIMARY KEY (`houseId`),
-  INDEX `fk_House_user_idx` (`adminId` ASC),
-  CONSTRAINT `fk_house_user`
-    FOREIGN KEY (`adminId`)
-    REFERENCES `cleansync`.`user` (`userId`));
+  `invite_link` CHAR(36) DEFAULT (UUID()),
+  PRIMARY KEY (`houseId`));
 
 SET FOREIGN_KEY_CHECKS = 1;
 -- -----------------------------------------------------
@@ -30,6 +26,7 @@ CREATE TABLE `cleansync`.`User` (
   `password` VARCHAR(256) NOT NULL,
   `House_houseId` INT,
   `personalPoints` INT,
+  `role` ENUM('member','admin','owner') NOT NULL DEFAULT 'member',
   PRIMARY KEY (`userId`),
   INDEX `fk_user_House_idx` (`House_houseId` ASC),
   CONSTRAINT `fk_user_house`

@@ -119,7 +119,7 @@ return function (App $app) {
         });
         $group->get('/create', HouseHold\CreateHouseHoldAction::class);
         //TODO: Unique codes for household join links
-        $group->get('/join/{id}', HouseHold\JoinHouseHoldAction::class);
+        $group->get('/join/{id}/{uuid}', HouseHold\JoinHouseHoldAction::class);
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);
         $group->post('/remove', Household\RemoveUserHouseHoldAction::class);

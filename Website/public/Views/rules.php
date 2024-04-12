@@ -117,7 +117,7 @@ height:30px;
                         <a class="navlink">Rules</a>
                         <ul class="menu vertical nested">
                         <li><a class="navlink" href="rules.php">View All Rules</a></li>
-                        <li><a class="navlink" href="addrule.php">Add Rule</a></li>
+                        <li><a class="navlink" href="rule/create">Add Rule</a></li>
                         </ul>
                         </li>
                         <li><a class="navlink" href="#">Tasks</a></li>
@@ -141,7 +141,7 @@ height:30px;
             <div id="main-content" class="grid-x grid-margin-x">
                 <div class="cell small-12" style="width: 100%;">
                     <div class="add-task-button-container">
-                        <button class="button" id="addTaskButton">Add Rule</button>
+                        <a href="rule/create" class="button" id="addTaskButton">Add Rule</a>
                     </div>
                     <div class="table-wrapper">
                         <table class="unstriped custom-table" >

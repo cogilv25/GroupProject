@@ -18,6 +18,14 @@
   body,  html {
     height:100vh;
   }
+
+  .customh5{
+    margin-left:150px;
+}
+.custominputs {
+height:30px;
+}
+
 #sidenav, .navlink {
   background-color: #468F8B;
   color: black;

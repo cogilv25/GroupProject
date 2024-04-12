@@ -16,8 +16,7 @@ enum ScheduleType
 //TODO: Once User Validation is implemented in actions houseId and userId will be known safe values so we can remove
 // some of the prepared queries making things a bit less.... big.
 //TODO: Just discovered Join Delete's so that might reduce the number of queries required here and there.
-//TODO: Full implementation
-//TODO: Return newly created records Id's where not uniquely linked to the user (as in a user only has one of these).
+//TODO: Compress (Compression Oriented Programming)
 class DatabaseDomain
 {
 	private mysqli $db;
@@ -121,7 +120,7 @@ class DatabaseDomain
     public function removeUserFromHousehold(int $userId, int $houseId, int $adminLevel) : bool
     {
         //Owner can delete anyone except themselves
-        $query = "UPDATE `user` SET `House_houseId`= NULL WHERE `House_houseId`=".$houseId." AND `userId`=".$userId . 
+        $query = "UPDATE `user` SET `House_houseId`= NULL AND `role`='member' WHERE `House_houseId`=".$houseId." AND `userId`=".$userId . 
         " AND NOT `role`='owner'";
 
         if($adminLevel == 1)
@@ -264,6 +263,21 @@ class DatabaseDomain
         $query->close();
 
         return ($data != null) ? $data : false;
+    }
+
+    public function getUsersNamesInHousehold(int $houseId) : bool | array
+    {
+        $result = $this->db->query("SELECT `userId`, `forename`, `surname` FROM ".
+            "`user` WHERE `House_houseId`=" . $houseId);
+
+        if($result === false) return false;
+
+        $data = [];
+        while($row = $result->fetch_row())
+        {
+            $data[$row[0]] = ['forename' => $row[1], 'surname' => $row[2]];
+        }
+        return $data;
     }
 
     public function createRoom(int $houseId, string $name) : bool | int
@@ -653,11 +667,26 @@ class DatabaseDomain
         return $this->db->commit();
     }
 
-    public function createUserRoomRule(int $houseId, $userId, $roomId) : bool | int
+    public function createUserRoomRule(int $houseId, $userId, $roomId, $active = false) : bool | int
     {
+        $active = $active ? "TRUE" : "FALSE";
+
         //Create new user_room rule in house
-        $query = $this->db->prepare("INSERT INTO `User_Exempt_Room` (`houseId`, `userId`, `roomId`) VALUES (?, ?, ?)");
-        $query->bind_param("iii", $houseId, $userId, $roomId);
+        $query = $this->db->prepare("INSERT INTO `User_Exempt_Room` (`houseId`, `userId`, `roomId`, `active`) VALUES (?, ?, ?, ?)");
+        $query->bind_param("iiis", $houseId, $userId, $roomId, $active);
+        $result = $query->execute();
+        $query->close();
+
+        return $result ? $this->db->insert_id : false;
+    }
+
+    public function createUserTaskRule(int $houseId, $userId, $taskId, $active = false) : bool | int
+    {
+        $active = $active ? "TRUE" : "FALSE";
+
+        //Create new user_task rule in house
+        $query = $this->db->prepare("INSERT INTO `User_Exempt_Task` (`houseId`, `userId`, `taskId`, `active`) VALUES (?, ?, ?, ?)");
+        $query->bind_param("iiis", $houseId, $userId, $taskId, $active);
         $result = $query->execute();
         $query->close();
 
@@ -718,17 +747,6 @@ class DatabaseDomain
 
         //Finally if all went well commit and return
         return $this->db->commit() ? $this->db->insert_id : false;
-    }
-
-    public function createUserTaskRule(int $houseId, $userId, $taskId) : bool | int
-    {
-        //Create new user_task rule in house
-        $query = $this->db->prepare("INSERT INTO `User_Exempt_Task` (`houseId`, `userId`, `taskId`) VALUES (?, ?, ?)");
-        $query->bind_param("iii", $houseId, $userId, $taskId);
-        $result = $query->execute();
-        $query->close();
-
-        return $result ? $this->db->insert_id : false;
     }
 
     public function deleteRule(int $houseId, int $ruleType, int $ruleId) : bool | int

@@ -25,8 +25,8 @@ class DeleteTaskAction extends AdminAction
         $taskId = (int)$data['taskId'];
 
         if(!$this->db->deleteTask($taskId, $this->houseId))
-            return $this->createJsonResponse($this->response, ['message' => 'Task deletion failed']);
+            return $this->createJsonResponse($this->response, 'Task deletion failed');
 
-        return $this->createJsonResponse($this->response, ['message' => 'Task deleted successfully']);
+        return $this->createJsonResponse($this->response, 'Task deleted successfully');
     }
 }

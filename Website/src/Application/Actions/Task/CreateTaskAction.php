@@ -22,9 +22,10 @@ class CreateTaskAction extends AdminAction
         if (strlen($data['name']) < 2)
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
-        if(!$this->db->createTask($this->houseId, $data['name'], $data['description']))
-            return $this->createJsonResponse($this->response, ['message' => 'Task creation failed']);
+        $id = $this->db->createTask($this->houseId, $data['name'], $data['description']);
+        if($id === false)
+            return $this->createJsonResponse($this->response, 'Task creation failed', 500);
 
-        return $this->createJsonResponse($this->response, ['message' => 'Task created successfully']);
+        return $this->createJsonDataResponse($this->response, $id, false);
     }
 }

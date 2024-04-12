@@ -21,8 +21,8 @@ class LeaveHouseHoldAction extends MemberAction
         $result = $this->db->removeUserFromHousehold($this->userId, $this->houseId);
 
         if(!$result)
-            return $this->createJsonResponse($this->response, ["message" => "Failed to leave House"], 500);
+            return $this->createJsonResponse($this->response, "Failed to leave House", 500);
 
-        return $this->createJsonResponse($this->response, ["message" => "Left house successfully"]);
+        return $this->createJsonResponse($this->response, "Left house successfully");
     }
 }

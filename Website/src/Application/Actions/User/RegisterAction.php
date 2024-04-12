@@ -51,11 +51,11 @@ class RegisterAction extends Action
 
         //TODO: Create Exception for unreachables
         if(!$id)
-            return $this->createJsonResponse($this->response, ['message' => 'Registration failed']);
+            return $this->createJsonResponse($this->response, 'Registration failed');
 
         // Creates Session called Logged In with the value of the userId
         $_SESSION['loggedIn'] = $id;
         // Returns a Json response 
-        return $this->createJsonResponse($this->response, ['message' => 'Registration was successful']);
+        return $this->createJsonResponse($this->response, 'Registration was successful');
     }
 }

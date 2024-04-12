@@ -14,7 +14,7 @@ use Slim\Exception\HttpMethodNotAllowedException;
 class CreateUserScheduleRowAction extends UserAction
 {
 
-    protected array $validDays = ['Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday','All','Weekdays','Weekends'];
+    protected array $validDays = ['Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
     protected function action(): Response
     {
@@ -37,9 +37,10 @@ class CreateUserScheduleRowAction extends UserAction
         if($begin < 0 || $end < 0 || $begin>95 || $end>95 || $begin>$end)
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
-        if(!$this->db->createUserScheduleRows($this->userId, $begin, $end, $day))
-            return $this->createJsonResponse($this->response, ['message' => 'User Schedule Row creation failed']);
+        $id = $this->db->createUserScheduleRows($this->userId, $begin, $end, $day);
+        if($id === false)
+            return $this->createJsonResponse($this->response, 'User Schedule Row creation failed', 500);
 
-        return $this->createJsonResponse($this->response, ['message' => 'User Schedule Row created successfully']);
+        return $this->createJsonDataResponse($this->response, $id, false);
     }
 }

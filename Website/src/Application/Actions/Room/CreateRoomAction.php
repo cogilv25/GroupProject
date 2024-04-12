@@ -27,10 +27,10 @@ class CreateRoomAction extends AdminAction
         if(strlen($data['name'])>32)
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
+        $id = $this->db->createRoom($this->houseId, $data['name']);
+        if($id === false)
+            return $this->createJsonResponse($this->response, 'Room creation failed', 500);
 
-        if(!$this->db->createRoom($this->houseId, $data['name']))
-            return $this->createJsonResponse($this->response, ['message' => 'Room creation failed']);
-
-        return $this->createJsonResponse($this->response, ['message' => 'Room created successfully']);
+        return $this->createJsonDataResponse($this->response, $id, false);
     }
 }

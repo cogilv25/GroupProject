@@ -17,6 +17,7 @@ enum ScheduleType
 // some of the prepared queries making things a bit less.... big.
 //TODO: Just discovered Join Delete's so that might reduce the number of queries required here and there.
 //TODO: Full implementation
+//TODO: Return newly created records Id's where not uniquely linked to the user (as in a user only has one of these).
 class DatabaseDomain
 {
 	private mysqli $db;
@@ -107,15 +108,7 @@ class DatabaseDomain
         if(!$query->execute())
             return false;
 
-        //Return new userId
-        $query = $this->db->prepare("SELECT `userId` FROM `user` WHERE `email` = ?");
-        $query->bind_param("s", $email);
-        $query->execute();
-        $query->bind_result($id);
-        $result = $query->fetch();
-        $query->close();
-
-        return $result ? $id : false;
+        return $this->db->insert_id;
     }
 
     public function addUserToHousehold(int $userId, int $houseId) : bool
@@ -225,7 +218,7 @@ class DatabaseDomain
         while($query->fetch())
         {
             $role = $userId == $adminId ? "admin" : "member";
-            $data[$userId] = ['forename' => $forename, 'surname' => $surname, 'role' => $role, 'email' => $email];
+            $data[$userId] = ['userId' => $userId, 'forename' => $forename, 'surname' => $surname, 'role' => $role, 'email' => $email];
         }
 
         $query->close();
@@ -233,7 +226,7 @@ class DatabaseDomain
         return ($data != null) ? $data : false;
     }
 
-    public function createRoom(int $houseId, string $name) : bool
+    public function createRoom(int $houseId, string $name) : bool | int
     {
         //Create new room in house
         $query = $this->db->prepare("INSERT INTO `Room` (`name`, `houseId`) VALUES (?, ?)");
@@ -241,7 +234,7 @@ class DatabaseDomain
         $result = $query->execute();
         $query->close();
 
-        return $result;
+        return $result ? $this->db->insert_id : false;
     }
 
     public function updateRoom(int $houseId, int $roomId, string $name) : bool
@@ -341,7 +334,7 @@ class DatabaseDomain
         return $details;
     }
 
-    public function createTask(int $houseId, string $name, string $description) : bool
+    public function createTask(int $houseId, string $name, string $description) : bool | int
     {
         //Create new task in house
         $query = $this->db->prepare("INSERT INTO `Task` (`name`, `description`, `houseId`) VALUES (?, ?, ?)");
@@ -349,7 +342,7 @@ class DatabaseDomain
         $result = $query->execute();
         $query->close();
 
-        return $result;
+        return $result ? $this->db->insert_id : false;
     }
 
     public function updateTask(int $houseId, int $taskId, string $name, string $description) : bool
@@ -401,23 +394,6 @@ class DatabaseDomain
         return $data;
     }
 
-    private function expandDayToArray(string $day) : array
-    {
-        $days = [];
-        if($day == 'All')
-        {
-            array_push($days, 'Monday','Tuesday','Wednesday','Thursday','Friday');
-            array_push($days, 'Saturday','Sunday');
-        }
-        elseif($day == 'Weekdays')
-            array_push($days, 'Monday','Tuesday','Wednesday','Thursday','Friday');
-        elseif($day == 'Weekends')
-            array_push($days, 'Saturday','Sunday');
-        else
-            $days[] = $day;
-        return $days;
-    }
-
     //Check if the provided row overlaps with any other rows in the schedule.
     //can be used for Task, Room and User Schedules
     public function checkForScheduleCollisions(ScheduleType $t, int $t_id, string $day, int $begin, int $end)
@@ -451,33 +427,30 @@ class DatabaseDomain
         return ($result->num_rows == 1) ? true : false;
     }
 
-    public function createUserScheduleRows(int $userId, int $begin, int $end, string $day)
+    public function createUserScheduleRow(int $userId, int $begin, int $end, string $day) : bool | int
     {
-        $days = $this->expandDayToArray($day);
 
-        //Create/s new row/s in a UserSchedule
+        //Creates a new row in a UserSchedule
         $this->db->begin_transaction();
-        foreach ($days as &$day) {
-            $query = $this->db->prepare("INSERT INTO `UserSchedule` (`userId`, `day`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
-            $query->bind_param("isii", $userId, $day, $begin, $end);
-            $result = $query->execute();
-            $query->close();
+        $query = $this->db->prepare("INSERT INTO `UserSchedule` (`userId`, `day`, `beginTimeslot`, `endTimeslot`) VALUES (?, ?, ?, ?)");
+        $query->bind_param("isii", $userId, $day, $begin, $end);
+        $result = $query->execute();
+        $query->close();
 
-            if(!$result)
-            {
-                $this->db->rollback();
-                return false;
-            }
+        if(!$result)
+        {
+            $this->db->rollback();
+            return false;
+        }
 
-            //Check if our new row overlaps with any other rows and if so rollback
-            if(!$this->checkForScheduleCollisions(ScheduleType::User, $userId, $day, $begin, $end))
-            {
-                $this->db->rollback();
-                return false;
-            }
+        //Check if our new row overlaps with any other rows and if so rollback
+        if(!$this->checkForScheduleCollisions(ScheduleType::User, $userId, $day, $begin, $end))
+        {
+            $this->db->rollback();
+            return false;
         }
         
-        return $this->db->commit();
+        return $this->db->commit() ? $this->db->insert_id : false;
     }
 
 
@@ -639,7 +612,7 @@ class DatabaseDomain
         return $this->db->commit();
     }
 
-    public function createUserRoomRule(int $houseId, $userId, $roomId) : bool
+    public function createUserRoomRule(int $houseId, $userId, $roomId) : bool | int
     {
         //Create new user_room rule in house
         $query = $this->db->prepare("INSERT INTO `User_Exempt_Room` (`houseId`, `userId`, `roomId`) VALUES (?, ?, ?)");
@@ -647,10 +620,10 @@ class DatabaseDomain
         $result = $query->execute();
         $query->close();
 
-        return $result;
+        return $result ? $this->db->insert_id : false;
     }
 
-    public function createTaskTimeRule(int $houseId, $taskId, $day, $begin, $end) : bool
+    public function createTaskTimeRule(int $houseId, $taskId, $day, $begin, $end) : bool | int
     {
         //Start a transaction and update the row in ernest.
         $this->db->begin_transaction();
@@ -675,10 +648,10 @@ class DatabaseDomain
 
 
         //Finally if all went well commit and return
-        return $this->db->commit();
+        return $this->db->commit() ? $this->db->insert_id : false;
     }
 
-    public function createRoomTimeRule(int $houseId, $roomId, $day, $begin, $end) : bool
+    public function createRoomTimeRule(int $houseId, $roomId, $day, $begin, $end) : bool | int
     {
         //Start a transaction and update the row in ernest.
         $this->db->begin_transaction();
@@ -703,10 +676,10 @@ class DatabaseDomain
 
 
         //Finally if all went well commit and return
-        return $this->db->commit();
+        return $this->db->commit() ? $this->db->insert_id : false;
     }
 
-    public function createUserTaskRule(int $houseId, $userId, $taskId) : bool
+    public function createUserTaskRule(int $houseId, $userId, $taskId) : bool | int
     {
         //Create new user_task rule in house
         $query = $this->db->prepare("INSERT INTO `User_Exempt_Task` (`houseId`, `userId`, `taskId`) VALUES (?, ?, ?)");
@@ -714,10 +687,10 @@ class DatabaseDomain
         $result = $query->execute();
         $query->close();
 
-        return $result;
+        return $result ? $this->db->insert_id : false;
     }
 
-    public function deleteRule(int $houseId, int $ruleType, int $ruleId) : bool
+    public function deleteRule(int $houseId, int $ruleType, int $ruleId) : bool | int
     {
         $idColumn = "scheduleId";
         switch($ruleType)
@@ -743,7 +716,7 @@ class DatabaseDomain
         $result = $query->execute();
         $query->close();
 
-        return $result;
+        return $result ? $this->db->insert_id : false;
     }
 
     public function getRulesInHousehold(int $houseId) : array | bool

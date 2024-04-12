@@ -16,6 +16,6 @@ class GetUserScheduleAction extends UserAction
     {
 
         $data = $this->db->getUserSchedule($this->userId);
-        return $this->createJsonResponse($this->response, $data);
+        return $this->createJsonDataResponse($this->response, $data, false);
     }
 }

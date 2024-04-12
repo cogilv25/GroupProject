@@ -36,11 +36,22 @@ abstract class Action
 
     abstract protected function action(): Response;
 
-    // Function to create a json response
-    protected function createJsonResponse(Response $response, $data, int $statusCode = 200): Response
+    // TODO: Rename when redundant code removed
+    protected function createJsonResponse(Response $response, string $message, int $statusCode = 200): Response
     {
+        $data = ['statusCode' => $statusCode, 'message' => $message];
         $response->getBody()->write(json_encode($data,JSON_PRETTY_PRINT));
 
-        return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    protected function createJsonDataResponse(Response $response, $data, array | string | bool $errorMessageList, int $statusCode = 200): Response
+    {
+        $responseData = ['statusCode' => $statusCode, 'data' => $data];
+        if($errorMessageList !== false)
+            $responseData['errors'] = $errorMessageList;
+        $response->getBody()->write(json_encode($responseData,JSON_PRETTY_PRINT));
+
+        return $response->withHeader('Content-Type', 'application/json');
     }
 }

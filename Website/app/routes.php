@@ -147,7 +147,7 @@ return function (App $app) {
         $group->post('/update_row', Schedule\UpdateUserScheduleRowAction::class);
         $group->post('/delete_row', Schedule\DeleteUserScheduleRowAction::class);
         $group->get('/delete', Schedule\DeleteUserScheduleAction::class);
-        $group->get('/list', Schedule\GetUserScheduleAction::class);
+        $group->get('/data', Schedule\GetUserScheduleAction::class);
     });
 
     //HouseHold Actions
@@ -173,11 +173,12 @@ return function (App $app) {
             return $renderer->render($response, 'household.php', ['users' => $data, 'currentUser' => $user]);
         });
         $group->get('/create', HouseHold\CreateHouseHoldAction::class);
+        //TODO: Unique codes for household join links
         $group->get('/join/{id}', HouseHold\JoinHouseHoldAction::class);
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);
         $group->post('/remove', Household\RemoveUserHouseHoldAction::class);
-        $group->get('/list', Household\ListHouseholdAction::class);
+        $group->get('/data', Household\ListHouseholdAction::class);
         $group->get('/schedules', Schedule\GetHouseholdUserSchedulesAction::class);
         $group->get('/gen_rota', Household\RotaGenAction::class);
     });
@@ -188,7 +189,7 @@ return function (App $app) {
         $group->post('/create', Room\CreateRoomAction::class);
         $group->post('/update', Room\UpdateRoomAction::class);
         $group->post('/delete', Room\DeleteRoomAction::class);
-        $group->get('/list', Room\ListRoomAction::class);
+        $group->get('/data', Room\ListRoomAction::class);
     });
 
     //Task Actions
@@ -197,7 +198,7 @@ return function (App $app) {
         $group->post('/create', Task\CreateTaskAction::class);
         $group->post('/update', Task\UpdateTaskAction::class);
         $group->post('/delete', Task\DeleteTaskAction::class);
-        $group->get('/list', Task\ListTaskAction::class);
+        $group->get('/data', Task\ListTaskAction::class);
     });
 
     //Rule Actions
@@ -211,6 +212,6 @@ return function (App $app) {
                 $createGroup->post('/user_room', Rule\CreateUserRoomRuleAction::class);
             });
         $group->post('/delete', Rule\DeleteRuleAction::class);
-        $group->get('/list', Rule\ListRuleAction::class);
+        $group->get('/data', Rule\ListRuleAction::class);
     });
 };

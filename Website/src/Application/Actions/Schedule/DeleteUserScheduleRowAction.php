@@ -25,8 +25,8 @@ class DeleteUserScheduleRowAction extends UserAction
         $scheduleId = (int)$data['scheduleId'];
 
         if(!$this->db->deleteUserScheduleRow($this->userId, $scheduleId))
-            return $this->createJsonResponse($this->response, ['message' => 'User Schedule Row deletion failed']);
+            return $this->createJsonResponse($this->response, 'User Schedule Row deletion failed');
 
-        return $this->createJsonResponse($this->response, ['message' => 'User Schedule Row deleted successfully']);
+        return $this->createJsonResponse($this->response, 'User Schedule Row deleted successfully');
     }
 }

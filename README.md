@@ -27,7 +27,7 @@ This guide uses Git BASH, but you could use Git GUI.
 - Goto [Composer](https://getcomposer.org/download/), download and run Composer-Setup.exe.
 - When asked for a command-line PHP browse to your XAMPP installation directory and select php.exe from within the php folder and tick add this PHP to your PATH. The rest of the installer is just next->finish, etc.
 - Open a **NEW** instance of git BASH and navigate to the Website folder within the group project repo.
-- Run the command `composer update`
+- Run the command `composer update` (You need the git command in your PATH for this to work)
 
 ### Start the Server
 - Open XAMPP Control Panel.

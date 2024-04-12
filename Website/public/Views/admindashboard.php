@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="/CSS/dashboard.css"> 
     <link rel="stylesheet" href="/CSS/householdModal.css">
-
+    <link rel="stylesheet" href="/CSS/scheduleTimeRangeControl.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/roundSlider/1.6.1/roundslider.css" integrity="sha512-XO53CaiPx+m4HUiZ02P4OEGLyyT46mJQzWhwqYsdqRR7IOjPuujK0UPAK9ckSfcJE4ED7dT9pF9r78yXoOKeYw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js" crossorigin="anonymous"></script>    
+    <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js" crossorigin="anonymous"></script>  
+      
 
 </head>
 <body>
@@ -75,153 +77,206 @@
     }
 }
 
-.add-task-button-container {
-    text-align: right;
-    padding-top: 15px;
-    margin-right:150px;
-     /* Adjust the space between the button and the table */
+#slider1{
+  margin:50px;
+}
+   
+.rs-clock-number {
+  font-size: 14px; /* Adjust the size as needed */
+  color: #000; /* Change the color as needed */
+  font-weight: bold;
+}
+
+
+
+.tooltip-menu {
+  display: none; /* Hidden initially */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 10px; /* Space between the circle and the tooltip */
+  z-index: 1001; /* Ensure it's above the add-handle circle and other elements */
+}
+
+.tooltip-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tooltip-menu ul li a {
+  display: block;
+  padding: 10px 20px;
+  color: #333;
+  text-decoration: none;
+}
+
+.tooltip-menu ul li a:hover {
+  background-color: #f0f0f0;
+}
+
+#segmentsTable {
+  margin-left: 20px; /* Add left margin */
+  font-size: 0.9rem; /* Make table font smaller if needed */
+  max-width:1200px;
+}
+
+#segmentsTable th, #segmentsTable td {
+  padding: 4px 8px; /* Adjust padding to make table cells smaller */
+}
+
+.button-group {
+            text-align: center; /* Center the buttons */
+            margin: 5px; /* Space between buttons and slider */
+
+        }
+.custombtn{
+  margin:15px;
+}
+.cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px; /* Adds space between rows */
+    }
+
+    .day-label {
+        margin-bottom: 10px; /* Space between the label and the button group */
+        font-size: 1.2em; /* Larger text for better readability */
+    }
+
+    .button-group {
+        margin-bottom: 15px; /* Space between the button group and the slider */
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .custombtn {
+        margin: 5px; /* Space around buttons */
+        padding: 8px 12px; /* Button padding for better touch */
+        background-color:#959695;
+        border-radius:12px;
+    }
+    .custombtn:hover {
+        margin: 5px; /* Space around buttons */
+        padding: 8px 12px; /* Button padding for better touch */
+        background-color:#484a49;
+        border-radius:12px;
+    }
+
+
+    #submitSchedule {
+    padding: 10px 20px;
+    font-size: 16px; 
+    background-color: #959695; 
+    color: black; 
+    border: black solid 1px; 
+    border-radius: 5px; 
+}
+.cell.medium-12 {
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 100px; 
+    width: 100%; 
+}
+#submitSchedule:disabled {
+    background: #484a49; 
+    color: black; 
 }
   </style>
-  <body>
+  <?php include 'adminsidebar.php'; ?>
 
-    <div class="off-canvas-wrapper">
-      <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
-        <div class="off-canvas position-left reveal-for-large" id="sidenav" data-off-canvas data-position="left">
-            <div class="grid-x grid-padding-x">
-                <div class="cell small-12 text-center">
-                    <a id="logo">CleanSync</a>
-                </div>
-                <div class="cell">
-                    <ul class="vertical menu ">
-                      <li><a class="navlink" href="/">Home</a></li>
-                      <li><a class="navlink" href="notifications">Notifications</a></li>
-                      <li><a id="loadRules"  class="navlink" >Rules</a></li>
-                      <li><a id="loadTasks" class="navlink" >Tasks</a></li>
-                      <li><a id="loadHousehold" class="navlink" >HouseHold</a></li>
-                      <li><a class="navlink">Schedule</a></li>
-                      <li><a id="loadRooms" class="navlink">Rooms</a></li>
-                      <li><a class="navlink" href="profile">Profile</a></li>
-                      <li><a class="navlink" href="settings">Settings</a></li>
-                      <li><a class="navlink" href="/logout">Logout</a></li>
-                  </ul>
-                </div>
-            </div>
-        </div>
-        <div class="off-canvas-content" data-off-canvas-content>
-            <div class="title-bar hide-for-large">
-                <div class="title-bar-left">
-                    <button class="menu-icon" type="button" data-open="sidenav"></button>
-                    <span class="title-bar-title">CleanSync</span>
-                </div>
-            </div>
-          <div id="main-content" class="grid-x grid-margin-x small-up-1 medium-up-3 large-up-4">
-                <div class="cell">
-                  <div class="card" >
-                    <div class="card-section">
-                      <h4>Dashboard Card.</h4>
-                      <p>Responsive card width n height</p>
-                    </div>
+        <div id="main-content" class="grid-x grid-margin-x small-up-1 medium-up-3 large-up-4">
+           <div class="cell">
+                <div class="card" >
+                  <div class="card-section">
+                    <h4>Dashboard Card.</h4>
+                    <p>Responsive card width n height</p>
                   </div>
                 </div>
-                <div class="cell">
-                  <div class="card" >
-                    <div class="card-section">
-                      <h4>Dashboard Card.</h4>
-                      <p>Responsive card width n height</p>
-                    </div>
+              </div>
+              <div class="cell">
+                <div class="card" >
+                  <div class="card-section">
+                    <h4>Dashboard Card.</h4>
+                    <p>Responsive card width n height</p>
                   </div>
                 </div>
-                <div class="cell">
-                  <div class="card" >
-                    <div class="card-section">
-                      <h4>Dashboard Card.</h4>
-                      <p>Responsive card width n height</p>
-                    </div>
+              </div>
+              <div class="cell">
+                <div class="card" >
+                  <div class="card-section">
+                    <h4>Dashboard Card.</h4>
+                    <p>Responsive card width n height</p>
                   </div>
                 </div>
-                <div class="cell">
-                  <div class="card" >
-                    <div class="card-section">
-                      <h4>Dashboard Card.</h4>
-                      <p>Responsive card width n height</p>
-                    </div>
+              </div>
+              <div class="cell">
+                <div class="card" >
+                  <div class="card-section">
+                    <h4>Dashboard Card.</h4>
+                    <p>Responsive card width n height</p>
                   </div>
                 </div>
-            </div>
-        </div>
-    </div>
+              </div>
+          </div>
+      </div> 
+  </div>
 </div>
+<script src="/Javascript/roundslider.js"></script>
 
 <script>
+
 $(document).ready(function() {
     $(document).foundation();
 
-    // Listen for click event on the link with ID 'loadHousehold'
-    $('#loadHousehold').click(function(e) {
-        e.preventDefault(); // Prevent the default link behavior
+
+    // Function to load content into '#main-content'
+    function loadContent(url) {
+        // Empty the '#main-content' div and remove all attached event handlers
+        $('#main-content').empty().off();
+
+        // Perform the AJAX request
         $.ajax({
-            url: 'household', // Path to your household.php file
-            type: 'GET', // GET method to fetch data
+            url: url, // Use the URL passed to the function
+            type: 'GET',
             success: function(response) {
-                // Insert the fetched content into the 'household-content' div
+                // Insert the fetched content into the '#main-content' div
                 $('#main-content').html(response);
             },
             error: function(xhr, status, error) {
-                // Handle any errors
                 console.error("Error: " + status + " " + error);
             }
         });
+    }
+    // Bind click event handlers to your links/buttons
+    $('#loadHousehold').click(function(e) {
+        e.preventDefault();
+        loadContent('household/page'); // Pass the URL to the loadContent function
     });
 
-    $('#loadRules').click(function(e) {
-        e.preventDefault(); // Prevent the default link behavior
-        $.ajax({
-            url: 'adminRules.php', // Path to your household.php file
-            type: 'GET', // GET method to fetch data
-            success: function(response) {
-                // Insert the fetched content into the 'household-content' div
-                $('#main-content').html(response);
-            },
-            error: function(xhr, status, error) {
-                // Handle any errors
-                console.error("Error: " + status + " " + error);
-            }
-        });
+    $('#loadSchedule').click(function(e) {
+        e.preventDefault();
+        loadContent('schedule/page');
     });
 
     $('#loadRooms').click(function(e) {
-        e.preventDefault(); // Prevent the default link behavior
-        $.ajax({
-            url: 'adminroom.php', // Path to your household.php file
-            type: 'GET', // GET method to fetch data
-            success: function(response) {
-                // Insert the fetched content into the 'household-content' div
-                $('#main-content').html(response);
-            },
-            error: function(xhr, status, error) {
-                // Handle any errors
-                console.error("Error: " + status + " " + error);
-            }
-        });
+        e.preventDefault();
+        loadContent('adminroom.php');
     });
 
     $('#loadTasks').click(function(e) {
-        e.preventDefault(); // Prevent the default link behavior
-        $.ajax({
-            url: 'adminTasks.php', // Path to your household.php file
-            type: 'GET', // GET method to fetch data
-            success: function(response) {
-                // Insert the fetched content into the 'household-content' div
-                $('#main-content').html(response);
-            },
-            error: function(xhr, status, error) {
-                // Handle any errors
-                console.error("Error: " + status + " " + error);
-            }
-        });
+        e.preventDefault();
+        loadContent('adminTasks.php');
     });
 
-
+    $('#loadRules').click(function(e) {
+        e.preventDefault();
+        loadContent('adminRules.php');
+    });
 });
 </script>
 

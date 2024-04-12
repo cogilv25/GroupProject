@@ -11,92 +11,128 @@
 
 
 </head>
+<?php
+/*
+Rule Input Data Examples:
+
+1. Room Time Restriction:
+- 'userId' => [User ID],
+- 'roomName' => [Name of the room],
+- 'day' => [Day of the week],
+
+2. Task Time Restriction:
+- 'userId' => [User ID],
+- 'taskName' => [Name of the task],
+- 'day' => [Day of the week],
+
+
+3. User Task Restriction:
+- 'userId' => [User ID],
+- 'taskName' => [Name of the task],
+
+
+4. User Room Restriction:
+- 'userId' => [User ID],
+- 'roomName' => [Name of the room],
+
+
+Example Data:
+$ruleData = [
+    ['userId' => 1, 'roomName' => 'kitchen', 'day' => 'Monday'],
+    ['userId' => 2, 'taskName' => 'Vacuuming', 'day' => 'Wednesday'],
+    ['userId' => 3, 'taskName' => 'Dusting'],
+    ['userId' => 4, 'roomName' => 'living room'],
+];
+*/
+
+?>
+
 <body>
 <style>
   body,  html {
     height:100vh;
   }
-#sidenav, .navlink {
-  background-color: #468F8B;
-  color: black;
-  font-weight: bold;
-}
-#logo {
-    font-weight: bold;
-    text-align: center;
-    align-items: center;
-    color: black;
-    font-size: larger;
-}
-.card{
-  border:solid 2px black;
-  margin: 5px;
-  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-  transition: 0.3s;
-  border-radius: 5px;
-}
-.custombtn {
-  margin-bottom: 1rem !important;
-  color:black !important;
-  font-weight:bolder;
-  font-size:13px;
-}
+	#sidenav, .navlink {
+	background-color: #468F8B;
+	color: black;
+	font-weight: bold;
+	}
+	#logo {
+		font-weight: bold;
+		text-align: center;
+		align-items: center;
+		color: black;
+		font-size: larger;
+	}
+	.card{
+	border:solid 2px black;
+	margin: 5px;
+	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+	transition: 0.3s;
+	border-radius: 5px;
+	}
+	.custombtn {
+	margin-bottom: 1rem !important;
+	color:black !important;
+	font-weight:bolder;
+	font-size:13px;
+	}
 
-.table-wrapper {
-    width: 90%; /* Adjust this value to control the width of the table */
-    margin: auto; /* Centers the table wrapper within its parent */
-    overflow-x: auto; /* Adds a scrollbar if the table overflows */
-}
+	.table-wrapper {
+		width: 90%; /* Adjust this value to control the width of the table */
+		margin: auto; /* Centers the table wrapper within its parent */
+		overflow-x: auto; /* Adds a scrollbar if the table overflows */
+	}
 
-.custom-table {
-    border: 2px solid black;
-    width: 100%; /* Makes the table take up the full width of its wrapper */
-}
+	.custom-table {
+		border: 2px solid black;
+		width: 100%; /* Makes the table take up the full width of its wrapper */
+	}
 
-.custom-table th, .custom-table td {
-    border-right: 1px solid black;
-    border-collapse: collapse;
-}
+	.custom-table th, .custom-table td {
+		border-right: 1px solid black;
+		border-collapse: collapse;
+	}
 
-.custom-table th:last-child, .custom-table td:last-child {
-    border-right: none;
-}
+	.custom-table th:last-child, .custom-table td:last-child {
+		border-right: none;
+	}
 
-#addTaskButton {
-    /* Button styles */
-    padding-right: 20px;
+	#addTaskButton {
+		/* Button styles */
+		padding-right: 20px;
 
-}
+	}
 
-@media screen and (max-width: 640px) {
-    .custom-table th, .custom-table td {
-        border-right: none;
-    }
-}
+	@media screen and (max-width: 640px) {
+		.custom-table th, .custom-table td {
+			border-right: none;
+		}
+	}
 
-.add-task-button-container {
-    text-align: right;
-    padding-top: 15px;
-    margin-right:150px;
-     /* Adjust the space between the button and the table */
-}
+	.add-task-button-container {
+		text-align: right;
+		padding-top: 15px;
+		margin-right:150px;
+		/* Adjust the space between the button and the table */
+	}
 
-.small-margin {
-    margin-left: 2rem; /* Adds margin to the left */
-    margin-right: 2rem; /* Adds margin to the right */
-}
+	.small-margin {
+		margin-left: 2rem; /* Adds margin to the left */
+		margin-right: 2rem; /* Adds margin to the right */
+	}
 
-h2.text-center {
-    font-size: 2rem; /* Adjust the size as needed */
-    margin-top: 1rem;
-}
-.customh5{
-    margin-left:150px;
-}
-.custominputs {
-height:30px;
-}
-  </style>
+	h2.text-center {
+		font-size: 2rem; 
+		margin-top: 1rem;
+	}
+	.customh5{
+		margin-left:150px;
+	}
+	.custominputs {
+	height:30px;
+	}
+</style>
   <body>
   <div class="off-canvas-wrapper">
 	<div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>

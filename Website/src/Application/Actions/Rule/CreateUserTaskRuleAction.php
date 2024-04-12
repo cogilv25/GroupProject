@@ -25,9 +25,10 @@ class CreateUserTaskRuleAction extends AdminAction
         $taskId = $data['taskId'];
         $targetUserId = $data['userId'];
 
-        if(!$this->db->createUserTaskRule($this->houseId, $targetUserId, $taskId))
-            return $this->createJsonResponse($this->response, ['message' => 'Rule creation failed']);
+        $id = $this->db->createUserTaskRule($this->houseId, $targetUserId, $taskId);
+        if($id === false)
+            return $this->createJsonResponse($this->response, 'Rule creation failed', 500);
 
-        return $this->createJsonResponse($this->response, ['message' => 'Rule created successfully']);
+        return $this->createJsonDataResponse($this->response, $id, false);
     }
 }

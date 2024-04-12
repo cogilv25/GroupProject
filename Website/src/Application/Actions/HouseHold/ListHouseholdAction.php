@@ -11,6 +11,6 @@ class ListHouseholdAction extends MemberAction
     protected function action(): Response
     {
         $userList = $this->db->getUsersInHousehold($this->houseId);
-        return $this->createJsonResponse($this->response, $userList);
+        return $this->createJsonDataResponse($this->response, $userList, false);
     }
 }

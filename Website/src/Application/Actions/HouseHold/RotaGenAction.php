@@ -43,128 +43,231 @@ class RotaGenAction extends AdminAction
 {
     protected function action(): Response
     {
+        // userID, roomId, taskId
         $userRoomTasks = $this->db->getValidUserRoomTaskCombinations($this->houseId);
 
-        $userSchedules = $this->db->getUserSchedulesFlat($this->houseId);
+        $rawuserSchedules = $this->db->getUserSchedulesFlat($this->houseId);
 
-        //Ignore multiple days, just choose one for now
-        foreach($userSchedules as $row)
+        // Ignore multiple days, just look at Monday for now
+        // TODO: switch for different days so we're not constantly
+        //         comparing strings on the critical path.
+        foreach($rawuserSchedules as $row)
         {
-            if($row[1] == "Monday")
+            $day = 0;
+            switch($row[1])
             {
-                $mondaySchedules[] = [$row[0],$row[2],$row[3]];
-                $capacityUserSchedules[$row[0]][] = [$row[2], $row[3]-$row[2]];
+                case "Tuesday": $day = 1; break;
+                case "Wednesday": $day = 2; break;
+                case "Thursday": $day = 3; break;
+                case "Friday": $day = 4; break;
+                case "Saturday": $day = 5; break;
+                case "Sunday": $day = 6; break;
             }
-        }
 
-        //TODO: Job Schedules don't make sense.. split into room and task schedules
-        //        you will never have a collision as there is only ever 1 of each job.
+            $userSchedules[$row[0]][$day][] = [$row[2], $row[3]];
+        }   
+
+        $jobList = [];
+
+        // $row == [0=>userId,1=>roomId,2=>taskId]
         foreach ($userRoomTasks as $row)
         {
+            $found = false;
+            foreach($jobList as $index => $job)
+            {
+                if($job['room'] == $row[1] && $job['task'] == $row[2])
+                {
+                    $usersEligibleJob[$index][] = $row[0];
+                    $found = true;
+                    break;
+                }
+            }
+            if(!$found)
+            {
+                // TODO: Real duration and period values, period unused atm..
+                $jobList[] = ['room' => $row[1], 'task' => $row[2], 'duration' => 4, 'period' => -1 ];
+                $usersEligibleJob[count($jobList)-1][] = $row[0];
+            }
             $job = $row[1]."-".$row[2];
             $jobToRoomTask[$job] = [$row[1],$row[2]];
             $jobEligibleUsers[$job][] = $row[0];
-            //TODO: Get real Job(RoomTime) Schedules
-            $capacityJobSchedule[$job][] = [0,95];
+            for ($day=0; $day < 7; $day++) 
+            { 
+                // TODO: Get real Room and Time Schedules, we are currently
+                //         assuming rooms and tasks can be used/done anytime.
+                $roomSchedules[$row[1]][$day][0] = [0,95];
+                //TODO: Incorporate task schedules, currently we assume that everyone can do a
+                //        specific task concurrently, which while true for some tasks is not for
+                //        others for example there may only be 1 hoover. 
+                $taskSchedules[$row[2]][$day][0] = [0,95];
+            }
+            $capacityJobSchedule[$job][0] = [0,95];
         }
 
-        $rota = [];
-        //This is awful but works to sort the rota without losing the userId's
-        foreach ($capacityUserSchedules as $key => $value)
+        $success = true;
+        $errors = [];
+
+
+        // Sort the jobList and userEligibleJob arrays by the number of users eligible for the 
+        //   specific job to get the jobs in order from the hardest to allocate to the easiest,
+        //   thus making it easier to evenly distribute the jobs.
+        array_multisort(array_map('count',$usersEligibleJob), SORT_ASC, SORT_NUMERIC, $usersEligibleJob, $jobList);
+
+        // Initialize the rota with all users
+        foreach ($userSchedules as $user => $schedule)
+            $rota[$user] = [];
+
+        // Loop through the jobs that need assigned in ascending order based on
+        //   the number of users who are not exempt from the job.
+        foreach ($jobList as $jobIndex => $job)
         {
-            $rota[] = [$key => []];
-        }
-
-        $status['status'] = 'success';
-
-        foreach ($jobEligibleUsers as $job => $users) 
-        {
-            //Foreach on users from least jobs to most jobs
-                //Try to assign job checking user and job schedules
-                //On fail skip to next user
-                //On success reduce user and job schedule capacities
-
             $jobAssigned = false;
-            //This is awful but works to sort the rota without losing the userId's
-            //TODO: We could probably use usort which would look 10% better haha!
-            //TODO: check out uasort as a possible solution to the weirdness...
-            array_multisort(array_map(function($a){foreach($a as $tab){return count($tab);}},$rota),SORT_ASC,SORT_NUMERIC,$rota);
-            foreach ($rota as $key => $userIdTab)
+            // Sort the list of user rotas by the number of jobs assigned to each rota.
+            // This gives us a list of user rotas with the user who has been assigned
+            //   the fewest jobs at the top.
+            // We do this each time a job is assigned as the user with the most jobs
+            //   may change.
+            uasort($rota,function($a,$b){ return count($a)-count($b);});
+
+            
+
+            // Loop through the users in ascending order based on jobs assigned.
+            foreach ($rota as $user => $userRota)
             {
-                $uId = array_key_first($userIdTab);
-                if(array_search($uId, $users)===false) continue;
-                foreach($capacityUserSchedules[$uId] as $ukey => $urow)
+                // Skip the user if they are exempt from the job
+                if(array_search($user, $usersEligibleJob[$jobIndex]) === false) continue;
+
+                // Loop through each day of the users schedule
+                // TODO: We probably want to limit what days a job can be done based
+                //         based on the period for that job/task instead of just
+                //         looping through all the days of a given week.
+                foreach ($userSchedules[$user] as $day => $userSchedule)
                 {
-                    if($urow[1] < 4) continue; //Job can't fit in this schedule jump to next one
-
-                    foreach($capacityJobSchedule[$job] as $jkey => $jrow)
+                    // Loop through the rows in the users schedule
+                    foreach ($userSchedule as $userScheduleRowIndex => $userScheduleRow )
                     {
-                        if($jrow[1] < 4) continue; //Job can't fit in this schedule jump to next one
+                        // Variables are just for readability.
+                        $ubegin = $userScheduleRow[0]; $uend = $userScheduleRow[1];
+                        // If there is no room in this row of this users schedule
+                        //   the job doesn't fit and we can exit early.
+                        if($uend - $ubegin < $job['duration']) continue;
 
-                        //If the job can fit at the beginning of the user and job schedules we can just
-                        //    decrement the capacity for that schedule row otherwise..
-                        //If we can find a spot where it fits in both the user and job schedules then
-                        //    where it is not at the beginning of a schedule row we must split the row
-                        //    at that point creating a new row where it is at the start....
-
-                        $ustart = $urow[0]; $ucap = $urow[1]; $uend = $ustart + $ucap;
-                        $jstart = $jrow[0]; $jcap = $jrow[1]; $jend = $jstart + $jcap;
-                        $ostart = max($ustart, $jstart); $oend = min($uend, $jend); $ocap = $oend - $ostart;
-
-                        //Will be negative if the schedules do not overlap otherwise will be
-                        //    the capacity of the overlapping region.
-                        if($ocap < 4) continue; //Job can't fit in this schedule jump to next one
-
-                        //We now know it fits at ostart now to update the 2 schedules
-                        $room = $jobToRoomTask[$job][0];
-                        $task = $jobToRoomTask[$job][1];
-
-                        if($ostart == $ustart) // Simplest possibility
+                        // Loop through the rows in the room schedule that this job
+                        //   will take place within.
+                        foreach ($roomSchedules[$job['room']][$day] as $roomScheduleRowIndex => $roomScheduleRow )
                         {
-                            $capacityUserSchedules[$uId][$ukey][1]-=4;
-                            $capacityUserSchedules[$uId][$ukey][0]+=4;
-                        }
-                        else
-                        {
-                            //This is where we could create small gaps in the
-                            //    schedule that can't be filled by any job.
-                            $capacityUserSchedules[$uId][] = [$ostart,$uend-$ostart];
-                            $capacityUserSchedules[$uId][$ukey][1] = $ostart-$ustart;
-                        }
+                            // Variables are just for readability.
+                            $rbegin = $roomScheduleRow[0]; $rend = $roomScheduleRow[1];
+                            // If there is no room in this row of the room's schedule
+                            //  the job doesn't fit and we can exit early.
+                            if($rend - $rbegin < $job['duration']) continue;
 
-                        if($ostart == $jstart) // Simplest possibility
-                        {
-                            $capacityJobSchedule[$job][$jkey][1]-=4;
-                            $capacityJobSchedule[$job][$jkey][0]+=4;
-                        }
-                        else
-                        {
-                            //This is where we could create small gaps in the
-                            //    schedule that can't be filled by any job.
-                            $capacityJobSchedule[$job][] = [$ostart,$jend-$ostart];
-                            $capacityJobSchedule[$job][$jkey][1] = $ostart-$jstart;
-                        }
+                            //TODO: Task schedule checking would go here..
 
-                        //Finally create a new row in the rota!
-                        $rota[$key][$uId][] = [$room,$task,$ostart, $ostart + 4];
-                        $jobAssigned = true;
-                        break;
+                            // Get the inner range which is the maximum range of the user and room
+                            //   schedules combined.
+                            $ibegin = max($rbegin, $ubegin); $iend = min($rend, $uend);
+
+                            // The calculated range $iend - $ibegin will be negative if the schedules
+                            //   do not intersect so we don't need to explicitly check for this.
+
+                            // If there is no room in the combined user,room schedule row
+                            //   the job doesn't fit and we can exit early.
+                            if($iend - $ibegin < $job['duration']) continue;
+
+                            // This is the point where we know the job can fit in the current
+                            //   user's schedule and the job's room's schedule. We just have to
+                            //   insert it into the user's rota and remove the range from the
+                            //   user's schedule and the job's room's schedule.
+
+                            //Calculate the begin and end for the new rota entry
+                            $ebegin = $ibegin; $eend = $ebegin + $job['duration'];
+
+                            //Remove the range from the user's schedule
+
+                            // If the start of the range == the start of the users schedule
+                            //   row this is the easiest case where we shorten or remove the
+                            //   row from the users schedule,
+                            if($ebegin == $ubegin)
+                            {
+                                // If the range exactly matches the user's schedule row
+                                //   remove the row from the schedule, otherwise, set
+                                //   the begin field of the schedule row to the end of
+                                //   the range.
+                                if($eend == $uend)
+                                    unset($userSchedules[$day][$userScheduleRowIndex]);
+                                else
+                                    $userSchedules[$day][$userScheduleRowIndex][0] = $eend;
+                            }
+                            else
+                            {
+                                // Otherwise, if the end of the range == the end of the users
+                                //   schedule row range then we just shorten the row.
+                                //TODO: Moving things around we could get rid of a line of code
+                                //        it requires rewording the comments though
+                                if($eend == $uend)
+                                    $userSchedules[$day][$userScheduleRowIndex][1] = $ebegin;
+                                // Finally if the range is somewhere in the middle of
+                                //   the user's schedule row then we need to split the
+                                //   row into 2 seperate rows in their schedule.
+                                else
+                                {
+                                    $userSchedules[$day][] = [$eend, $uend];
+                                    $userSchedules[$day][$userScheduleRowIndex][1] = $ebegin;
+                                }
+                            }
+
+                            //Remove the range from the room's schedule
+
+                            // This is the same process as for the user so I will omit
+                            //   the detailed comments.
+                            if($ebegin == $rbegin)
+                            {
+                                if($eend == $rend)
+                                    unset($roomSchedules[$day][$roomScheduleRowIndex]);
+                                else
+                                    $roomSchedules[$day][$roomScheduleRowIndex][0] = $eend;
+                            }
+                            else
+                            {
+                                //More compact does the same thing.
+                                if($eend != $rend)
+                                    $roomSchedules[$day][] = [$eend, $rend];
+
+                                $roomSchedules[$day][$roomScheduleRowIndex][1] = $ebegin;
+                            }
+
+                            // Finally we can insert the new row into the rota and set the flag
+                            //   that breaks the loops to get to the next
+                            $row = $job;
+                            unset($row['period']);
+                            unset($row['duration']);
+
+                            $row['begin'] = $ebegin;
+                            $row['end'] = $eend;
+                            $row['day'] = $day;
+
+                            $rota[$user][] = $row;
+                            $jobAssigned = true;
+                            break;
+                        }
+                        if($jobAssigned) break;
                     }
                     if($jobAssigned) break;
                 }
                 if($jobAssigned) break;
             }
+            //If we got the job assigned to someone continue      
             if($jobAssigned) continue;
 
-            //We couldn't assign the job to anyone!!
-            $room = $jobToRoomTask[$job][0];
-            $task = $jobToRoomTask[$job][1];
-            $status['status'] = 'error';
-            $status['messages'][] = "Couldn't assign task: ".$task." in room: " . $room. " to any user";
+            //If we didn't get the job assigned to someone then we can have a good moan!
+            $errors[] = "Couldn't assign task: " . $job['task'] . " in room: " . $job['room'] . " to any user";
         }
 
-        $status['rota'] = $rota;
+        // $errors can either be an array of strings or false to indicate there are no errors.
+        if(count($errors) < 1 )
+            $errors = false;
 
-        return $this->createJsonResponse($this->response, $status);
+        return $this->createJsonDataResponse($this->response, $rota, $errors);
     }
 }

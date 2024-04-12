@@ -15,8 +15,8 @@ class DeleteUserScheduleAction extends UserAction
     protected function action(): Response
     {
         if(!$this->db->deleteUserSchedule($this->userId))
-            return $this->createJsonResponse($this->response, ['message' => 'User Schedule deletion failed']);
+            return $this->createJsonResponse($this->response, 'User Schedule deletion failed');
 
-        return $this->createJsonResponse($this->response, ['message' => 'User Schedule deleted successfully']);
+        return $this->createJsonResponse($this->response, 'User Schedule deleted successfully');
     }
 }

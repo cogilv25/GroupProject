@@ -36,12 +36,4 @@ abstract class MemberAction extends Action
     }
 
     abstract protected function action(): Response;
-
-    // Function to create a json response
-    protected function createJsonResponse(Response $response, $data, int $statusCode = 200): Response
-    {
-        $response->getBody()->write(json_encode($data,JSON_PRETTY_PRINT));
-
-        return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
-    }
 }

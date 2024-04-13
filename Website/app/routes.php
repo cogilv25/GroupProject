@@ -143,6 +143,11 @@ return function (App $app) {
     //UserSchedule Actions
     $app->group('/schedule', function (Group $group)
     {
+        $group->get('/page', function(Request $request, Response $response)
+        {
+            $renderer = $this->get('renderer');
+            return $renderer->render($response, 'schedule.php');
+        });
         $group->post('/create_row', Schedule\CreateUserScheduleRowAction::class);
         $group->post('/update_row', Schedule\UpdateUserScheduleRowAction::class);
         $group->post('/delete_row', Schedule\DeleteUserScheduleRowAction::class);
@@ -154,6 +159,25 @@ return function (App $app) {
     $app->group('/household', function (Group $group)
     {
         $group->get('', function(Request $request, Response $response) {
+            $renderer = $this->get('renderer');
+            $userId = $request->getAttribute('userId');
+            if($userId==0)
+                return $response->withHeader('Location', '/')->withStatus(302);
+
+            $db = $this->get('db');
+            $data = $db->getUserHouseAndAdminStatus($userId);
+            if($data === false)
+                return $renderer->render($response, 'household.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
+
+            $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
+            $houseId = $data[0];
+
+            $data = $db->getUsersInHousehold($houseId);
+
+
+            return $renderer->render($response, 'household.php', ['users' => $data, 'currentUser' => $user]);
+        });
+        $group->get('/page', function(Request $request, Response $response) {
             $renderer = $this->get('renderer');
             $userId = $request->getAttribute('userId');
             if($userId==0)

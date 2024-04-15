@@ -16,8 +16,7 @@ enum ScheduleType
 //TODO: Once User Validation is implemented in actions houseId and userId will be known safe values so we can remove
 // some of the prepared queries making things a bit less.... big.
 //TODO: Just discovered Join Delete's so that might reduce the number of queries required here and there.
-//TODO: Full implementation
-//TODO: Return newly created records Id's where not uniquely linked to the user (as in a user only has one of these).
+//TODO: Compress (Compression Oriented Programming)
 class DatabaseDomain
 {
 	private mysqli $db;
@@ -64,16 +63,15 @@ class DatabaseDomain
         return $this->db->query($queryString);
     }
 
-    //Create household and add user as admin
+    //Create household making the user the owner
     public function createHousehold(int $userId) : bool
     {
-        $query1 = "INSERT INTO `House` (`adminId`) VALUES (". $userId .")";
+        $result = $this->db->query("INSERT INTO `House` VALUES ()");
+        $id = $this->db->insert_id;
 
-        $subQuery = "SELECT `houseId` FROM `House` WHERE `adminId`=".$userId;
-        $query2 = "UPDATE `user` SET `House_houseId`=(". $subQuery .")  WHERE `userId`=" . $userId;
+        if(!$result) return false;
 
-        //If the first query succeeds return the result of the second otherwise false
-        return $this->db->query($query1) ? $this->db->query($query2) : false;
+        return $this->db->query("UPDATE `user` SET `House_houseId`=". $id .", `role`='owner' WHERE `userId`=" . $userId);
     }
 
     public function getUserIdAndPasswordHash(string $email) : array | false
@@ -119,12 +117,24 @@ class DatabaseDomain
         return $this->db->query($query);
     }
 
-    public function removeUserFromHousehold(int $userId, int $houseId) : bool
+    public function removeUserFromHousehold(int $userId, int $houseId, int $adminLevel) : bool
     {
-        $this->db->begin_transaction();
-        $query = "UPDATE `user` SET `House_houseId`=NULL WHERE `House_houseId`=".$houseId." AND `userId`=".$userId;
+        //Owner can delete anyone except themselves
+        $query = "UPDATE `user` SET `House_houseId`= NULL AND `role`='member' WHERE `House_houseId`=".$houseId." AND `userId`=".$userId . 
+        " AND NOT `role`='owner'";
 
-        if($this->db->query($query) == false)
+        if($adminLevel == 1)
+            $query .= " AND NOT `role`='admin'";
+
+        $this->db->begin_transaction();
+
+        if($result = $this->db->query($query) == false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        if($this->db->affected_rows < 1)
         {
             $this->db->rollback();
             return false;
@@ -145,23 +155,35 @@ class DatabaseDomain
         return $this->db->commit();
     }
 
-    public function getUserHouseAndAdminStatus(int $userId)
+    public function getUserHouseAndRole(int $userId)
     {
-        $query = $this->db->prepare("SELECT `House_houseId`,`houseId` FROM `user` LEFT JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
+        $query = $this->db->prepare("SELECT `House_houseId`,`role` FROM `user` WHERE `userId` = ?");
         $query->bind_param("i", $userId);
         $query->execute(); 
-        $query->bind_result($houseId, $adminHouseId);
+        $query->bind_result($houseId, $role);
         $query->fetch();
         $query->close();
         if(!isset($houseId))
             return false;
-        return [$houseId, $adminHouseId != null];
+        return [$houseId, $role];
     }
 
     public function getAdminHouse(int $adminId) : int | bool
     {
-        $query = $this->db->prepare("SELECT `houseId` FROM `user` JOIN `House` ON `adminId`=`userId` WHERE `userId` = ?");
+        $query = $this->db->prepare("SELECT `House_houseId` FROM `user` WHERE `userId` = ? AND (`role`='owner' OR `role`='admin')");
         $query->bind_param("i", $adminId);
+        $query->execute(); 
+        $query->bind_result($houseId);
+        $query->fetch();
+        $query->close();
+        if($query->num_rows < 1) return false;
+        return $houseId;
+    }
+
+    public function getOwnerHouse(int $ownerId) : int | bool
+    {
+        $query = $this->db->prepare("SELECT `House_houseId` FROM `user` WHERE `userId` = ? AND `role`='owner'");
+        $query->bind_param("i", $ownerId);
         $query->execute(); 
         $query->bind_result($houseId);
         $query->fetch();
@@ -171,17 +193,48 @@ class DatabaseDomain
 
     public function isUserAdmin(int $userId) : bool
     {
-        return $this->getAdminHouse($userId) == null ? false : true;
+        return ($this->getAdminHouse($userId) != false);
     }
 
-    public function getUserInviteLink(int $userId) : string | false
+    public function promoteUser(int $houseId, int $userId) : bool
     {
-        $houseId = $this->getAdminHouse($userId);
-        if($houseId == null)
-            return false;
+        return $this->db->query("UPDATE `user` SET `role`='admin' WHERE ".
+        "`House_houseId`=" . $houseId . " AND `userId`=" . $userId);
+    }
+
+    public function demoteUser(int $houseId, int $userId) : bool
+    {
+        return $this->db->query("UPDATE `user` SET `role`='member' WHERE ".
+        "`House_houseId`=" . $houseId . " AND `userId`=" . $userId);
+    }
+
+    public function getUserInviteLink(int $userId) : string
+    {
+        $result = $this->db->query("SELECT `houseId`, `invite_link`, `role` FROM `user` JOIN ".
+            "`house` on `House_houseId`=`houseId` WHERE `userId`=" . $userId);
+
+        if($result === false) return "No Link";
+        if($result->num_rows == 0) return "No Link";
+
+        $row = $result->fetch_row();
+        $role = $row[2];
+        if($role == 'member') return "No Link";
+
+        $houseId = $row[0];
+        $inviteLink = $row[1];
 
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-        return $protocol . "://" . $_SERVER['HTTP_HOST'] . "/household/join/" . $houseId;
+        return $protocol . "://" . $_SERVER['HTTP_HOST'] . "/household/join/" . $houseId . "/" . $inviteLink;
+    }
+
+    public function validateInviteLink(int $houseId, string $inviteLink)
+    {
+        $result = $this->db->query("SELECT `houseId` FROM `house` WHERE `houseId`=" . $houseId .
+                                   " AND `invite_link`='" . $inviteLink . "'");
+
+        if($result === false) return false;
+
+        return ($result->num_rows > 0) ? true : false;
     }
 
     public function getUserHousehold(int $userId) : int | false
@@ -198,32 +251,34 @@ class DatabaseDomain
 
     public function getUsersInHousehold(int $houseId)
     {
-        $query = $this->db->prepare("SELECT `adminId` FROM `House` WHERE `houseId` = ?");
+        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname`, `email`, `role` FROM `user` WHERE `House_houseId` = ?");
         $query->bind_param("i", $houseId);
         $query->execute(); 
-        $query->bind_result($adminId);
-        $result = $query->fetch();
-        $query->close();
+        $query->bind_result($userId, $forename, $surname, $email, $role);
 
-        //Fails if $houseId is not a valid id
-        if($result!=true)
-            return false;
-
-        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname`, `email` FROM `user` WHERE `House_houseId` = ?");
-        $query->bind_param("i", $houseId);
-        $query->execute(); 
-        $query->bind_result($userId, $forename, $surname, $email);
-
-        //TODO: @MultipleAdmins
         while($query->fetch())
         {
-            $role = $userId == $adminId ? "admin" : "member";
             $data[$userId] = ['userId' => $userId, 'forename' => $forename, 'surname' => $surname, 'role' => $role, 'email' => $email];
         }
 
         $query->close();
 
         return ($data != null) ? $data : false;
+    }
+
+    public function getUsersNamesInHousehold(int $houseId) : bool | array
+    {
+        $result = $this->db->query("SELECT `userId`, `forename`, `surname` FROM ".
+            "`user` WHERE `House_houseId`=" . $houseId);
+
+        if($result === false) return false;
+
+        $data = [];
+        while($row = $result->fetch_row())
+        {
+            $data[$row[0]] = ['forename' => $row[1], 'surname' => $row[2]];
+        }
+        return $data;
     }
 
     public function createRoom(int $houseId, string $name) : bool | int
@@ -250,6 +305,7 @@ class DatabaseDomain
 
     public function deleteRoom(int $roomId, int $houseId) : bool
     {
+        //TODO: Delete affected Room_Has_Task entries.
         $queryString = "DELETE `Room`, `taskpoints`, `User_Exempt_Room`, `RoomSchedule` FROM `Room` ".
             "LEFT JOIN `taskpoints` ON `Room`.`roomId`=`taskpoints`.`roomId` ".
             "LEFT JOIN `User_Exempt_Room` ON `User_Exempt_Room`.`roomId`=`Room`.`roomId`".
@@ -288,9 +344,9 @@ class DatabaseDomain
     public function getHouseholdTaskDetails(int $houseId)
     {
         $query = "SELECT `room`.`roomId`, `room`.`name`, `task`.`taskId`, `task`.`name`, `task`.`description`, `RHTId` ".
-        "FROM `room` JOIN `task` ON `task`.`houseId`=`room`.`houseId` ". 
+        "FROM `room` RIGHT JOIN `task` ON `task`.`houseId`=`room`.`houseId` ". 
         "LEFT JOIN `room_has_task` ON (`room`.`roomId` = `room_has_task`.`roomId` ".
-        "AND `task`.`taskId`=`room_has_task`.`taskId`) WHERE `room`.`houseId`=". $houseId;
+        "AND `task`.`taskId`=`room_has_task`.`taskId`) WHERE `task`.`houseId`=". $houseId;
 
         $result = $this->db->query($query);       
 
@@ -304,7 +360,8 @@ class DatabaseDomain
             $details['tasks'][$row[2]]['description'] = $row[4];
             $details['tasks'][$row[2]]['rooms'][$row[0]] = (bool)($row[5] != null);
 
-            $details['rooms'][$row[0]] = $row[1];
+            if($row[0] != null)
+                $details['rooms'][$row[0]] = $row[1];
         }
 
         return $details;
@@ -328,7 +385,8 @@ class DatabaseDomain
             $details['rooms'][$row[0]]['name'] = $row[1];
             $details['rooms'][$row[0]]['tasks'][$row[2]] = (bool)($row[4] != null);
 
-            $details['tasks'][$row[2]] = $row[3];
+            if($row[2] != null)
+                $details['tasks'][$row[2]] = $row[3];
         }
 
         return $details;
@@ -581,7 +639,7 @@ class DatabaseDomain
         $this->db->begin_transaction();
 
         //Makes all users who were in the Household homeless
-        $query = $this->db->prepare("UPDATE `user`SET `House_houseId`=NULL WHERE `House_houseId`=?");
+        $query = $this->db->prepare("UPDATE `user`SET `House_houseId`=NULL, `role`='member' WHERE `House_houseId`=?");
         $query->bind_param("i", $houseId);
         $result = $query->execute();
         $query->close();
@@ -612,11 +670,26 @@ class DatabaseDomain
         return $this->db->commit();
     }
 
-    public function createUserRoomRule(int $houseId, $userId, $roomId) : bool | int
+    public function createUserRoomRule(int $houseId, $userId, $roomId, $active = false) : bool | int
     {
+        $active = $active ? "TRUE" : "FALSE";
+
         //Create new user_room rule in house
-        $query = $this->db->prepare("INSERT INTO `User_Exempt_Room` (`houseId`, `userId`, `roomId`) VALUES (?, ?, ?)");
-        $query->bind_param("iii", $houseId, $userId, $roomId);
+        $query = $this->db->prepare("INSERT INTO `User_Exempt_Room` (`houseId`, `userId`, `roomId`, `active`) VALUES (?, ?, ?, ?)");
+        $query->bind_param("iiis", $houseId, $userId, $roomId, $active);
+        $result = $query->execute();
+        $query->close();
+
+        return $result ? $this->db->insert_id : false;
+    }
+
+    public function createUserTaskRule(int $houseId, $userId, $taskId, $active = false) : bool | int
+    {
+        $active = $active ? "TRUE" : "FALSE";
+
+        //Create new user_task rule in house
+        $query = $this->db->prepare("INSERT INTO `User_Exempt_Task` (`houseId`, `userId`, `taskId`, `active`) VALUES (?, ?, ?, ?)");
+        $query->bind_param("iiis", $houseId, $userId, $taskId, $active);
         $result = $query->execute();
         $query->close();
 
@@ -679,17 +752,6 @@ class DatabaseDomain
         return $this->db->commit() ? $this->db->insert_id : false;
     }
 
-    public function createUserTaskRule(int $houseId, $userId, $taskId) : bool | int
-    {
-        //Create new user_task rule in house
-        $query = $this->db->prepare("INSERT INTO `User_Exempt_Task` (`houseId`, `userId`, `taskId`) VALUES (?, ?, ?)");
-        $query->bind_param("iii", $houseId, $userId, $taskId);
-        $result = $query->execute();
-        $query->close();
-
-        return $result ? $this->db->insert_id : false;
-    }
-
     public function deleteRule(int $houseId, int $ruleType, int $ruleId) : bool | int
     {
         $idColumn = "scheduleId";
@@ -717,6 +779,24 @@ class DatabaseDomain
         $query->close();
 
         return $result ? $this->db->insert_id : false;
+    }
+
+    public function createRoomHasTaskEntry(int $houseId, int $roomId, int $taskId) : bool
+    {
+        // If the room and task ids are not for the correct house, although this shouldn't happen,
+        //   they won't be used by the rest of the application.
+        $query = "INSERT INTO `room_has_task` (`houseId`,`roomId`,`taskId`) VALUES (" .
+            $houseId . ", " . $roomId . ", " . $taskId .")";
+        return $this->db->query($query);
+    }
+
+    public function deleteRoomHasTaskEntry(int $houseId, int $roomId, int $taskId) : bool
+    {
+        // Including houseId in the query prevents nefarious requests from deleting arbitrary
+        //   household's room_has_task entries.
+        $query = "DELETE FROM `room_has_task` WHERE `houseId`=" . $houseId . " AND `roomId`= " .
+        $roomId . " AND `taskId`=" . $taskId;
+        return $this->db->query($query);
     }
 
     public function getRulesInHousehold(int $houseId) : array | bool

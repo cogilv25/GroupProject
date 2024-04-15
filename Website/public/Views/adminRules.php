@@ -24,7 +24,7 @@ $adminruleData = [
 
 <div class="cell small-12" style="width: 100%;">
     <div class="add-task-button-container">
-        <button class="button" id="addTaskButton">Add Rule</button>
+        <a href="rule/create" class="button">Add Rule</a>
     </div>
     <div class="table-wrapper">
         <table class="unstriped custom-table" >

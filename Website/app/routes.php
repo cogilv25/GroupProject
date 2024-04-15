@@ -29,8 +29,8 @@ return function (App $app) {
     //    the admin dashboard for logged in admins
     $app->map(['GET', 'POST'], '/', function (Request $request, Response $response) {
         $renderer = $this->get('renderer');
-
         $userId = $request->getAttribute('userId');
+
         if($userId==0)
             return $renderer->render($response, 'Authpage.html');
         else
@@ -38,97 +38,12 @@ return function (App $app) {
             $db = $this->get('db');
             $link = $db->getUserInviteLink($userId);
 
+
             if($link == false)
                 return $renderer->render($response, 'Dashboard.php', ['link' => "No Link"]);
             else
                 return $renderer->render($response, 'admindashboard.php', ['link' => $link]);
         }
-    });
-    
-
-    $app->get('/adminroom.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $data = $db->getUserHouseAndAdminStatus($userId);
-        if($data === false)
-            return $renderer->render($response, 'adminroom.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
-
-        $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
-        $houseId = $data[0];
-
-        $data = $db->getHouseholdRoomDetails($houseId);
-        $data['currentUser'] = $user;
-
-        return $renderer->render($response, 'adminroom.php', $data);
-    });
-
-    $app->get('/rules.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $link = $db->getUserInviteLink($userId);
-        if($link == false)
-            $link = "No Link";
-
-        $data = ['link' => $link];
-        return $renderer->render($response, 'rules.php', $data);
-    });
-    $app->get('/addrule.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $link = $db->getUserInviteLink($userId);
-        if($link == false)
-            $link = "No Link";
-
-        $data = ['link' => $link];
-        return $renderer->render($response, 'addrule.php', $data);
-    });
-
-
-    $app->get('/adminTasks.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $data = $db->getUserHouseAndAdminStatus($userId);
-        if($data === false)
-            return $renderer->render($response, 'adminroom.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
-
-        $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
-        $houseId = $data[0];
-
-        $data = $db->getHouseholdTaskDetails($houseId);
-        $data['currentUser'] = $user;
-
-        return $renderer->render($response, 'adminTasks.php', $data);
-    });
-
-    $app->get('/adminRules.php', function (Request $request, Response $response) {
-        $userId = $request->getAttribute('userId');
-        if($userId==0)
-            throw new HttpUnauthorizedException($request, "You must be logged in to do that");
-
-        $renderer = $this->get('renderer');
-        $db = $this->get('db');
-        $link = $db->getUserInviteLink($userId);
-        if($link == false)
-            $link = "No Link";
-
-        $data = ['link' => $link];
-        return $renderer->render($response, 'adminRules.php', $data);
     });
 
     //User Actions
@@ -143,10 +58,17 @@ return function (App $app) {
     //UserSchedule Actions
     $app->group('/schedule', function (Group $group)
     {
-        $group->get('/page', function(Request $request, Response $response)
+        $group->get('', function (Request $request, Response $response)
         {
+            //Prepare data
+            $userId = $request->getAttribute('userId');
+            if($userId == 0)
+                return $response->withHeader('Location', '/')->withStatus(302);
+
+            $page = "schedule.php";
             $renderer = $this->get('renderer');
-            return $renderer->render($response, 'schedule.php');
+
+            return $renderer->render($response, 'admindashboard.php', ['page' => $page, 'link' => "No Link"]);
         });
         $group->post('/create_row', Schedule\CreateUserScheduleRowAction::class);
         $group->post('/update_row', Schedule\UpdateUserScheduleRowAction::class);
@@ -161,47 +83,37 @@ return function (App $app) {
         $group->get('', function(Request $request, Response $response) {
             $renderer = $this->get('renderer');
             $userId = $request->getAttribute('userId');
+
             if($userId==0)
                 return $response->withHeader('Location', '/')->withStatus(302);
 
             $db = $this->get('db');
-            $data = $db->getUserHouseAndAdminStatus($userId);
-            if($data === false)
-                return $renderer->render($response, 'household.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
+            $invite = $db->getUserInviteLink($userId);
+            $houseRole = $db->getUserHouseAndRole($userId);
 
-            $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
-            $houseId = $data[0];
+            if($houseRole === false)
+            {
+                $data = ['currentUser' => ['userId' => $userId, 'homeless' => true]];
+            }
+            else
+            {
+                $data = ['users' => $db->getUsersInHousehold($houseRole[0])];
+                $data['currentUser'] = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
+            }
 
-            $data = $db->getUsersInHousehold($houseId);
+            $data['page'] = "household.php";
+            $data['link'] = $invite;
 
-
-            return $renderer->render($response, 'household.php', ['users' => $data, 'currentUser' => $user]);
-        });
-        $group->get('/page', function(Request $request, Response $response) {
-            $renderer = $this->get('renderer');
-            $userId = $request->getAttribute('userId');
-            if($userId==0)
-                return $response->withHeader('Location', '/')->withStatus(302);
-
-            $db = $this->get('db');
-            $data = $db->getUserHouseAndAdminStatus($userId);
-            if($data === false)
-                return $renderer->render($response, 'household.php', ['currentUser' => ['userId' => $userId, 'homeless' => true]]);
-
-            $user = ['userId' => $userId, 'isAdmin' => $data[1], 'homeless' => false ];
-            $houseId = $data[0];
-
-            $data = $db->getUsersInHousehold($houseId);
-
-
-            return $renderer->render($response, 'household.php', ['users' => $data, 'currentUser' => $user]);
+            return $renderer->render($response, 'admindashboard.php', $data);
         });
         $group->get('/create', HouseHold\CreateHouseHoldAction::class);
         //TODO: Unique codes for household join links
-        $group->get('/join/{id}', HouseHold\JoinHouseHoldAction::class);
+        $group->get('/join/{id}/{uuid}', HouseHold\JoinHouseHoldAction::class);
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);
         $group->post('/remove', Household\RemoveUserHouseHoldAction::class);
+        $group->post('/promote', Household\PromoteUserHouseHoldAction::class);
+        $group->post('/demote', Household\DemoteUserHouseHoldAction::class);
         $group->get('/data', Household\ListHouseholdAction::class);
         $group->get('/schedules', Schedule\GetHouseholdUserSchedulesAction::class);
         $group->get('/gen_rota', Household\RotaGenAction::class);
@@ -210,26 +122,131 @@ return function (App $app) {
     //Room Actions
     $app->group('/room', function (Group $group)
     {
+        $group->get('', function(Request $request, Response $response) {
+            $userId = $request->getAttribute('userId');
+            if($userId==0)
+                return $response->withHeader('Location', '/')->withStatus(302);
+
+            $renderer = $this->get('renderer');
+            $db = $this->get('db');
+            $invite = $db->getUserInviteLink($userId);
+            $houseRole = $db->getUserHouseAndRole($userId);
+
+            if($houseRole === false)
+            {
+                $data = ['rooms' => [], 'tasks' => []];
+                $data['currentUser'] = ['userId' => $userId, 'homeless' => true];
+            }
+            else
+            {
+                $data = $db->getHouseholdRoomDetails($houseRole[0]);
+                $data['currentUser'] = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
+            }
+
+            $data['page'] = 'adminroom.php';
+            $data['link'] = $invite;
+
+            return $renderer->render($response, 'admindashboard.php', $data);
+        });
         $group->post('/create', Room\CreateRoomAction::class);
         $group->post('/update', Room\UpdateRoomAction::class);
         $group->post('/delete', Room\DeleteRoomAction::class);
         $group->get('/data', Room\ListRoomAction::class);
+        $group->post('/update_tasks', Room\UpdateTasksAction::class);
     });
 
     //Task Actions
     $app->group('/task', function (Group $group)
     {
+        $group->get('', function(Request $request, Response $response) {
+            $userId = $request->getAttribute('userId');
+            if($userId==0)
+                return $response->withHeader('Location', '/')->withStatus(302);
+
+            $renderer = $this->get('renderer');
+            $db = $this->get('db');
+            $invite = $db->getUserInviteLink($userId);
+            $houseRole = $db->getUserHouseAndRole($userId);
+
+            if($houseRole === false)
+            {
+                $data = ['rooms' => [], 'tasks' => []];
+                $data['currentUser'] = ['userId' => $userId, 'homeless' => true];
+            }
+            else
+            {
+                $data = $db->getHouseholdTaskDetails($houseRole[0]);
+                $data['currentUser'] = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
+            }
+
+            $data['page'] = 'adminTasks.php';
+            $data['link'] = $invite;
+
+            return $renderer->render($response, 'admindashboard.php', $data);
+        });
         $group->post('/create', Task\CreateTaskAction::class);
         $group->post('/update', Task\UpdateTaskAction::class);
         $group->post('/delete', Task\DeleteTaskAction::class);
         $group->get('/data', Task\ListTaskAction::class);
+        $group->post('/update_rooms', Task\UpdateRoomsAction::class);
     });
 
     //Rule Actions
     $app->group('/rule', function (Group $group)
     {
+        $group->get('', function(Request $request, Response $response) {
+            $userId = $request->getAttribute('userId');
+            if($userId==0)
+                return $response->withHeader('Location', '/')->withStatus(302);
+
+            $renderer = $this->get('renderer');
+            $db = $this->get('db');
+            $invite = $db->getUserInviteLink($userId);
+            $data = $db->getUserHouseAndRole($userId);
+
+            if($data === false)
+            {
+                $user = ['userId' => $userId, 'homeless' => true];
+                $data = ['page' => "rules.php"];
+            }
+            else
+            {
+                $user = ['userId' => $userId, 'role' => $data[1], 'homeless' => false ];
+                $data = ['page' => ($data[1] == "member") ? "rules.php" : "adminRules.php"];
+            }
+
+            $data['currentUser'] = $user;
+            $data['link'] = $invite;
+
+            return $renderer->render($response, 'admindashboard.php', $data);
+        });
         $group->group('/create', function (Group $createGroup)
             {
+
+                //TODO: Could this just be part of the rule page?
+                $createGroup->get('', function (Request $request, Response $response)
+                {
+                    $userId = $request->getAttribute('userId');
+                    if($userId==0)
+                        return $response->withHeader('Location', '/')->withStatus(302);
+
+                    $renderer = $this->get('renderer');
+                    $db = $this->get('db');
+
+                    $data = $db->getUserHouseAndRole($userId);
+                    if($data === false)
+                        return $response->withHeader('Location', '/rule')->withStatus(302);
+
+                    $houseId = $data[0];
+
+                    $user = ['userId' => $userId, 'role' => $data[1]];
+                    $data = ['link' => "No Link", 'page' => "addRule.php", 'currentUser' => $user];
+                    $data['rooms'] = $db->getRoomsInHousehold($houseId);
+                    $data['tasks'] = $db->getTasksInHousehold($houseId);
+                    $data['users'] = $db->getUsersNamesInHousehold($houseId);
+
+                    return $renderer->render($response, 'admindashboard.php', $data);
+                });
                 $createGroup->post('/room_time', Rule\CreateRoomTimeRuleAction::class);
                 $createGroup->post('/task_time', Rule\CreateTaskTimeRuleAction::class);
                 $createGroup->post('/user_task', Rule\CreateUserTaskRuleAction::class);

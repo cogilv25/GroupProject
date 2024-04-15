@@ -7,8 +7,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="/CSS/dashboard.css"> 
     <link rel="stylesheet" href="/CSS/householdModal.css">
+    <!-- TODO: not needed? -->
     <link rel="stylesheet" href="/CSS/scheduleTimeRangeControl.css">
+    <?php // TODO: only used on the schedule page so we should insert this line with php ideally ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/roundSlider/1.6.1/roundslider.css" integrity="sha512-XO53CaiPx+m4HUiZ02P4OEGLyyT46mJQzWhwqYsdqRR7IOjPuujK0UPAK9ckSfcJE4ED7dT9pF9r78yXoOKeYw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js" crossorigin="anonymous"></script>  
       
@@ -19,6 +22,14 @@
   body,  html {
     height:100vh;
   }
+
+  .customh5{
+    margin-left:150px;
+}
+.custominputs {
+height:30px;
+}
+
 #sidenav, .navlink {
   background-color: #468F8B;
   color: black;
@@ -189,96 +200,103 @@
   </style>
   <?php include 'adminsidebar.php'; ?>
 
-        <div id="main-content" class="grid-x grid-margin-x small-up-1 medium-up-3 large-up-4">
-           <div class="cell">
-                <div class="card" >
-                  <div class="card-section">
-                    <h4>Dashboard Card.</h4>
-                    <p>Responsive card width n height</p>
-                  </div>
-                </div>
-              </div>
-              <div class="cell">
-                <div class="card" >
-                  <div class="card-section">
-                    <h4>Dashboard Card.</h4>
-                    <p>Responsive card width n height</p>
-                  </div>
-                </div>
-              </div>
-              <div class="cell">
-                <div class="card" >
-                  <div class="card-section">
-                    <h4>Dashboard Card.</h4>
-                    <p>Responsive card width n height</p>
-                  </div>
-                </div>
-              </div>
-              <div class="cell">
-                <div class="card" >
-                  <div class="card-section">
-                    <h4>Dashboard Card.</h4>
-                    <p>Responsive card width n height</p>
-                  </div>
-                </div>
-              </div>
+
+  <div id="main-content" class="grid-x grid-margin-x small-up-1 medium-up-3 large-up-4">
+    <?php 
+        if(isset($page))
+        {
+            if($page !== false)
+                include($page);
+        }
+        else
+        {
+    ?>
+        <div class="cell">
+          <div class="card" >
+            <div class="card-section">
+              <h4>Dashboard Card.</h4>
+              <p>Responsive card width n height</p>
+            </div>
           </div>
-      </div> 
-  </div>
+        </div>
+      <div class="cell">
+        <div class="card" >
+          <div class="card-section">
+            <h4>Dashboard Card.</h4>
+            <p>Responsive card width n height</p>
+          </div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="card" >
+          <div class="card-section">
+            <h4>Dashboard Card.</h4>
+            <p>Responsive card width n height</p>
+          </div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="card" >
+          <div class="card-section">
+            <h4>Dashboard Card.</h4>
+            <p>Responsive card width n height</p>
+          </div>
+        </div>
+    </div>
+        <?php
+        }   
+        ?>
+    </div>
+
+<div class="reveal" id="inviteModal" data-reveal>
+    <div class="grid-x grid-padding-x align-center">
+        <div class="cell small-12 medium-12 large-12">
+            <h2>Invite Household Members</h2>
+            <p>Household Universal Link to allow members to join.</p>
+            <form>
+                <div class="grid-x grid-padding-x align-middle">
+                    <div class="cell auto urlstyle">
+                        <!-- -->
+                        <p><a id="invitationUrl"><?=$link?></a></p>
+                    </div>
+                    <div class="cell shrink">
+                        <button id="copyInviteButton" type="button" class="button primary">Copy</button>
+                    </div>
+                </div>
+            </form>
+            <button class="close-button" data-close aria-label="Close modal" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
 </div>
-<script src="/Javascript/roundslider.js"></script>
 
-<script>
-
-$(document).ready(function() {
-    $(document).foundation();
-
-
-    // Function to load content into '#main-content'
-    function loadContent(url) {
-        // Empty the '#main-content' div and remove all attached event handlers
-        $('#main-content').empty().off();
-
-        // Perform the AJAX request
-        $.ajax({
-            url: url, // Use the URL passed to the function
-            type: 'GET',
-            success: function(response) {
-                // Insert the fetched content into the '#main-content' div
-                $('#main-content').html(response);
-            },
-            error: function(xhr, status, error) {
-                console.error("Error: " + status + " " + error);
+    
+    <?php 
+        if(isset($dynamicScripts))
+        {
+            foreach($dynamicScripts as $path)
+            {
+                echo("<script>\n");
+                include($path);
+                echo("</script>\n");
             }
-        });
-    }
-    // Bind click event handlers to your links/buttons
-    $('#loadHousehold').click(function(e) {
-        e.preventDefault();
-        loadContent('household/page'); // Pass the URL to the loadContent function
-    });
+        }
 
-    $('#loadSchedule').click(function(e) {
-        e.preventDefault();
-        loadContent('schedule/page');
+        if(isset($staticScripts))
+        {
+            foreach($staticScripts as $path)
+            {
+                echo("<script src=\"" . $path . "\"></script>\n");
+            }
+        }
+    ?>
+    <script>
+    $(document).foundation();
+    $('#inviteButton').on('click', function(e) {
+        e.preventDefault(); // Prevent the default behavior of the link
+        $('#inviteModal').foundation('open');
     });
-
-    $('#loadRooms').click(function(e) {
-        e.preventDefault();
-        loadContent('adminroom.php');
-    });
-
-    $('#loadTasks').click(function(e) {
-        e.preventDefault();
-        loadContent('adminTasks.php');
-    });
-
-    $('#loadRules').click(function(e) {
-        e.preventDefault();
-        loadContent('adminRules.php');
-    });
-});
-</script>
-
+    </script>
 </body>
 </html> 

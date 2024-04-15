@@ -16,6 +16,8 @@ abstract class MemberAction extends Action
 
     protected int $houseId;
 
+    protected int $privilege; //0,1,2 == owner,admin,member
+
     public function __invoke(Request $request, Response $response, array $args): Response
     {
         $this->request = $request;
@@ -28,9 +30,20 @@ abstract class MemberAction extends Action
             throw new HttpMethodNotAllowedException($this->request, "You must be logged in to do that");
 
         //Check if user belongs to a household.
-        $this->houseId = $this->db->getUserHousehold($this->userId);
-        if($this->houseId == false)
+        $data = $this->db->getUserHouseAndRole($this->userId);
+        if($data === false)
             throw new HttpBadRequestException($this->request, "You are not a member of a Household");
+
+
+        $this->houseId = $data[0];
+        switch($data[1])
+        {
+            case 'owner': $this->privilege = 0;
+            break;
+            case 'admin': $this->privilege = 1;
+            break;
+            default: $this->privilege = 2;
+        }
 
         return $this->action();
     }

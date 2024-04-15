@@ -12,5 +12,23 @@ use Slim\Exception\HttpMethodNotAllowedException;
 //An action that can be only be performed by the owner of a house
 abstract class OwnerAction extends AdminAction
 {
+    public function __invoke(Request $request, Response $response, array $args): Response
+    {
+        $this->request = $request;
+        $this->response = $response;
+        $this->args = $args;
+
+        //Check if user is logged in
+        $this->adminId = $this->request->getAttribute('userId');
+        if($this->adminId == 0)
+            throw new HttpMethodNotAllowedException($this->request, "You must be logged in to do that");
+
+        //Get the house this user belongs to and check if the user owns it.
+        $this->houseId = $this->db->getOwnerHouse($this->adminId);
+        if($this->houseId == false)
+            throw new HttpMethodNotAllowedException($this->request, "You must be a house owner to do that");
+        $this->adminLevel = 0;
+        return $this->action();
+    }
     abstract protected function action(): Response;
 }

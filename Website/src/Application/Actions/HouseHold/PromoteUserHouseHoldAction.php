@@ -3,12 +3,12 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\HouseHold;
 
-use App\Application\Actions\AdminAction;
+use App\Application\Actions\OwnerAction;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpUnauthorizedException;
 
-class RemoveUserHouseHoldAction extends AdminAction
+class PromoteUserHouseHoldAction extends OwnerAction
 {
 
     protected function action(): Response
@@ -23,12 +23,11 @@ class RemoveUserHouseHoldAction extends AdminAction
 
         $memberId = (int)$data['userId'];
 
-        //Remove member from users household
-        $result = $this->db->removeUserFromHousehold($memberId, $this->houseId, $this->adminLevel);
+        $result = $this->db->promoteUser($this->houseId, $memberId);
 
         if(!$result)
-            return $this->createJsonResponse($this->response, "Failed to remove user from House", 500);
+            return $this->createJsonResponse($this->response, "Failed to promote user", 500);
 
-        return $this->createJsonResponse($this->response, "Removed user from house successfully");
+        return $this->createJsonResponse($this->response, "User promoted");
     }
 }

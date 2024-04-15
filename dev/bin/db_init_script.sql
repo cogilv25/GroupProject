@@ -11,12 +11,8 @@ USE `cleansync`;
 SET FOREIGN_KEY_CHECKS = 0;
 CREATE TABLE `cleansync`.`House` (
   `houseId` INT NOT NULL AUTO_INCREMENT,
-  `adminId` INT NOT NULL,
-  PRIMARY KEY (`houseId`),
-  INDEX `fk_House_user_idx` (`adminId` ASC),
-  CONSTRAINT `fk_house_user`
-    FOREIGN KEY (`adminId`)
-    REFERENCES `cleansync`.`user` (`userId`));
+  `invite_link` CHAR(36) DEFAULT (UUID()),
+  PRIMARY KEY (`houseId`));
 
 SET FOREIGN_KEY_CHECKS = 1;
 -- -----------------------------------------------------
@@ -30,6 +26,7 @@ CREATE TABLE `cleansync`.`User` (
   `password` VARCHAR(256) NOT NULL,
   `House_houseId` INT,
   `personalPoints` INT,
+  `role` ENUM('member','admin','owner') NOT NULL DEFAULT 'member',
   PRIMARY KEY (`userId`),
   INDEX `fk_user_House_idx` (`House_houseId` ASC),
   CONSTRAINT `fk_user_house`
@@ -76,6 +73,7 @@ CREATE TABLE `cleansync`.`User_Exempt_Task` (
   `houseId` INT NOT NULL,
   `userId` INT NOT NULL,
   `taskId` INT NOT NULL,
+  `active` BOOL NOT NULL,
   PRIMARY KEY (`UETId`),
   CONSTRAINT `user_exempt_task_unique` UNIQUE(`userId`,`taskId`),
   INDEX `fk_user_exempt_task_user_idx` (`userId` ASC),
@@ -99,6 +97,7 @@ CREATE TABLE `cleansync`.`User_Exempt_Room` (
   `houseId` INT NOT NULL,
   `userId` INT NOT NULL,
   `roomId` INT NOT NULL,
+  `active` BOOL NOT NULL,
   PRIMARY KEY (`UERId`),
   CONSTRAINT `user_exempt_room_unique` UNIQUE(`userId`,`roomId`),
   INDEX `fk_user_exempt_room_user_idx` (`userId` ASC),

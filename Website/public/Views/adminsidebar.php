@@ -8,15 +8,16 @@
                 <div class="cell">
                     <ul class="vertical menu ">
                       <li><a class="navlink" href="/">Home</a></li>
-                      <li><a class="navlink" href="notifications">Notifications</a></li>
-                      <li><a id="loadRules"  class="navlink" >Rules</a></li>
-                      <li><a id="loadTasks" class="navlink" >Tasks</a></li>
-                      <li><a id="loadHousehold" class="navlink" >HouseHold</a></li>
-                      <li><a id="loadSchedule" class="navlink">Schedule</a></li>
-                      <li><a id="loadRooms" class="navlink">Rooms</a></li>
-                      <li><a class="navlink" href="profile">Profile</a></li>
-                      <li><a class="navlink" href="settings">Settings</a></li>
+                      <li><a class="navlink" href="/notifications">Notifications</a></li>
+                      <li><a class="navlink" href="/rule">Rules</a></li>
+                      <li><a class="navlink" href="/task">Tasks</a></li>
+                      <li><a class="navlink" href="/household" >HouseHold</a></li>
+                      <li><a class="navlink" href="/schedule">Schedule</a></li>
+                      <li><a class="navlink" href="/room">Rooms</a></li>
+                      <li><a class="navlink" href="/profile">Profile</a></li>
+                      <li><a class="navlink" href="/settings">Settings</a></li>
                       <li><a class="navlink" href="/logout">Logout</a></li>
+                      <li><a id="inviteButton" class="navlink">Invite Link</a></li>
                   </ul>
                 </div>
             </div>

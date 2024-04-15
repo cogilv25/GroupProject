@@ -14,11 +14,11 @@ class LeaveHouseHoldAction extends MemberAction
 
     protected function action(): Response
     {
-        if($this->db->getAdminHouse($this->userId) != false)
-            throw HttpMethodNotAllowedException("Admin can not leave their houehold!");
+        if($this->db->getOwnerHouse($this->userId) != false)
+            throw HttpMethodNotAllowedException("Owner can not leave their household!");
 
         //Remove user from their House
-        $result = $this->db->removeUserFromHousehold($this->userId, $this->houseId);
+        $result = $this->db->removeUserFromHousehold($this->userId, $this->houseId, 0);
 
         if(!$result)
             return $this->createJsonResponse($this->response, "Failed to leave House", 500);

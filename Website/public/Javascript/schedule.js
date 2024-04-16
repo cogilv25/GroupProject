@@ -118,7 +118,6 @@ $.fn.roundSlider.prototype.refreshSlider = function () {
   this.addClockNumbers();
 }
 $(".round-slider").each(function(index) {
-  
   var sliderId = $(this).data('slider-id');
         var storedHandles = localStorage.getItem('slider' + sliderId);
         var initialHandles = storedHandles ? JSON.parse(storedHandles) : [

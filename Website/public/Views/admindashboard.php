@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="/CSS/dashboard.css"> 
     <link rel="stylesheet" href="/CSS/householdModal.css">
-    <!-- TODO: not needed? -->
     <link rel="stylesheet" href="/CSS/scheduleTimeRangeControl.css">
     <?php // TODO: only used on the schedule page so we should insert this line with php ideally ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/roundSlider/1.6.1/roundslider.css" integrity="sha512-XO53CaiPx+m4HUiZ02P4OEGLyyT46mJQzWhwqYsdqRR7IOjPuujK0UPAK9ckSfcJE4ED7dT9pF9r78yXoOKeYw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -88,115 +87,9 @@ height:30px;
     }
 }
 
-#slider1{
-  margin:50px;
-}
-   
-.rs-clock-number {
-  font-size: 14px; /* Adjust the size as needed */
-  color: #000; /* Change the color as needed */
-  font-weight: bold;
-}
 
 
 
-.tooltip-menu {
-  display: none; /* Hidden initially */
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: 10px; /* Space between the circle and the tooltip */
-  z-index: 1001; /* Ensure it's above the add-handle circle and other elements */
-}
-
-.tooltip-menu ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.tooltip-menu ul li a {
-  display: block;
-  padding: 10px 20px;
-  color: #333;
-  text-decoration: none;
-}
-
-.tooltip-menu ul li a:hover {
-  background-color: #f0f0f0;
-}
-
-#segmentsTable {
-  margin-left: 20px; /* Add left margin */
-  font-size: 0.9rem; /* Make table font smaller if needed */
-  max-width:1200px;
-}
-
-#segmentsTable th, #segmentsTable td {
-  padding: 4px 8px; /* Adjust padding to make table cells smaller */
-}
-
-.button-group {
-            text-align: center; /* Center the buttons */
-            margin: 5px; /* Space between buttons and slider */
-
-        }
-.custombtn{
-  margin:15px;
-}
-.cell {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px; /* Adds space between rows */
-    }
-
-    .day-label {
-        margin-bottom: 10px; /* Space between the label and the button group */
-        font-size: 1.2em; /* Larger text for better readability */
-    }
-
-    .button-group {
-        margin-bottom: 15px; /* Space between the button group and the slider */
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .custombtn {
-        margin: 5px; /* Space around buttons */
-        padding: 8px 12px; /* Button padding for better touch */
-        background-color:#959695;
-        border-radius:12px;
-    }
-    .custombtn:hover {
-        margin: 5px; /* Space around buttons */
-        padding: 8px 12px; /* Button padding for better touch */
-        background-color:#484a49;
-        border-radius:12px;
-    }
-
-
-    #submitSchedule {
-    padding: 10px 20px;
-    font-size: 16px; 
-    background-color: #959695; 
-    color: black; 
-    border: black solid 1px; 
-    border-radius: 5px; 
-}
-.cell.medium-12 {
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    height: 100px; 
-    width: 100%; 
-}
-#submitSchedule:disabled {
-    background: #484a49; 
-    color: black; 
-}
   </style>
   <?php include 'adminsidebar.php'; ?>
 

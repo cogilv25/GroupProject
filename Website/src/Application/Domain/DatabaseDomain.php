@@ -487,7 +487,33 @@ class DatabaseDomain
 
     public function checkScheduleForCollisions(ScheduleType $t, int $t_id)
     {
-        //TODO: Whole schedule collision checking
+        switch ($t) {
+            case ScheduleType::User:
+            $table = "UserSchedule";
+                break;
+            case ScheduleType::Task:
+            $table = "TaskSchedule";
+                break;
+            case ScheduleType::Room:
+            $table = "RoomSchedule";
+                break;
+        }
+
+        // This query returns a count of the schedule rows that collide.
+        $query = "SELECT count(*) FROM `". $table ."` as t1 WHERE 1 > ".
+        "(SELECT count(*) FROM `". $table ."` WHERE `t1`.`day`=`day` AND ". 
+        "((`t1`.`beginTimeslot` <= `beginTimeslot` AND `t1`.`endTimeslot` >= `beginTimeslot`) OR ".
+        "(`t1`.`beginTimeslot` <= `endTimeslot` AND `t1`.`endTimeslot` >= `endTimeslot`) OR ".
+        "(`t1`.`beginTimeslot` >= `beginTimeslot` AND `t1`.`endTimeslot` <= `endTimeslot`)))";
+
+        $result = $this->db->query($query);
+
+        if($result === false)
+            return true;
+
+        if($result->fetch_row()[0] != 0)
+            return true;
+
         return false;
     }
 

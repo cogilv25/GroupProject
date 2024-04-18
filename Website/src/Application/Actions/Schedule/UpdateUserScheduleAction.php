@@ -28,7 +28,6 @@ class UpdateUserScheduleAction extends UserAction
             throw new HttpBadRequestException($this->request, "Invalid form data submitted");
 
         $schedules = $data['schedules'];
-
         $scheduleRows = [];
         foreach ($schedules as $row)
         {

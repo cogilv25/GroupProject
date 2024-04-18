@@ -1,85 +1,58 @@
-.view
-{
-    position: relative;
-    max-width: 1920px;
-    width: 85%;
-    height: 6vw;
-    max-height: 80px;
-    display: flex;
-    flex-direction: row;
-    margin: auto;
-    background-color: #7cb;
-    border: solid 3px #666;
-    border-radius: 3px;
+.day-label {
+    margin-bottom: 10px; 
+    font-size: 1.2em; 
 }
-.container
-{
-    padding-top: 50px;
+
+.button-group {
+    margin-bottom: 15px; 
     display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100vh;
+    flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-}
-.unsetBlock
-{
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    background-color: #c11;
-    height: 100%;
-    width: 100%;
 }
 
-.time-range-button
-{
-    width: 200px;
-    height: 50px;
-    font-family: Verdana;
-    font-size: 12pt;
-    border: solid 3px #555;
-    border-radius: 4px;
-    background-color: #7cb;
-    margin: 3px;
-    cursor: pointer;
+.custombtn {
+    margin: 5px; /* Space around buttons */
+    padding: 8px 12px; /* Button padding for better touch */
+    background-color:#959695;
+    border-radius:12px;
+}
+.custombtn:hover {
+    margin: 5px; /* Space around buttons */
+    padding: 8px 12px; /* Button padding for better touch */
+    background-color:#484a49;
+    border-radius:12px;
 }
 
-.setBlock
-{
-    position: absolute;
-    left: 0%;
-    background-color: #1a1;
-    height: 100%;
-    width: 100%;
-}
 
-.three-lists-container
-{
-    display: flex;
-    flex-direction: row;
-    margin: auto;
-    justify-content: space-around;
-    width: 100%;
+#submitSchedule {
+padding: 10px 20px;
+font-size: 16px; 
+background-color: #959695; 
+color: black; 
+border: black solid 1px; 
+border-radius: 5px; 
 }
-
-.list-container
-{
+.customcell.medium-12 {
+display: flex; 
+justify-content: center; 
+align-items: center; 
+height: 100px; 
+width: 100%; 
+}
+#submitSchedule:disabled {
+background: #484a49; 
+color: black; 
+}
+.customcell {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 30%;
+    justify-content: center;
+    margin-bottom: 20px; 
 }
 
-.list-item
-{
-    display: flex;
-    justify-content: center;
-    padding: 5px;
-    background-color: #7cb;
-    border: solid 2px #555;
-    border-radius: 20px;
-    width: 90%;
-    margin: 5px;
-    cursor: pointer;
-}
+.rs-clock-number {
+    font-size: 14px; 
+    color: #000; 
+    font-weight: bold;
+  }

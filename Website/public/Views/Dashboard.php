@@ -30,7 +30,7 @@
                                 <li><a class="navlink" href="addrule.php">Add Rule</a></li>
                             </ul>
                         </li>
-                        <li><
+                        <li>
                       <li><a class="navlink" href="#">Tasks</a></li>
                       <li><a id="loadHousehold" class="navlink" href="#">HouseHold</a></li>
                       <li><a class="navlink" href="schedule">Schedule</a></li>
@@ -50,6 +50,8 @@
                 </div>
             </div>
             <div id="main-content" class="grid-x grid-margin-x small-up-1 medium-up-3 large-up-4">
+
+            
             </div>
         </div>
     </div>
@@ -58,30 +60,6 @@
 
 
 
-    <?php include 'householdModal.html'; ?>
-    <!--Invite members to household via this universal link -->
-    <div class="reveal" id="inviteModal" data-reveal>
-        <div class="grid-x grid-padding-x align-center">
-            <div class="cell small-12 medium-12 large-12">
-                <h2>Invite Household Members</h2>
-                <p>Household Universal Link to allow members to join.</p>
-                <form>
-                    <div class="grid-x grid-padding-x align-middle">
-                        <div class="cell auto urlstyle">
-                            <!-- -->
-                            <p><a id="invitationUrl"><?=$link?></a></p>
-                        </div>
-                        <div class="cell shrink">
-                            <button type="button" class="button primary">Copy</button>
-                        </div>
-                    </div>
-                </form>
-                <button class="close-button" data-close aria-label="Close modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        </div>
-    </div>
 
 
     <script src="/Javascript/dashboard.js"></script>

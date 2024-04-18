@@ -6,10 +6,16 @@
                     <a id="logo">CleanSync</a>
                 </div>
                 <div class="cell">
-                    <ul class="vertical menu ">
+                <ul class="vertical menu accordion-menu" data-accordion-menu>
                       <li><a class="navlink" href="/">Home</a></li>
                       <li><a class="navlink" href="/notifications">Notifications</a></li>
-                      <li><a class="navlink" href="/rule">Rules</a></li>
+                      <li>
+                        <a class="navlink">Rules</a>
+                        <ul class="menu vertical nested">
+                                <li><a class="navlink" href="/rule">View All Rules</a></li>
+                                <li><a class="navlink" href="rule/create">Add Rule</a></li>
+                        </ul>
+                        </li>
                       <li><a class="navlink" href="/task">Tasks</a></li>
                       <li><a class="navlink" href="/household" >HouseHold</a></li>
                       <li><a class="navlink" href="/schedule">Schedule</a></li>
@@ -29,3 +35,10 @@
                     <span class="title-bar-title">CleanSync</span>
                 </div>
             </div>
+            <script>
+                 $(document).foundation();
+             </script>
+
+<style>
+
+    </style>

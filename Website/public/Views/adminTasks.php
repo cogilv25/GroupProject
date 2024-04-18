@@ -46,7 +46,8 @@ $tasks =
             {room4Id} => true
         ]
     ]
-] */ ?>
+] */ 
+ ?>
 
 <?php if($currentUser['homeless'] === false) { ?>
     <div class="cell small-12 medium-6 large-auto">
@@ -90,7 +91,7 @@ $tasks =
                                 <input id="assignedCheckbox<?=$roomId?>" type="checkbox" <?=$value?"checked":""?>>
                                 <label for="assignedCheckbox<?=$roomId?>"> <?=$rooms[$roomId]?> </label>
                                 <br>
-                        }
+                        
                     
                     <?php }}} ?>
                 </fieldset>

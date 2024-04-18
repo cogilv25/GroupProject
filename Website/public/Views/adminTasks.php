@@ -1,5 +1,52 @@
 <?php 
 $dynamicScripts = ["Javascript/task.js"];
+
+/*Input schema 
+
+{value} donates a value from the database
+
+$currentUser =
+[
+    'homeless' = {userHasHome}, // Boolean
+    'userId' = {userId},
+    'isAdmin' = {userIsAdmin} // Boolean
+]
+
+$rooms =
+[
+    {roomId1} = {roomName1},
+    {roomId2} = {roomName2},
+    {roomId3} = {roomName3},
+    {roomId4} = {roomName4},
+]
+
+$tasks =
+[ 
+   {taskId1} => 
+   [ 
+        'name' => {taskName1},
+        'description' => {taskDesc1},
+        'rooms' =>                  // If a roomId row is true then the
+        [                           // task is performed in the room.
+            {room1Id} => true,
+            {room2Id} => true,                              
+            {room3Id} => false,
+            {room4Id} => false
+        ]
+    ], 
+    {taskId2} => 
+    [
+        'name' => {taskName2},
+        'description' => {taskDesc2},
+        'rooms' =>
+        [
+            {room1Id} => false,
+            {room2Id} => true,
+            {room3Id} => false,
+            {room4Id} => true
+        ]
+    ]
+] */ 
  ?>
 
 <?php if($currentUser['homeless'] === false) { ?>

@@ -71,8 +71,9 @@ return function (App $app) {
             return $renderer->render($response, 'admindashboard.php', ['page' => $page, 'link' => "No Link"]);
         });
         $group->post('/create_row', Schedule\CreateUserScheduleRowAction::class);
-        $group->post('/update_row', Schedule\UpdateUserScheduleRowAction::class);
+        $group->post('/update_row', Schedule\UpdateUserScheduleRowAction::class); // Updates a single row
         $group->post('/delete_row', Schedule\DeleteUserScheduleRowAction::class);
+        $group->post('/update', Schedule\UpdateUserScheduleAction::class);        // Updates the whole schedule
         $group->get('/delete', Schedule\DeleteUserScheduleAction::class);
         $group->get('/data', Schedule\GetUserScheduleAction::class);
     });

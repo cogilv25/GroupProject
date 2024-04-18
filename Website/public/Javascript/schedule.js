@@ -236,8 +236,3 @@ $(".custombtn").on("click", function() {
     checkAllApplied();
     $("#submitSchedule").removeAttr('title');
 });
-$("#submitSchedule").on("click", function() {
-    if (slidersApplied.every(Boolean)) {
-        alert("Schedule Submitted Successfully!");
-    }
-});

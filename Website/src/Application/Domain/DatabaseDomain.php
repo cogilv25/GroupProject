@@ -454,7 +454,7 @@ class DatabaseDomain
 
     //Check if the provided row overlaps with any other rows in the schedule.
     //can be used for Task, Room and User Schedules
-    public function checkForScheduleCollisions(ScheduleType $t, int $t_id, string $day, int $begin, int $end)
+    public function checkScheduleRowCollides(ScheduleType $t, int $t_id, string $day, int $begin, int $end)
     {
         switch ($t) {
             case ScheduleType::User:
@@ -479,10 +479,84 @@ class DatabaseDomain
 
         //Unreachable
         if($result == false)
-            return false;
+            return true;
 
         //We should get exactly 1 row
-        return ($result->num_rows == 1) ? true : false;
+        return ($result->num_rows != 1) ? true : false;
+    }
+
+    public function checkScheduleForCollisions(ScheduleType $t, int $t_id)
+    {
+        //TODO: Whole schedule collision checking
+        return false;
+    }
+
+    // $rows should be in the form [[begin, end, day], ...]
+    public function overwriteUserSchedule(int $userId, array $rows) : bool
+    {
+        //Get existing row id's
+        $result = $this->db->query("SELECT `scheduleId` FROM `UserSchedule` WHERE `userId`=" . $userId);
+        
+        if($result === false)
+            return false; // Theoretically unreachable.
+
+        $rowIds = [];
+        while($row = $result->fetch_row())
+            $rowIds[] = $row[0];
+
+        $i = 0;
+        $range = min(count($rowIds), count($rows));
+        $delete = (count($rowIds) > count($rows));
+        $this->db->begin_transaction();
+        for(;$i<$range;++$i)
+        {
+            $query = "UPDATE `schedule` SET `day`='" . $rows[$i][2] . "', `beginTimeslot`=" .
+            $rows[$i][0] . ", `endTimeslot`=" . $rows[$i][1] . "WHERE `scheduleId`=" . $rowIds[$i];
+
+            $result = $this->db->query($query);
+            if($result === false)
+            {
+                $this->db->rollback();
+                return false;
+            }
+        }
+
+        if($delete)
+        {
+            for(;$i < count($rowIds);++$i)
+            {
+                $result = $this->query("DELETE FROM `schedule` WHERE `scheduleId`=" . $rowIds[$i]);
+                if($result === false)
+                {
+                    $this->db->rollback();
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            for(;$i < count($rows);++$i)
+            {
+                $query = "INSERT INTO `UserSchedule` (`userId`, `day`, `beginTimeslot`, `endTimeslot`) ".
+                "VALUES (" . $userId . ",'" . $rows[$i][2] . "'," . $rows[$i][0] . "," .$rows[$i][1] . ")";
+
+                $result = $this->db->query($query);
+
+                if($result === false)
+                {
+                    $this->db->rollback();
+                    return false;
+                }
+            }
+        }
+
+        if($this->checkScheduleForCollisions(ScheduleType::User, $userId) === true)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        return $this->db->commit();
     }
 
     public function createUserScheduleRow(int $userId, int $begin, int $end, string $day) : bool | int
@@ -502,7 +576,7 @@ class DatabaseDomain
         }
 
         //Check if our new row overlaps with any other rows and if so rollback
-        if(!$this->checkForScheduleCollisions(ScheduleType::User, $userId, $day, $begin, $end))
+        if($this->checkScheduleRowCollides(ScheduleType::User, $userId, $day, $begin, $end))
         {
             $this->db->rollback();
             return false;
@@ -530,7 +604,7 @@ class DatabaseDomain
         }
 
         //Check if our new row overlaps with any other rows and if so rollback
-        if(!$this->checkForScheduleCollisions(ScheduleType::User, $userId, $day, $begin, $end))
+        if($this->checkScheduleRowCollides(ScheduleType::User, $userId, $day, $begin, $end))
         {
             $this->db->rollback();
             return false;
@@ -713,7 +787,7 @@ class DatabaseDomain
         }
 
         //Check if our new row overlaps with any other rows and if so rollback
-        if(!$this->checkForScheduleCollisions(ScheduleType::Task, $taskId, $day, $begin, $end))
+        if($this->checkScheduleRowCollides(ScheduleType::Task, $taskId, $day, $begin, $end))
         {
             $this->db->rollback();
             return false;
@@ -741,7 +815,7 @@ class DatabaseDomain
         }
 
         //Check if our new row overlaps with any other rows and if so rollback
-        if(!$this->checkForScheduleCollisions(ScheduleType::Room, $roomId, $day, $begin, $end))
+        if($this->checkScheduleRowCollides(ScheduleType::Room, $roomId, $day, $begin, $end))
         {
             $this->db->rollback();
             return false;

@@ -139,7 +139,7 @@ function formatSliderData() {
 
 function sendDataToDatabase(scheduleData) {
     $.ajax({
-        url: '/schedule/create_row',  
+        url: '/schedule/update',  
         type: 'POST',
         contentType: 'application/json',   
         data: JSON.stringify({schedules: scheduleData}),

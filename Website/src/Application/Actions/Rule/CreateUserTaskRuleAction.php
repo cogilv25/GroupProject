@@ -38,7 +38,7 @@ class CreateUserTaskRuleAction extends MemberAction
 
         $taskId = (int)$data['taskId'];
 
-        // Pre-activate rules created by admins
+        // Pre-activate rules created by admins <- TODO: This doesn't work they are always inactive.
         $ruleId = $this->db->createUserTaskRule($this->houseId, $targetUserId, $taskId, $this->privilege < 2);
         if($ruleId === false)
             return $this->createJsonResponse($this->response, 'Rule creation failed', 500);

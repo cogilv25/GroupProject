@@ -510,8 +510,8 @@ class DatabaseDomain
         $this->db->begin_transaction();
         for(;$i<$range;++$i)
         {
-            $query = "UPDATE `schedule` SET `day`='" . $rows[$i][2] . "', `beginTimeslot`=" .
-            $rows[$i][0] . ", `endTimeslot`=" . $rows[$i][1] . "WHERE `scheduleId`=" . $rowIds[$i];
+            $query = "UPDATE `UserSchedule` SET `day`='" . $rows[$i][2] . "', `beginTimeslot`=" .
+            $rows[$i][0] . ", `endTimeslot`=" . $rows[$i][1] . " WHERE `scheduleId`=" . $rowIds[$i];
 
             $result = $this->db->query($query);
             if($result === false)
@@ -525,7 +525,7 @@ class DatabaseDomain
         {
             for(;$i < count($rowIds);++$i)
             {
-                $result = $this->query("DELETE FROM `schedule` WHERE `scheduleId`=" . $rowIds[$i]);
+                $result = $this->query("DELETE FROM `UserSchedule` WHERE `scheduleId`=" . $rowIds[$i]);
                 if($result === false)
                 {
                     $this->db->rollback();

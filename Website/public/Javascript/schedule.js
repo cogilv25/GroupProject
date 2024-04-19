@@ -131,7 +131,7 @@ $(".round-slider").each(function(index) {
         radius: 120,
         width: 15,
         min: 0,
-        max: 96,
+        max: 95,
         startAngle: 90,
         endAngle: "+360",
         showTooltip: false,

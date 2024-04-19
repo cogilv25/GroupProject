@@ -186,10 +186,29 @@ height:30px;
     ?>
     <script>
     $(document).foundation();
+
     $('#inviteButton').on('click', function(e) {
         e.preventDefault(); // Prevent the default behavior of the link
         $('#inviteModal').foundation('open');
     });
+
+    $('#copyInviteButton').on('click', function(e) {
+        // Select the text inside the <a> tag
+        var textToCopy = $('#invitationUrl').text();
+        // Create a temporary input element
+        var tempInput = $("<input>");
+        // Append it to the body
+        $("body").append(tempInput);
+        // Set the value of the input to the text we want to copy
+        tempInput.val(textToCopy).select();
+        // Copy the selected text to the clipboard
+        document.execCommand("copy");
+        // Remove the temporary input element
+        tempInput.remove();
+        // Change button text to "Copied"
+        $(this).text("Copied");
+    });
+
     </script>
 </body>
 </html> 

@@ -52,6 +52,7 @@ if($currentUser['role'] == 'owner') //Owner view
                         <button onclick="promoteUser(<?=$user['userId']?>);" type="button" class=" custombtn success button">Promote</button>
             <?php       } else { ?>
                             <button onclick="demoteUser(<?=$user['userId']?>);" type="button" class="custombtn alert button">Demote</button>
+                            <button onclick="transferHousehold(<?=$user['userId']?>);" type="button" class="custombtn alert button">Transfer Household</button>
             <?php       } 
                     } ?>
                 </div>

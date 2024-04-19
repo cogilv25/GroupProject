@@ -38,11 +38,10 @@ return function (App $app) {
             $db = $this->get('db');
             $link = $db->getUserInviteLink($userId);
 
-
-            if($link == false)
-                return $renderer->render($response, 'Dashboard.php', ['link' => "No Link"]);
-            else
-                return $renderer->render($response, 'admindashboard.php', ['link' => $link]);
+            $data = ['link' => $link];
+            $dashboard = ($link == "No Link") ? "Dashboard.php" : "admindashboard.php";
+            
+            return $renderer->render($response, $dashboard, $data);
         }
     });
 
@@ -65,14 +64,20 @@ return function (App $app) {
             if($userId == 0)
                 return $response->withHeader('Location', '/')->withStatus(302);
 
-            $page = "schedule.php";
             $renderer = $this->get('renderer');
+            $db = $this->get('db');
+            $link = $db->getUserInviteLink($userId);
 
-            return $renderer->render($response, 'admindashboard.php', ['page' => $page, 'link' => "No Link"]);
+
+            $data = ['link' => $link, 'page' => "schedule.php"];
+            $dashboard = ($link == "No Link") ? "Dashboard.php" : "admindashboard.php";
+
+            return $renderer->render($response, $dashboard, $data);
         });
         $group->post('/create_row', Schedule\CreateUserScheduleRowAction::class);
-        $group->post('/update_row', Schedule\UpdateUserScheduleRowAction::class);
+        $group->post('/update_row', Schedule\UpdateUserScheduleRowAction::class); // Updates a single row
         $group->post('/delete_row', Schedule\DeleteUserScheduleRowAction::class);
+        $group->post('/update', Schedule\UpdateUserScheduleAction::class);        // Updates the whole schedule
         $group->get('/delete', Schedule\DeleteUserScheduleAction::class);
         $group->get('/data', Schedule\GetUserScheduleAction::class);
     });
@@ -94,23 +99,26 @@ return function (App $app) {
             if($houseRole === false)
             {
                 $data = ['currentUser' => ['userId' => $userId, 'homeless' => true]];
+                $dashboard = "Dashboard.php";
             }
             else
             {
                 $data = ['users' => $db->getUsersInHousehold($houseRole[0])];
                 $data['currentUser'] = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
+                $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
             }
 
             $data['page'] = "household.php";
             $data['link'] = $invite;
 
-            return $renderer->render($response, 'admindashboard.php', $data);
+            return $renderer->render($response, $dashboard, $data);
         });
         $group->get('/create', HouseHold\CreateHouseHoldAction::class);
         //TODO: Unique codes for household join links
         $group->get('/join/{id}/{uuid}', HouseHold\JoinHouseHoldAction::class);
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);
+        $group->post('/transfer', HouseHold\TransferHouseHoldAction::class);
         $group->post('/remove', Household\RemoveUserHouseHoldAction::class);
         $group->post('/promote', Household\PromoteUserHouseHoldAction::class);
         $group->post('/demote', Household\DemoteUserHouseHoldAction::class);
@@ -136,17 +144,19 @@ return function (App $app) {
             {
                 $data = ['rooms' => [], 'tasks' => []];
                 $data['currentUser'] = ['userId' => $userId, 'homeless' => true];
+                $dashboard = "Dashboard.php";
             }
             else
             {
                 $data = $db->getHouseholdRoomDetails($houseRole[0]);
                 $data['currentUser'] = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
+                $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
             }
 
             $data['page'] = 'adminroom.php';
             $data['link'] = $invite;
 
-            return $renderer->render($response, 'admindashboard.php', $data);
+            return $renderer->render($response, $dashboard, $data);
         });
         $group->post('/create', Room\CreateRoomAction::class);
         $group->post('/update', Room\UpdateRoomAction::class);
@@ -172,17 +182,19 @@ return function (App $app) {
             {
                 $data = ['rooms' => [], 'tasks' => []];
                 $data['currentUser'] = ['userId' => $userId, 'homeless' => true];
+                $dashboard = "Dashboard.php";
             }
             else
             {
                 $data = $db->getHouseholdTaskDetails($houseRole[0]);
                 $data['currentUser'] = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
+                $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
             }
 
             $data['page'] = 'adminTasks.php';
             $data['link'] = $invite;
 
-            return $renderer->render($response, 'admindashboard.php', $data);
+            return $renderer->render($response, $dashboard, $data);
         });
         $group->post('/create', Task\CreateTaskAction::class);
         $group->post('/update', Task\UpdateTaskAction::class);
@@ -202,23 +214,25 @@ return function (App $app) {
             $renderer = $this->get('renderer');
             $db = $this->get('db');
             $invite = $db->getUserInviteLink($userId);
-            $data = $db->getUserHouseAndRole($userId);
+            $houseRole = $db->getUserHouseAndRole($userId);
 
-            if($data === false)
+            if($houseRole === false)
             {
                 $user = ['userId' => $userId, 'homeless' => true];
-                $data = ['page' => "rules.php"];
+                $dashboard = "Dashboard.php";
             }
             else
             {
-                $user = ['userId' => $userId, 'role' => $data[1], 'homeless' => false ];
-                $data = ['page' => ($data[1] == "member") ? "rules.php" : "adminRules.php"];
+                $user = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
+                $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
             }
 
             $data['currentUser'] = $user;
+            $data['page'] = "rules.php";
             $data['link'] = $invite;
-
-            return $renderer->render($response, 'admindashboard.php', $data);
+            $data['rules'] = $db->getExemptionRules($houseRole[0]);
+            
+            return $renderer->render($response, $dashboard, $data);
         });
         $group->group('/create', function (Group $createGroup)
             {
@@ -233,13 +247,14 @@ return function (App $app) {
                     $renderer = $this->get('renderer');
                     $db = $this->get('db');
 
-                    $data = $db->getUserHouseAndRole($userId);
-                    if($data === false)
+                    $houseRole = $db->getUserHouseAndRole($userId);
+                    if($houseRole === false)
                         return $response->withHeader('Location', '/rule')->withStatus(302);
 
-                    $houseId = $data[0];
+                    $houseId = $houseRole[0];
 
-                    $user = ['userId' => $userId, 'role' => $data[1]];
+                    $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
+                    $user = ['userId' => $userId, 'role' => $houseRole[1]];
                     $data = ['link' => "No Link", 'page' => "addRule.php", 'currentUser' => $user];
                     $data['rooms'] = $db->getRoomsInHousehold($houseId);
                     $data['tasks'] = $db->getTasksInHousehold($houseId);
@@ -247,10 +262,20 @@ return function (App $app) {
 
                     return $renderer->render($response, 'admindashboard.php', $data);
                 });
-                $createGroup->post('/room_time', Rule\CreateRoomTimeRuleAction::class);
-                $createGroup->post('/task_time', Rule\CreateTaskTimeRuleAction::class);
+                $createGroup->post('/room_time', Rule\CreateRoomTimeRuleAction::class); // TODO: @SchedulesOverhaul
+                $createGroup->post('/task_time', Rule\CreateTaskTimeRuleAction::class); // TODO: @SchedulesOverhaul
                 $createGroup->post('/user_task', Rule\CreateUserTaskRuleAction::class);
                 $createGroup->post('/user_room', Rule\CreateUserRoomRuleAction::class);
+            });
+
+        $group->group('/toggle', function (Group $toggleGroup)
+            {
+                $toggleGroup->post('/user_task', Rule\ToggleUserTaskRuleAction::class);
+                $toggleGroup->post('/user_room', Rule\ToggleUserRoomRuleAction::class);
+            });
+        $group->group('/update', function (Group $updateGroup)
+            {
+
             });
         $group->post('/delete', Rule\DeleteRuleAction::class);
         $group->get('/data', Rule\ListRuleAction::class);

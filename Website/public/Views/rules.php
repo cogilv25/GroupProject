@@ -1,24 +1,26 @@
 <?php 
 /*
-$rulesData = [
+$rules = [
     [
-        'Members' => 'Test 1',
-        'RuleName' => 'No hoovering at 15:00',
-        'TypeOfRule' => 'User + Task',
+        'forename' => 'John',
+        'surname' => 'Smith',
+        'name' => 'Hoovering',
+        'justification' => 'John really doesn't like hoovering and so implores the admins to take pity upon him.',
+        'type' => 'user_task',
+        'ruleId' => 1,
+        'active' => true
     ],
     // Add more rules as needed
-    [
-        'Members' => 'Test 2',
-        'RuleName' => 'No cooking after 22:00',
-        'TypeOfRule' => 'User + Room',
-    ],
 ];
 
 Example Data:
-$adminruleData = [
-    ['userId' => 1, 'rulename' => 'No hoovering at 15:00', 'TypeOfRule' => 'User + Task']
+$rules = [
+    ['forename' => 'Billy', 'surname' => 'Bob', 'name' => 'Living Room', just' => 'He is a ghost and bemoans entering it.', 
+        'type' => 'user_room', 'ruleId' => 1];
 ];
+
 */
+$staticScripts = ['Javascript/rule.js'];
 ?>
 
 <div class="cell small-12" style="width: 100%;">
@@ -29,23 +31,27 @@ $adminruleData = [
         <table class="unstriped custom-table" >
             <thead>
                 <tr>
-                <th width="200">Members</th>
-                <th width="200">Rule Name</th>
-                <th width="200">Type of Rule</th>
-                <th width="150">Enable</th>
-                <th width="150">Disable</th>
-                <th width="150">Modify</th>
+                    <th width="100">Member</th>
+                    <th width="150">Rule</th>
+                    <th width="300">Justification</th>
+                    <?php if($currentUser['role'] != 'member') { ?>
+                    <th width="50">Enabled</th>
+                    <?php } ?>
                 </tr>
             </thead>
             <tbody>
+            <?php foreach($rules as $id => $rule) { 
+                $name = $rule['forename'] . " " . $rule['surname'];
+                $desc = $rule['type'] == "user_task" ? " is exempt from " : " does not clean the ";?>
                 <tr>
-                <td>Test 1</td>
-                <td>No hoovering at 15:00</td>
-                <td>User + Task</td>
-                <td><input type="checkbox" name="check1"></td>
-                <td><input type="checkbox" name="check2"></td>
-                <td><input type="checkbox" name="check3"></td>
+                    <td><?=$name?></td>
+                    <td><?=$name . $desc . $rule['name']?></td>
+                    <td><?=$rule['just']?></td>
+                    <?php if($currentUser['role'] != 'member') { ?>
+                    <td><input rule_type="<?=$rule['type']?>" rule_id="<?=$rule['ruleId']?>" onchange="onRuleCheckboxToggled(event)" type="checkbox" id="check1" <?=$rule['active']?"checked":""?>></td>
+                    <?php } ?>
                 </tr>
+            <?php } ?>
             </tbody>
         </table>
     </div>

@@ -208,6 +208,41 @@ class DatabaseDomain
         "`House_houseId`=" . $houseId . " AND `userId`=" . $userId);
     }
 
+    public function transferOwnership(int $houseId, int $memberId, int $ownerId) : bool
+    {
+        $this->db->begin_transaction();
+
+        $result = $this->db->query("UPDATE `user` SET `role`='owner' WHERE `userId`=" . $memberId);
+
+        if($result === false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        if($this->db->affected_rows != 1)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        $result = $this->db->query("UPDATE `user` SET `role`='admin' WHERE `userId`=" . $ownerId);
+
+        if($result === false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        if($this->db->affected_rows != 1)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        return $this->db->commit();
+    }
+
     public function getUserInviteLink(int $userId) : string
     {
         $result = $this->db->query("SELECT `houseId`, `invite_link`, `role` FROM `user` JOIN ".
@@ -454,7 +489,7 @@ class DatabaseDomain
 
     //Check if the provided row overlaps with any other rows in the schedule.
     //can be used for Task, Room and User Schedules
-    public function checkForScheduleCollisions(ScheduleType $t, int $t_id, string $day, int $begin, int $end)
+    public function checkScheduleRowCollides(ScheduleType $t, int $t_id, string $day, int $begin, int $end)
     {
         switch ($t) {
             case ScheduleType::User:
@@ -479,10 +514,110 @@ class DatabaseDomain
 
         //Unreachable
         if($result == false)
-            return false;
+            return true;
 
         //We should get exactly 1 row
-        return ($result->num_rows == 1) ? true : false;
+        return ($result->num_rows != 1) ? true : false;
+    }
+
+    public function checkScheduleForCollisions(ScheduleType $t, int $t_id)
+    {
+        switch ($t) {
+            case ScheduleType::User:
+            $table = "UserSchedule";
+                break;
+            case ScheduleType::Task:
+            $table = "TaskSchedule";
+                break;
+            case ScheduleType::Room:
+            $table = "RoomSchedule";
+                break;
+        }
+
+        // This query returns a count of the schedule rows that collide.
+        $query = "SELECT count(*) FROM `". $table ."` as t1 WHERE 1 > ".
+        "(SELECT count(*) FROM `". $table ."` WHERE `t1`.`day`=`day` AND ". 
+        "((`t1`.`beginTimeslot` <= `beginTimeslot` AND `t1`.`endTimeslot` >= `beginTimeslot`) OR ".
+        "(`t1`.`beginTimeslot` <= `endTimeslot` AND `t1`.`endTimeslot` >= `endTimeslot`) OR ".
+        "(`t1`.`beginTimeslot` >= `beginTimeslot` AND `t1`.`endTimeslot` <= `endTimeslot`)))";
+
+        $result = $this->db->query($query);
+
+        if($result === false)
+            return true;
+
+        if($result->fetch_row()[0] != 0)
+            return true;
+
+        return false;
+    }
+
+    // $rows should be in the form [[begin, end, day], ...]
+    public function overwriteUserSchedule(int $userId, array $rows) : bool
+    {
+        //Get existing row id's
+        $result = $this->db->query("SELECT `scheduleId` FROM `UserSchedule` WHERE `userId`=" . $userId);
+        
+        if($result === false)
+            return false; // Theoretically unreachable.
+
+        $rowIds = [];
+        while($row = $result->fetch_row())
+            $rowIds[] = $row[0];
+
+        $i = 0;
+        $range = min(count($rowIds), count($rows));
+        $delete = (count($rowIds) > count($rows));
+        $this->db->begin_transaction();
+        for(;$i<$range;++$i)
+        {
+            $query = "UPDATE `UserSchedule` SET `day`='" . $rows[$i][2] . "', `beginTimeslot`=" .
+            $rows[$i][0] . ", `endTimeslot`=" . $rows[$i][1] . " WHERE `scheduleId`=" . $rowIds[$i];
+
+            $result = $this->db->query($query);
+            if($result === false)
+            {
+                $this->db->rollback();
+                return false;
+            }
+        }
+
+        if($delete)
+        {
+            for(;$i < count($rowIds);++$i)
+            {
+                $result = $this->query("DELETE FROM `UserSchedule` WHERE `scheduleId`=" . $rowIds[$i]);
+                if($result === false)
+                {
+                    $this->db->rollback();
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            for(;$i < count($rows);++$i)
+            {
+                $query = "INSERT INTO `UserSchedule` (`userId`, `day`, `beginTimeslot`, `endTimeslot`) ".
+                "VALUES (" . $userId . ",'" . $rows[$i][2] . "'," . $rows[$i][0] . "," .$rows[$i][1] . ")";
+
+                $result = $this->db->query($query);
+
+                if($result === false)
+                {
+                    $this->db->rollback();
+                    return false;
+                }
+            }
+        }
+
+        if($this->checkScheduleForCollisions(ScheduleType::User, $userId) === true)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        return $this->db->commit();
     }
 
     public function createUserScheduleRow(int $userId, int $begin, int $end, string $day) : bool | int
@@ -502,7 +637,7 @@ class DatabaseDomain
         }
 
         //Check if our new row overlaps with any other rows and if so rollback
-        if(!$this->checkForScheduleCollisions(ScheduleType::User, $userId, $day, $begin, $end))
+        if($this->checkScheduleRowCollides(ScheduleType::User, $userId, $day, $begin, $end))
         {
             $this->db->rollback();
             return false;
@@ -530,7 +665,7 @@ class DatabaseDomain
         }
 
         //Check if our new row overlaps with any other rows and if so rollback
-        if(!$this->checkForScheduleCollisions(ScheduleType::User, $userId, $day, $begin, $end))
+        if($this->checkScheduleRowCollides(ScheduleType::User, $userId, $day, $begin, $end))
         {
             $this->db->rollback();
             return false;
@@ -696,6 +831,25 @@ class DatabaseDomain
         return $result ? $this->db->insert_id : false;
     }
 
+    public function toggleUserTaskRule(int $houseId, int $ruleId, bool $state) : bool
+    {
+        $active = $state ? "TRUE" : "FALSE"; 
+        $query = "UPDATE `User_Exempt_Task` SET `active`=" . $active . " WHERE ".
+            "houseId=" . $houseId . " AND `UETId`=" . $ruleId;
+
+        return $this->db->query($query);
+    }
+
+    public function toggleUserRoomRule(int $houseId, int $ruleId, bool $state) : bool
+    {
+        $active = $state ? "TRUE" : "FALSE"; 
+        $query = "UPDATE `User_Exempt_Room` SET `active`=" . $active . " WHERE ".
+            "houseId=" . $houseId . " AND `UERId`=" . $ruleId;
+
+        return $this->db->query($query);
+    }
+
+
     public function createTaskTimeRule(int $houseId, $taskId, $day, $begin, $end) : bool | int
     {
         //Start a transaction and update the row in ernest.
@@ -713,7 +867,7 @@ class DatabaseDomain
         }
 
         //Check if our new row overlaps with any other rows and if so rollback
-        if(!$this->checkForScheduleCollisions(ScheduleType::Task, $taskId, $day, $begin, $end))
+        if($this->checkScheduleRowCollides(ScheduleType::Task, $taskId, $day, $begin, $end))
         {
             $this->db->rollback();
             return false;
@@ -741,7 +895,7 @@ class DatabaseDomain
         }
 
         //Check if our new row overlaps with any other rows and if so rollback
-        if(!$this->checkForScheduleCollisions(ScheduleType::Room, $roomId, $day, $begin, $end))
+        if($this->checkScheduleRowCollides(ScheduleType::Room, $roomId, $day, $begin, $end))
         {
             $this->db->rollback();
             return false;
@@ -797,6 +951,47 @@ class DatabaseDomain
         $query = "DELETE FROM `room_has_task` WHERE `houseId`=" . $houseId . " AND `roomId`= " .
         $roomId . " AND `taskId`=" . $taskId;
         return $this->db->query($query);
+    }
+
+    public function getExemptionRules(int $houseId) : array | bool
+    {
+        //TODO: Add justification to the database to allow users to give details
+        //        to the admins about why they want a rule applied.
+
+        //Get User_Exempt_Task rules
+        $query = "SELECT `forename`,`surname`,`Task`.`name`,`UETId`,`active` FROM `User_Exempt_Task` JOIN ".
+                 "`User` ON `User`.`userId`=`User_Exempt_Task`.`userId` JOIN `Task` ON `Task`.`taskId`=".
+                 "`User_Exempt_Task`.`taskId` WHERE `Task`.`houseId`=" . $houseId;
+
+        $result = $this->db->query($query);
+
+        if($result === false)
+            return false;
+
+        $rules = [];
+        while($row = $result->fetch_row())
+        {
+            $rules[] = ['forename' => $row[0], 'surname' => $row[1], 'name' => $row[2], 'just' => "",
+                'type' => "user_task", 'ruleId' => $row[3], 'active' => ((bool)$row[4])];
+        }
+
+        //Get User_Exempt_Room rules
+        $query = "SELECT `forename`,`surname`,`Room`.`name`,`UERId`,`active` FROM `User_Exempt_Room` JOIN ".
+                 "`User` ON `User`.`userId`=`User_Exempt_Room`.`userId` JOIN `Room` ON `Room`.`roomId`=".
+                 "`User_Exempt_Room`.`roomId` WHERE `Room`.`houseId`=" . $houseId;
+
+        $result = $this->db->query($query);
+
+        if($result === false)
+            return false;
+
+        while($row = $result->fetch_row())
+        {
+            $rules[] = ['forename' => $row[0], 'surname' => $row[1], 'name' => $row[2], 'just' => "",
+                'type' => "user_room", 'ruleId' => $row[3], 'active' => ((bool)$row[4])];
+        }
+
+        return $rules;
     }
 
     public function getRulesInHousehold(int $houseId) : array | bool

@@ -345,18 +345,19 @@ function formatSliderData() {
 
 
 function sendDataToDatabase(scheduleData) {
-  $.ajax({
-      url: '/schedule/create_row',  
-      type: 'POST',
-      contentType: 'application/json',   
-      data: JSON.stringify({schedules: scheduleData}),
-      success: function(response) {
-          console.log('Data submitted successfully:', response);
-          alert('Schedule submitted successfully!');
-      },
-      error: function(xhr, status, error) {
-          console.error('Error submitting data:', error);
-          alert('Failed to submit schedule. Please try again.');
-      }
-  });
+    $.ajax({
+        url: '/schedule/update',  
+        type: 'POST',
+        contentType: 'application/json',   
+        data: JSON.stringify({schedules: scheduleData}),
+        success: function(response) {
+            console.log('Data submitted successfully:', response);
+            alert('Schedule submitted successfully!');
+        },
+        error: function(xhr, status, error) {
+            console.error('Error submitting data:', error);
+            alert('Failed to submit schedule. Please try again.');
+        }
+    });
 }
+

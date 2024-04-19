@@ -31,6 +31,23 @@ function promoteUser(userId)
     });
 }
 
+function transferHousehold(userId)
+{
+    $.ajax({
+        url: 'household/transfer', // Path to your household.php file
+        type: 'POST', // GET method to fetch data
+        data: 'userId='+userId,
+        success: function(response) {
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            // Handle any errors
+            console.error("Error: " + status + " " + error);
+            console.log(xhr.responseText);
+        }
+    });
+}
+
 function demoteUser(userId)
 {
     $.ajax({

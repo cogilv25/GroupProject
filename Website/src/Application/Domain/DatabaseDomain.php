@@ -208,6 +208,41 @@ class DatabaseDomain
         "`House_houseId`=" . $houseId . " AND `userId`=" . $userId);
     }
 
+    public function transferOwnership(int $houseId, int $memberId, int $ownerId) : bool
+    {
+        $this->db->begin_transaction();
+
+        $result = $this->db->query("UPDATE `user` SET `role`='owner' WHERE `userId`=" . $memberId);
+
+        if($result === false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        if($this->db->affected_rows != 1)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        $result = $this->db->query("UPDATE `user` SET `role`='admin' WHERE `userId`=" . $ownerId);
+
+        if($result === false)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        if($this->db->affected_rows != 1)
+        {
+            $this->db->rollback();
+            return false;
+        }
+
+        return $this->db->commit();
+    }
+
     public function getUserInviteLink(int $userId) : string
     {
         $result = $this->db->query("SELECT `houseId`, `invite_link`, `role` FROM `user` JOIN ".
@@ -796,6 +831,25 @@ class DatabaseDomain
         return $result ? $this->db->insert_id : false;
     }
 
+    public function toggleUserTaskRule(int $houseId, int $ruleId, bool $state) : bool
+    {
+        $active = $state ? "TRUE" : "FALSE"; 
+        $query = "UPDATE `User_Exempt_Task` SET `active`=" . $active . " WHERE ".
+            "houseId=" . $houseId . " AND `UETId`=" . $ruleId;
+
+        return $this->db->query($query);
+    }
+
+    public function toggleUserRoomRule(int $houseId, int $ruleId, bool $state) : bool
+    {
+        $active = $state ? "TRUE" : "FALSE"; 
+        $query = "UPDATE `User_Exempt_Room` SET `active`=" . $active . " WHERE ".
+            "houseId=" . $houseId . " AND `UERId`=" . $ruleId;
+
+        return $this->db->query($query);
+    }
+
+
     public function createTaskTimeRule(int $houseId, $taskId, $day, $begin, $end) : bool | int
     {
         //Start a transaction and update the row in ernest.
@@ -897,6 +951,47 @@ class DatabaseDomain
         $query = "DELETE FROM `room_has_task` WHERE `houseId`=" . $houseId . " AND `roomId`= " .
         $roomId . " AND `taskId`=" . $taskId;
         return $this->db->query($query);
+    }
+
+    public function getExemptionRules(int $houseId) : array | bool
+    {
+        //TODO: Add justification to the database to allow users to give details
+        //        to the admins about why they want a rule applied.
+
+        //Get User_Exempt_Task rules
+        $query = "SELECT `forename`,`surname`,`Task`.`name`,`UETId`,`active` FROM `User_Exempt_Task` JOIN ".
+                 "`User` ON `User`.`userId`=`User_Exempt_Task`.`userId` JOIN `Task` ON `Task`.`taskId`=".
+                 "`User_Exempt_Task`.`taskId` WHERE `Task`.`houseId`=" . $houseId;
+
+        $result = $this->db->query($query);
+
+        if($result === false)
+            return false;
+
+        $rules = [];
+        while($row = $result->fetch_row())
+        {
+            $rules[] = ['forename' => $row[0], 'surname' => $row[1], 'name' => $row[2], 'just' => "",
+                'type' => "user_task", 'ruleId' => $row[3], 'active' => ((bool)$row[4])];
+        }
+
+        //Get User_Exempt_Room rules
+        $query = "SELECT `forename`,`surname`,`Room`.`name`,`UERId`,`active` FROM `User_Exempt_Room` JOIN ".
+                 "`User` ON `User`.`userId`=`User_Exempt_Room`.`userId` JOIN `Room` ON `Room`.`roomId`=".
+                 "`User_Exempt_Room`.`roomId` WHERE `Room`.`houseId`=" . $houseId;
+
+        $result = $this->db->query($query);
+
+        if($result === false)
+            return false;
+
+        while($row = $result->fetch_row())
+        {
+            $rules[] = ['forename' => $row[0], 'surname' => $row[1], 'name' => $row[2], 'just' => "",
+                'type' => "user_room", 'ruleId' => $row[3], 'active' => ((bool)$row[4])];
+        }
+
+        return $rules;
     }
 
     public function getRulesInHousehold(int $houseId) : array | bool

@@ -118,6 +118,7 @@ return function (App $app) {
         $group->get('/join/{id}/{uuid}', HouseHold\JoinHouseHoldAction::class);
         $group->get('/delete', HouseHold\DeleteHouseHoldAction::class);
         $group->get('/leave', HouseHold\LeaveHouseHoldAction::class);
+        $group->post('/transfer', HouseHold\TransferHouseHoldAction::class);
         $group->post('/remove', Household\RemoveUserHouseHoldAction::class);
         $group->post('/promote', Household\PromoteUserHouseHoldAction::class);
         $group->post('/demote', Household\DemoteUserHouseHoldAction::class);
@@ -218,19 +219,19 @@ return function (App $app) {
             if($houseRole === false)
             {
                 $user = ['userId' => $userId, 'homeless' => true];
-                $data = ['page' => "rules.php"];
                 $dashboard = "Dashboard.php";
             }
             else
             {
                 $user = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
-                $data = ['page' => ($houseRole[1] == "member") ? "rules.php" : "adminRules.php"];
                 $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
             }
 
             $data['currentUser'] = $user;
+            $data['page'] = "rules.php";
             $data['link'] = $invite;
-
+            $data['rules'] = $db->getExemptionRules($houseRole[0]);
+            
             return $renderer->render($response, $dashboard, $data);
         });
         $group->group('/create', function (Group $createGroup)
@@ -261,10 +262,20 @@ return function (App $app) {
 
                     return $renderer->render($response, 'admindashboard.php', $data);
                 });
-                $createGroup->post('/room_time', Rule\CreateRoomTimeRuleAction::class);
-                $createGroup->post('/task_time', Rule\CreateTaskTimeRuleAction::class);
+                $createGroup->post('/room_time', Rule\CreateRoomTimeRuleAction::class); // TODO: @SchedulesOverhaul
+                $createGroup->post('/task_time', Rule\CreateTaskTimeRuleAction::class); // TODO: @SchedulesOverhaul
                 $createGroup->post('/user_task', Rule\CreateUserTaskRuleAction::class);
                 $createGroup->post('/user_room', Rule\CreateUserRoomRuleAction::class);
+            });
+
+        $group->group('/toggle', function (Group $toggleGroup)
+            {
+                $toggleGroup->post('/user_task', Rule\ToggleUserTaskRuleAction::class);
+                $toggleGroup->post('/user_room', Rule\ToggleUserRoomRuleAction::class);
+            });
+        $group->group('/update', function (Group $updateGroup)
+            {
+
             });
         $group->post('/delete', Rule\DeleteRuleAction::class);
         $group->get('/data', Rule\ListRuleAction::class);

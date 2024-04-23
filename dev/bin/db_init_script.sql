@@ -16,7 +16,7 @@ CREATE TABLE `House` (
 
 SET FOREIGN_KEY_CHECKS = 1;
 -- -----------------------------------------------------
--- Table `user`
+-- Table `User`
 -- -----------------------------------------------------
 CREATE TABLE `User` (
   `userId` INT NOT NULL AUTO_INCREMENT,
@@ -105,7 +105,7 @@ CREATE TABLE `User_Exempt_Room` (
   INDEX `fk_user_exempt_room_house_idx` (`houseId` ASC),
   CONSTRAINT `fk_user_exempt_room_user`
     FOREIGN KEY (`userId`)
-    REFERENCES `user` (`userId`),
+    REFERENCES `User` (`userId`),
   CONSTRAINT `fk_user_exempt_room_house`
     FOREIGN KEY (`houseId`)
     REFERENCES `House` (`houseId`),
@@ -128,7 +128,7 @@ CREATE TABLE `Room_Has_Task` (
   INDEX `fk_room_has_task_house_idx` (`houseId` ASC),
   CONSTRAINT `fk_room_has_task_room`
     FOREIGN KEY (`roomId`)
-    REFERENCES `room` (`roomId`),
+    REFERENCES `Room` (`roomId`),
   CONSTRAINT `fk_room_has_task_house`
     FOREIGN KEY (`houseId`)
     REFERENCES `House` (`houseId`),
@@ -192,7 +192,7 @@ CREATE TABLE `UserSchedule` (
   INDEX `fk_userschedule_user_idx` (`userId` ASC),
   CONSTRAINT `fk_userschedule_user`
     FOREIGN KEY (`userId`)
-    REFERENCES `user` (`userId`));
+    REFERENCES `User` (`userId`));
 
 
 -- -----------------------------------------------------
@@ -253,7 +253,7 @@ CREATE TABLE `Task_Has_User` (
     REFERENCES `Room` (`roomId`),
   CONSTRAINT `fk_Task_has_user_user1`
     FOREIGN KEY (`userId`)
-    REFERENCES `user` (`userId`),
+    REFERENCES `User` (`userId`),
   CONSTRAINT `fk_Task_has_user_Rota1`
     FOREIGN KEY (`rotaId`)
     REFERENCES `Rota` (`rotaId`));

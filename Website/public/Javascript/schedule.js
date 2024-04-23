@@ -352,11 +352,10 @@ function sendDataToDatabase(scheduleData) {
         data: JSON.stringify({schedules: scheduleData}),
         success: function(response) {
             console.log('Data submitted successfully:', response);
-            alert('Schedule submitted successfully!');
+            location.reload();
         },
         error: function(xhr, status, error) {
             console.error('Error submitting data:', error);
-            alert('Failed to submit schedule. Please try again.');
         }
     });
 }

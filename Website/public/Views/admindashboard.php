@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>CleanSync</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="/CSS/dashboard.css"> 
-    <link rel="stylesheet" href="/CSS/householdModal.css">
     <link rel="stylesheet" href="/CSS/scheduleTimeRangeControl.css">
     <?php // TODO: only used on the schedule page so we should insert this line with php ideally ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/roundSlider/1.6.1/roundslider.css" integrity="sha512-XO53CaiPx+m4HUiZ02P4OEGLyyT46mJQzWhwqYsdqRR7IOjPuujK0UPAK9ckSfcJE4ED7dT9pF9r78yXoOKeYw==" crossorigin="anonymous" referrerpolicy="no-referrer" />

@@ -35,3 +35,50 @@
   color:black ;
   
 }
+.toggle-group::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 6rem;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 8px solid black; /* Adjust the size and color of the arrow */
+}
+
+.toggle-group.up::after {
+            border-top: none; /* Remove default arrow */
+            border-bottom: 8px solid black; /* New arrow pointing up */
+        }
+
+.toggle-group {
+  position: relative;
+  padding-right: 20px; /* Adjust the padding to create space for the arrow */
+}
+.top-bar .menu {
+     
+        justify-content: center; /* Center the menu in the top bar */
+    }
+    .toggle-group {
+        display: block;
+        width: 100%;
+        color: #333;
+        text-decoration: none;
+        cursor: pointer;
+    }
+ 
+    .task-group-header th {
+        background-color: #f8f8f8;
+        text-align: left; /* Align text to the left */
+        padding-left: 15px; /* Add padding to align with task details */
+    }
+    #taskTable th, #taskTable td {
+        text-align: left; /* Align text to the left for all cells */
+        padding: 8px 10px;
+        border-bottom: 1px solid #e1e1e1; /* Add bottom border to all cells for clarity */
+    }
+    #taskTable {
+        margin-left:15px;
+    }

@@ -32,14 +32,14 @@ return function (App $app) {
         $userId = $request->getAttribute('userId');
 
         if($userId==0)
-            return $renderer->render($response, 'Authpage.html');
+            return $renderer->render($response, 'authpage.html');
         else
         {
             $db = $this->get('db');
             $link = $db->getUserInviteLink($userId);
 
             $data = ['link' => $link];
-            $dashboard = ($link == "No Link") ? "Dashboard.php" : "admindashboard.php";
+            $dashboard = ($link == "No Link") ? "dashboard.php" : "admindashboard.php";
             
             return $renderer->render($response, $dashboard, $data);
         }
@@ -70,7 +70,7 @@ return function (App $app) {
 
 
             $data = ['link' => $link, 'page' => "schedule.php"];
-            $dashboard = ($link == "No Link") ? "Dashboard.php" : "admindashboard.php";
+            $dashboard = ($link == "No Link") ? "dashboard.php" : "admindashboard.php";
 
             return $renderer->render($response, $dashboard, $data);
         });
@@ -99,13 +99,13 @@ return function (App $app) {
             if($houseRole === false)
             {
                 $data = ['currentUser' => ['userId' => $userId, 'homeless' => true]];
-                $dashboard = "Dashboard.php";
+                $dashboard = "dashboard.php";
             }
             else
             {
                 $data = ['users' => $db->getUsersInHousehold($houseRole[0])];
                 $data['currentUser'] = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
-                $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
+                $dashboard = ($houseRole[1] == "member") ? "dashboard.php" : "admindashboard.php";
             }
 
             $data['page'] = "household.php";
@@ -144,13 +144,13 @@ return function (App $app) {
             {
                 $data = ['rooms' => [], 'tasks' => []];
                 $data['currentUser'] = ['userId' => $userId, 'homeless' => true];
-                $dashboard = "Dashboard.php";
+                $dashboard = "dashboard.php";
             }
             else
             {
                 $data = $db->getHouseholdRoomDetails($houseRole[0]);
                 $data['currentUser'] = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
-                $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
+                $dashboard = ($houseRole[1] == "member") ? "dashboard.php" : "admindashboard.php";
             }
 
             $data['page'] = 'adminroom.php';
@@ -182,13 +182,13 @@ return function (App $app) {
             {
                 $data = ['rooms' => [], 'tasks' => []];
                 $data['currentUser'] = ['userId' => $userId, 'homeless' => true];
-                $dashboard = "Dashboard.php";
+                $dashboard = "dashboard.php";
             }
             else
             {
                 $data = $db->getHouseholdTaskDetails($houseRole[0]);
                 $data['currentUser'] = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
-                $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
+                $dashboard = ($houseRole[1] == "member") ? "dashboard.php" : "admindashboard.php";
             }
 
             $data['page'] = 'adminTasks.php';
@@ -219,12 +219,12 @@ return function (App $app) {
             if($houseRole === false)
             {
                 $user = ['userId' => $userId, 'homeless' => true];
-                $dashboard = "Dashboard.php";
+                $dashboard = "dashboard.php";
             }
             else
             {
                 $user = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
-                $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
+                $dashboard = ($houseRole[1] == "member") ? "dashboard.php" : "admindashboard.php";
             }
 
             $data['currentUser'] = $user;
@@ -253,9 +253,9 @@ return function (App $app) {
 
                     $houseId = $houseRole[0];
 
-                    $dashboard = ($houseRole[1] == "member") ? "Dashboard.php" : "admindashboard.php";
+                    $dashboard = ($houseRole[1] == "member") ? "dashboard.php" : "admindashboard.php";
                     $user = ['userId' => $userId, 'role' => $houseRole[1]];
-                    $data = ['link' => "No Link", 'page' => "addRule.php", 'currentUser' => $user];
+                    $data = ['link' => "No Link", 'page' => "addrule.php", 'currentUser' => $user];
                     $data['rooms'] = $db->getRoomsInHousehold($houseId);
                     $data['tasks'] = $db->getTasksInHousehold($houseId);
                     $data['users'] = $db->getUsersNamesInHousehold($houseId);

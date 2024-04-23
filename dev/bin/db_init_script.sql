@@ -5,20 +5,20 @@ CREATE SCHEMA `cleansync` DEFAULT CHARACTER SET utf8;
 USE `cleansync`;
 
 -- -----------------------------------------------------
--- Table `cleansync`.`House`
+-- Table `House`
 -- -----------------------------------------------------
 -- Disable fk checks as House and user reference one another
 SET FOREIGN_KEY_CHECKS = 0;
-CREATE TABLE `cleansync`.`House` (
+CREATE TABLE `House` (
   `houseId` INT NOT NULL AUTO_INCREMENT,
   `invite_link` CHAR(36) DEFAULT (UUID()),
   PRIMARY KEY (`houseId`));
 
 SET FOREIGN_KEY_CHECKS = 1;
 -- -----------------------------------------------------
--- Table `cleansync`.`user`
+-- Table `user`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`User` (
+CREATE TABLE `User` (
   `userId` INT NOT NULL AUTO_INCREMENT,
   `forename` VARCHAR(32) NOT NULL,
   `surname` VARCHAR(32) NOT NULL,
@@ -31,13 +31,13 @@ CREATE TABLE `cleansync`.`User` (
   INDEX `fk_user_House_idx` (`House_houseId` ASC),
   CONSTRAINT `fk_user_house`
     FOREIGN KEY (`House_houseId`)
-    REFERENCES `cleansync`.`House` (`houseId`));
+    REFERENCES `House` (`houseId`));
 
 
 -- -----------------------------------------------------
--- Table `cleansync`.`Room`
+-- Table `Room`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`Room` (
+CREATE TABLE `Room` (
   `roomId` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(32),
   `houseId` INT NOT NULL,
@@ -46,13 +46,13 @@ CREATE TABLE `cleansync`.`Room` (
   INDEX `fk_Room_House1_idx` (`houseId` ASC),
   CONSTRAINT `fk_Room_House1`
     FOREIGN KEY (`houseId`)
-    REFERENCES `cleansync`.`House` (`houseId`));
+    REFERENCES `House` (`houseId`));
 
 
 -- -----------------------------------------------------
--- Table `cleansync`.`Task`
+-- Table `Task`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`Task` (
+CREATE TABLE `Task` (
   `taskId` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(32) NOT NULL,
   `description` VARCHAR(1024) NOT NULL,
@@ -62,13 +62,13 @@ CREATE TABLE `cleansync`.`Task` (
   INDEX `fk_Task_Room1_idx` (`houseId` ASC),
   CONSTRAINT `fk_Task_House`
     FOREIGN KEY (`houseId`)
-    REFERENCES `cleansync`.`House` (`houseId`));
+    REFERENCES `House` (`houseId`));
 
 
 -- -----------------------------------------------------
--- Table `cleansync`.`User_Exempt_Task`
+-- Table `User_Exempt_Task`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`User_Exempt_Task` (
+CREATE TABLE `User_Exempt_Task` (
   `UETId` INT NOT NULL AUTO_INCREMENT,
   `houseId` INT NOT NULL,
   `userId` INT NOT NULL,
@@ -81,18 +81,18 @@ CREATE TABLE `cleansync`.`User_Exempt_Task` (
   INDEX `fk_user_exempt_task_house_idx` (`houseId` ASC),
   CONSTRAINT `fk_user_exempt_task_user`
     FOREIGN KEY (`userId`)
-    REFERENCES `cleansync`.`user` (`userId`),
+    REFERENCES `User` (`userId`),
   CONSTRAINT `fk_user_exempt_task_house`
     FOREIGN KEY (`houseId`)
-    REFERENCES `cleansync`.`House` (`houseId`),
+    REFERENCES `House` (`houseId`),
   CONSTRAINT `fk_user_exempt_task_task`
     FOREIGN KEY (`taskId`)
-    REFERENCES `cleansync`.`Task` (`taskId`));
+    REFERENCES `Task` (`taskId`));
 
 -- -----------------------------------------------------
--- Table `cleansync`.`User_Exempt_Room`
+-- Table `User_Exempt_Room`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`User_Exempt_Room` (
+CREATE TABLE `User_Exempt_Room` (
   `UERId` INT NOT NULL AUTO_INCREMENT,
   `houseId` INT NOT NULL,
   `userId` INT NOT NULL,
@@ -105,18 +105,18 @@ CREATE TABLE `cleansync`.`User_Exempt_Room` (
   INDEX `fk_user_exempt_room_house_idx` (`houseId` ASC),
   CONSTRAINT `fk_user_exempt_room_user`
     FOREIGN KEY (`userId`)
-    REFERENCES `cleansync`.`user` (`userId`),
+    REFERENCES `user` (`userId`),
   CONSTRAINT `fk_user_exempt_room_house`
     FOREIGN KEY (`houseId`)
-    REFERENCES `cleansync`.`House` (`houseId`),
+    REFERENCES `House` (`houseId`),
   CONSTRAINT `fk_user_exempt_room_room`
     FOREIGN KEY (`roomId`)
-    REFERENCES `cleansync`.`Room` (`roomId`));
+    REFERENCES `Room` (`roomId`));
 
 -- -----------------------------------------------------
--- Table `cleansync`.`Room_Has_Task`
+-- Table `Room_Has_Task`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`Room_Has_Task` (
+CREATE TABLE `Room_Has_Task` (
   `RHTId` INT NOT NULL AUTO_INCREMENT,
   `houseId` INT NOT NULL,
   `roomId` INT NOT NULL,
@@ -128,18 +128,18 @@ CREATE TABLE `cleansync`.`Room_Has_Task` (
   INDEX `fk_room_has_task_house_idx` (`houseId` ASC),
   CONSTRAINT `fk_room_has_task_room`
     FOREIGN KEY (`roomId`)
-    REFERENCES `cleansync`.`room` (`roomId`),
+    REFERENCES `room` (`roomId`),
   CONSTRAINT `fk_room_has_task_house`
     FOREIGN KEY (`houseId`)
-    REFERENCES `cleansync`.`House` (`houseId`),
+    REFERENCES `House` (`houseId`),
   CONSTRAINT `fk_room_has_task_task`
     FOREIGN KEY (`taskId`)
-    REFERENCES `cleansync`.`Task` (`taskId`));
+    REFERENCES `Task` (`taskId`));
 
 -- -----------------------------------------------------
--- Table `cleansync`.`RoomSchedule`
+-- Table `RoomSchedule`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`RoomSchedule` (
+CREATE TABLE `RoomSchedule` (
   `scheduleId` INT NOT NULL AUTO_INCREMENT,
   -- begin to end range is inclusive
   `beginTimeslot` INT NOT NULL,
@@ -152,15 +152,15 @@ CREATE TABLE `cleansync`.`RoomSchedule` (
   INDEX `fk_roomschedule_house_idx` (`houseId` ASC),
   CONSTRAINT `fk_roomschedule_room`
     FOREIGN KEY (`roomId`)
-    REFERENCES `cleansync`.`Room` (`roomId`),
+    REFERENCES `Room` (`roomId`),
   CONSTRAINT `fk_roomschedule_house`
     FOREIGN KEY (`houseId`)
-    REFERENCES `cleansync`.`House` (`houseId`));
+    REFERENCES `House` (`houseId`));
 
 -- -----------------------------------------------------
--- Table `cleansync`.`TaskSchedule`
+-- Table `TaskSchedule`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`TaskSchedule` (
+CREATE TABLE `TaskSchedule` (
   `scheduleId` INT NOT NULL AUTO_INCREMENT,
   -- begin to end range is inclusive
   `beginTimeslot` INT NOT NULL,
@@ -173,15 +173,15 @@ CREATE TABLE `cleansync`.`TaskSchedule` (
   INDEX `fk_taskschedule_house_idx` (`houseId` ASC),
   CONSTRAINT `fk_taskschedule_task`
     FOREIGN KEY (`taskId`)
-    REFERENCES `cleansync`.`Task` (`taskId`),
+    REFERENCES `Task` (`taskId`),
   CONSTRAINT `fk_taskschedule_house`
     FOREIGN KEY (`houseId`)
-    REFERENCES `cleansync`.`House` (`houseId`));
+    REFERENCES `House` (`houseId`));
 
 -- -----------------------------------------------------
--- Table `cleansync`.`UserSchedule`
+-- Table `UserSchedule`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`UserSchedule` (
+CREATE TABLE `UserSchedule` (
   `scheduleId` INT NOT NULL AUTO_INCREMENT,
   -- begin to end range is inclusive
   `beginTimeslot` INT NOT NULL,
@@ -192,13 +192,13 @@ CREATE TABLE `cleansync`.`UserSchedule` (
   INDEX `fk_userschedule_user_idx` (`userId` ASC),
   CONSTRAINT `fk_userschedule_user`
     FOREIGN KEY (`userId`)
-    REFERENCES `cleansync`.`user` (`userId`));
+    REFERENCES `user` (`userId`));
 
 
 -- -----------------------------------------------------
--- Table `cleansync`.`taskPoints`
+-- Table `taskPoints`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`taskPoints` (
+CREATE TABLE `TaskPoints` (
   `pointId` INT NOT NULL AUTO_INCREMENT,
   `quantity` INT NOT NULL,
   `taskId` INT NOT NULL,
@@ -208,22 +208,22 @@ CREATE TABLE `cleansync`.`taskPoints` (
   INDEX `fk_Rule_room2_idx` (`roomId` ASC),
   CONSTRAINT `fk_Rule_task2`
     FOREIGN KEY (`taskId`)
-    REFERENCES `cleansync`.`Task` (`taskId`),
+    REFERENCES `Task` (`taskId`),
   CONSTRAINT `fk_Rule_room2`
     FOREIGN KEY (`roomId`)
-    REFERENCES `cleansync`.`Room` (`roomId`));
+    REFERENCES `Room` (`roomId`));
 
 
 -- -----------------------------------------------------
--- Table `cleansync`.`Rota`
+-- Table `Rota`
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`Rota` (
+CREATE TABLE `Rota` (
   `rotaId` INT NOT NULL,
   PRIMARY KEY (`rotaId`));
 
 
 -- -----------------------------------------------------
--- Table `cleansync`.`Task_has_user`
+-- Table `Task_has_user`
 -- -----------------------------------------------------
 -- TODO: Rename to something like job_has_user or just
 --     rota and get rid of existing rota table.
@@ -232,7 +232,7 @@ CREATE TABLE `cleansync`.`Rota` (
 --     make detecting collisions easier if we allow
 --     manual modification of the rota post generation.
 -- -----------------------------------------------------
-CREATE TABLE `cleansync`.`Task_has_user` (
+CREATE TABLE `Task_Has_User` (
   `taskId` INT NOT NULL,
   `roomId` INT NOT NULL,
   `userId` INT NOT NULL,
@@ -247,13 +247,13 @@ CREATE TABLE `cleansync`.`Task_has_user` (
   INDEX `fk_Task_has_user_Rota1_idx` (`rotaId` ASC),
   CONSTRAINT `fk_Task_has_user_Task1`
     FOREIGN KEY (`taskId`)
-    REFERENCES `cleansync`.`Task` (`taskId`),
+    REFERENCES `Task` (`taskId`),
   CONSTRAINT `fk_Task_has_user_Room1`
     FOREIGN KEY (`roomId`)
-    REFERENCES `cleansync`.`Room` (`roomId`),
+    REFERENCES `Room` (`roomId`),
   CONSTRAINT `fk_Task_has_user_user1`
     FOREIGN KEY (`userId`)
-    REFERENCES `cleansync`.`user` (`userId`),
+    REFERENCES `user` (`userId`),
   CONSTRAINT `fk_Task_has_user_Rota1`
     FOREIGN KEY (`rotaId`)
-    REFERENCES `cleansync`.`Rota` (`rotaId`));
+    REFERENCES `Rota` (`rotaId`));

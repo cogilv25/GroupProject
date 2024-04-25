@@ -106,7 +106,17 @@ class DatabaseDomain
         if(!$query->execute())
             return false;
 
-        return $this->db->insert_id;
+        $userId = $this->db->insert_id;
+
+        $days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+        foreach ($days as $day)
+        {
+            $this->db->query("INSERT INTO `UserSchedule` (`beginTimeslot`,`endTimeslot`,`day`,`userId`) VALUES".
+                             "(36,68," . $day . "," . $userId . ")");
+        }
+
+        return $userId;
     }
 
     public function addUserToHousehold(int $userId, int $houseId) : bool

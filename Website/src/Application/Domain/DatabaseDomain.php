@@ -106,7 +106,17 @@ class DatabaseDomain
         if(!$query->execute())
             return false;
 
-        return $this->db->insert_id;
+        $userId = $this->db->insert_id;
+
+        $days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+        foreach ($days as $day)
+        {
+            $this->db->query("INSERT INTO `UserSchedule` (`beginTimeslot`,`endTimeslot`,`day`,`userId`) VALUES".
+                             "(36,68,'" . $day . "'," . $userId . ")");
+        }
+
+        return $userId;
     }
 
     public function addUserToHousehold(int $userId, int $houseId) : bool
@@ -1031,7 +1041,7 @@ class DatabaseDomain
         return $rules;
     }
 
-    public function getValidUserRoomTaskCombinations(int $houseId)
+    public function getValidUserRoomTaskCombinations(int $houseId) : array
     {
         //This query gets all tasks in all rooms for all users where:
         // - The task can be performed in the room (RHT)

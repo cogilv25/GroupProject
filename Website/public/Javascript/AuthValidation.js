@@ -166,6 +166,7 @@ $(document).ready(function() {
             try {
                 response = JSON.parse(error.responseText);
                 console.error("Error: ", response.message);
+                console.log(error.responseText);
             } catch (e) {
                 // If response is not JSON or empty
                 console.error("Error submitting login form: ", error);

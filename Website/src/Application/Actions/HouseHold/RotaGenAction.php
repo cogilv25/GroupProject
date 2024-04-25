@@ -48,15 +48,20 @@ class RotaGenAction extends AdminAction
 
         $rawuserSchedules = $this->db->getUserSchedulesFlat($this->houseId);
 
+        $rota = $this->db->getUsersNamesInHousehold($this->houseId);
+        $roomNames = $this->db->getRoomsInHousehold($this->houseId);
+        $taskDetails = $this->db->getTasksInHousehold($this->houseId);
+
         // Ignore multiple days, just look at Monday for now
         // TODO: switch for different days so we're not constantly
         //         comparing strings on the critical path.
+
+        $dayNames = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
         foreach($rawuserSchedules as $row)
         {
             $day = 0;
             switch($row[1])
             {
-                case "Tuesday": $day = 1; break;
                 case "Wednesday": $day = 2; break;
                 case "Thursday": $day = 3; break;
                 case "Friday": $day = 4; break;
@@ -64,10 +69,11 @@ class RotaGenAction extends AdminAction
                 case "Sunday": $day = 6; break;
             }
 
-            $userSchedules[$row[0]][$day][] = [$row[2], $row[3]];
+            $userSchedules[$row[0]][$day][] = [(int)$row[2], (int)$row[3]];
         }   
 
         $jobList = [];
+        $usersEligibleJob = [];
 
         // $row == [0=>userId,1=>roomId,2=>taskId]
         foreach ($userRoomTasks as $row)
@@ -82,6 +88,7 @@ class RotaGenAction extends AdminAction
                     break;
                 }
             }
+            
             if(!$found)
             {
                 // TODO: Real duration and period values, period unused atm..
@@ -112,10 +119,6 @@ class RotaGenAction extends AdminAction
         //   specific job to get the jobs in order from the hardest to allocate to the easiest,
         //   thus making it easier to evenly distribute the jobs.
         array_multisort(array_map('count',$usersEligibleJob), SORT_ASC, SORT_NUMERIC, $usersEligibleJob, $jobList);
-
-        // Initialize the rota with all users
-        foreach ($userSchedules as $user => $schedule)
-            $rota[$user] = [];
 
         // Loop through the jobs that need assigned in ascending order based on
         //   the number of users who are not exempt from the job.
@@ -165,7 +168,7 @@ class RotaGenAction extends AdminAction
                             //TODO: Task schedule checking would go here..
 
                             // Get the inner range which is the maximum range of the user and room
-                            //   schedules combined.
+                            //   schedule rows combined.
                             $ibegin = max($rbegin, $ubegin); $iend = min($rend, $uend);
 
                             // The calculated range $iend - $ibegin will be negative if the schedules
@@ -195,25 +198,25 @@ class RotaGenAction extends AdminAction
                                 //   the begin field of the schedule row to the end of
                                 //   the range.
                                 if($eend == $uend)
-                                    unset($userSchedules[$day][$userScheduleRowIndex]);
+                                    unset($userSchedules[$user][$day][$userScheduleRowIndex]);
                                 else
-                                    $userSchedules[$day][$userScheduleRowIndex][0] = $eend;
+                                    $userSchedules[$user][$day][$userScheduleRowIndex][0] = $eend;
                             }
                             else
                             {
+                                // TODO: Moving things around we could get rid of a line of code
+                                //         it requires rewording the comments though.
                                 // Otherwise, if the end of the range == the end of the users
                                 //   schedule row range then we just shorten the row.
-                                //TODO: Moving things around we could get rid of a line of code
-                                //        it requires rewording the comments though
                                 if($eend == $uend)
-                                    $userSchedules[$day][$userScheduleRowIndex][1] = $ebegin;
+                                    $userSchedules[$user][$day][$userScheduleRowIndex][1] = $ebegin;
                                 // Finally if the range is somewhere in the middle of
                                 //   the user's schedule row then we need to split the
                                 //   row into 2 seperate rows in their schedule.
                                 else
                                 {
-                                    $userSchedules[$day][] = [$eend, $uend];
-                                    $userSchedules[$day][$userScheduleRowIndex][1] = $ebegin;
+                                    $userSchedules[$user][$day][] = [$eend, $uend];
+                                    $userSchedules[$user][$day][$userScheduleRowIndex][1] = $ebegin;
                                 }
                             }
 
@@ -224,30 +227,28 @@ class RotaGenAction extends AdminAction
                             if($ebegin == $rbegin)
                             {
                                 if($eend == $rend)
-                                    unset($roomSchedules[$day][$roomScheduleRowIndex]);
+                                    unset($roomSchedules[$job['room']][$day][$roomScheduleRowIndex]);
                                 else
-                                    $roomSchedules[$day][$roomScheduleRowIndex][0] = $eend;
+                                    $roomSchedules[$job['room']][$day][$roomScheduleRowIndex][0] = $eend;
                             }
                             else
                             {
                                 //More compact does the same thing.
                                 if($eend != $rend)
-                                    $roomSchedules[$day][] = [$eend, $rend];
+                                    $roomSchedules[$job['room']][$day][] = [$eend, $rend];
 
-                                $roomSchedules[$day][$roomScheduleRowIndex][1] = $ebegin;
+                                $roomSchedules[$job['room']][$day][$roomScheduleRowIndex][1] = $ebegin;
                             }
 
                             // Finally we can insert the new row into the rota and set the flag
                             //   that breaks the loops to get to the next
-                            $row = $job;
-                            unset($row['period']);
-                            unset($row['duration']);
-
+                            $row = ['room' => $roomNames[$job['room']]['name']];
+                            $row['task'] = $taskDetails[$job['task']]['name'];
                             $row['begin'] = $ebegin;
                             $row['end'] = $eend;
-                            $row['day'] = $day;
+                            $row['day'] = $dayNames[$day];
 
-                            $rota[$user][] = $row;
+                            $rota[$user]['jobs'][] = $row;
                             $jobAssigned = true;
                             break;
                         }
@@ -261,7 +262,7 @@ class RotaGenAction extends AdminAction
             if($jobAssigned) continue;
 
             //If we didn't get the job assigned to someone then we can have a good moan!
-            $errors[] = "Couldn't assign task: " . $job['task'] . " in room: " . $job['room'] . " to any user";
+            $errors[] = "Couldn't assign task: " . $taskDetails[$job['task']]['name'] . " in room: " . $roomNames[$job['room']]['name'] . " to any user";
         }
 
         // $errors can either be an array of strings or false to indicate there are no errors.

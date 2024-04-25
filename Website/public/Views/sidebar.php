@@ -12,18 +12,15 @@
                       <li>
                         <a class="navlink">Rules</a>
                         <ul class="menu vertical nested">
-                                <li><a class="navlink" href="/rule">View All Rules</a></li>
+                                <li><a class="navlink" href="/rule">View  Rules</a></li>
                                 <li><a class="navlink" href="rule/create">Add Rule</a></li>
                         </ul>
-                        </li>
-                      <li><a class="navlink" href="/task">Tasks</a></li>
-                      <li><a class="navlink" href="/household" >HouseHold</a></li>
-                      <li><a class="navlink" href="/schedule">Schedule</a></li>
-                      <li><a class="navlink" href="/room">Rooms</a></li>
-                      <li><a class="navlink" href="/profile">Profile</a></li>
-                      <li><a class="navlink" href="/settings">Settings</a></li>
-                      <li><a class="navlink" href="/logout">Logout</a></li>
-                      <li><a id="inviteButton" class="navlink">Invite Link</a></li>
+                    </li>
+                    <li><a class="navlink" href="/household" >HouseHold</a></li>
+                    <li><a class="navlink" href="/schedule">Schedule</a></li>
+                    <li><a class="navlink" href="/profile">Profile</a></li>
+                    <li><a class="navlink" href="/settings">Settings</a></li>
+                    <li><a class="navlink" href="/logout">Logout</a></li>
                   </ul>
                 </div>
             </div>
@@ -35,4 +32,3 @@
                     <span class="title-bar-title">CleanSync</span>
                 </div>
             </div>
-       

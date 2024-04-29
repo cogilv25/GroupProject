@@ -217,20 +217,18 @@ return function (App $app) {
             $houseRole = $db->getUserHouseAndRole($userId);
 
             if($houseRole === false)
-            {
-                $user = ['userId' => $userId, 'homeless' => true];
-                $dashboard = "dashboard.php";
-            }
+                return $response->withHeader('Location', '/')->withStatus(302);
             else
             {
                 $user = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
                 $dashboard = ($houseRole[1] == "member") ? "dashboard.php" : "admindashboard.php";
+                $rules = $db->getExemptionRules($houseRole[0]);
             }
 
-            $data['currentUser'] = $user;
+            $data = ['currentUser' => $user];
             $data['page'] = "rules.php";
             $data['link'] = $invite;
-            $data['rules'] = $db->getExemptionRules($houseRole[0]);
+            $data['rules'] = $rules;
             
             return $renderer->render($response, $dashboard, $data);
         });
@@ -249,7 +247,7 @@ return function (App $app) {
 
                     $houseRole = $db->getUserHouseAndRole($userId);
                     if($houseRole === false)
-                        return $response->withHeader('Location', '/rule')->withStatus(302);
+                        return $response->withHeader('Location', '/')->withStatus(302);
 
                     $houseId = $houseRole[0];
 

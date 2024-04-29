@@ -37,10 +37,19 @@ return function (App $app) {
         {
             $db = $this->get('db');
             $link = $db->getUserInviteLink($userId);
-
-            $data = ['link' => $link];
-            $dashboard = ($link == "No Link") ? "dashboard.php" : "admindashboard.php";
-            
+            $houseRole = $db->getUserHouseAndRole($userId);
+                 if ($houseRole === false) {
+            // User is "homeless", i.e., not part of any household
+            $data = [
+                'currentUser' => ['userId' => $userId, 'homeless' => true],
+                'link' => $link
+            ];
+            $dashboard = "dashboard.php";
+        } else {
+            // User is part of a household
+            $data = ['currentUser' => ['userId' => $userId,'role' => $houseRole[1],'homeless' => false ],'link' => $link];
+            $dashboard = ($link == "No Link") ? "dashboard.php" : "admindashboard.php";        }
+        
             return $renderer->render($response, $dashboard, $data);
         }
     });
@@ -55,23 +64,38 @@ return function (App $app) {
     });
 
     //UserSchedule Actions
-    $app->group('/schedule', function (Group $group)
-    {
-        $group->get('', function (Request $request, Response $response)
-        {
-            //Prepare data
+    $app->group('/schedule', function (Group $group) {
+        $group->get('', function (Request $request, Response $response) {
             $userId = $request->getAttribute('userId');
-            if($userId == 0)
+            if ($userId == 0)
                 return $response->withHeader('Location', '/')->withStatus(302);
-
+    
             $renderer = $this->get('renderer');
             $db = $this->get('db');
             $link = $db->getUserInviteLink($userId);
-
-
-            $data = ['link' => $link, 'page' => "schedule.php"];
-            $dashboard = ($link == "No Link") ? "dashboard.php" : "admindashboard.php";
-
+            $houseRole = $db->getUserHouseAndRole($userId);
+    
+            if ($houseRole === false) {
+                // User is "homeless", i.e., not part of any household
+                $data = [
+                    'currentUser' => ['userId' => $userId, 'homeless' => true],
+                    'link' => $link,
+                    'page' => "schedule.php"
+                ];
+                $dashboard = "dashboard.php"; // Default dashboard for homeless users
+            } else {
+                // User is part of a household
+                $data = [
+                    'currentUser' => [
+                        'userId' => $userId,
+                        'role' => $houseRole[1],
+                        'homeless' => false
+                    ],
+                    'link' => $link,
+                    'page' => "schedule.php"
+                ];
+                $dashboard = ($link == "No Link") ? "dashboard.php" : "admindashboard.php";
+            }
             return $renderer->render($response, $dashboard, $data);
         });
         $group->post('/create_row', Schedule\CreateUserScheduleRowAction::class);

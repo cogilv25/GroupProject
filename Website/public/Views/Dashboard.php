@@ -36,6 +36,7 @@
                             <th>Start Time</th>
                             <th>End Time</th>
                             <th>Duration</th>
+                            <th>Day of  weeek</th>
                             <th>Priority</th>
                             <th>Points to gain</th>
                         </tr>
@@ -47,6 +48,7 @@
                             </th>
                         </tr>
                         <tr class="task-details Inprogress" style="display: none;">
+                            <td>test</td>
                             <td>test</td>
                             <td>test</td>
                             <td>test</td>

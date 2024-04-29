@@ -277,8 +277,7 @@ return function (App $app) {
 
                     if($houseRole[1] == "member")
                     {
-                        return $response->withHeader('Location', '/rule')->withStatus(302);
-                        $user = ['userId' => $userId, 'homeless' => true];
+                        $user = ['userId' => $userId, 'homeless' => false];
                         $dashboard = "dashboard.php";
                     }
                     else 

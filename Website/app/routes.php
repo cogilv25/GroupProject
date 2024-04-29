@@ -272,19 +272,26 @@ return function (App $app) {
                     $db = $this->get('db');
 
                     $houseRole = $db->getUserHouseAndRole($userId);
-                    if($houseRole === false)
-                        return $response->withHeader('Location', '/rule')->withStatus(302);
-
                     $houseId = $houseRole[0];
 
-                    $dashboard = ($houseRole[1] == "member") ? "dashboard.php" : "admindashboard.php";
+                    if($houseRole[1] == "member")
+                    {
+                        return $response->withHeader('Location', '/rule')->withStatus(302);
+                        $user = ['userId' => $userId, 'homeless' => true];
+                        $dashboard = "dashboard.php";
+                    }
+                    else 
+                    {
+                        $user = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
+                        $dashboard = ($houseRole[1] == "member") ? "dashboard.php" : "admindashboard.php";
+                    }
                     $user = ['userId' => $userId, 'role' => $houseRole[1]];
                     $data = ['link' => "No Link", 'page' => "addrule.php", 'currentUser' => $user];
                     $data['rooms'] = $db->getRoomsInHousehold($houseId);
                     $data['tasks'] = $db->getTasksInHousehold($houseId);
                     $data['users'] = $db->getUsersNamesInHousehold($houseId);
 
-                    return $renderer->render($response, 'admindashboard.php', $data);
+                    return $renderer->render($response, $dashboard, $data);
                 });
                 $createGroup->post('/room_time', Rule\CreateRoomTimeRuleAction::class); // TODO: @SchedulesOverhaul
                 $createGroup->post('/task_time', Rule\CreateTaskTimeRuleAction::class); // TODO: @SchedulesOverhaul

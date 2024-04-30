@@ -106,6 +106,48 @@ return function (App $app) {
         $group->get('/data', Schedule\GetUserScheduleAction::class);
     });
 
+    $app->group('/userdashboard', function (Group $group) {
+        $group->get('', function (Request $request, Response $response) {
+            $userId = $request->getAttribute('userId');
+            if ($userId == 0)
+                return $response->withHeader('Location', '/')->withStatus(302);
+    
+            $renderer = $this->get('renderer');
+            $db = $this->get('db');
+            $link = $db->getUserInviteLink($userId);
+            $houseRole = $db->getUserHouseAndRole($userId);
+    
+            if ($houseRole === false) {
+                // User is "homeless", i.e., not part of any household
+                $data = [
+                    'currentUser' => ['userId' => $userId, 'homeless' => true],
+                    'link' => $link,
+                    'page' => "userdashboard.php"
+                ];
+                $dashboard = "dashboard.php"; // Default dashboard for homeless users
+            } else {
+                // User is part of a household
+                $data = [
+                    'currentUser' => [
+                        'userId' => $userId,
+                        'role' => $houseRole[1],
+                        'homeless' => false
+                    ],
+                    'link' => $link,
+                    'page' => "userdashboard.php"
+                ];
+                $dashboard = ($link == "No Link") ? "dashboard.php" : "admindashboard.php";
+            }
+            return $renderer->render($response, $dashboard, $data);
+        });
+      
+    });
+
+
+
+
+
+
     //HouseHold Actions
     $app->group('/household', function (Group $group)
     {
@@ -243,7 +285,7 @@ return function (App $app) {
             if($houseRole === false)
                 return $response->withHeader('Location', '/')->withStatus(302);
             else
-            {
+            {   $user['role'] = $houseRole[1];
                 $user = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
                 $dashboard = ($houseRole[1] == "member") ? "dashboard.php" : "admindashboard.php";
                 $rules = $db->getExemptionRules($houseRole[0]);
@@ -268,28 +310,25 @@ return function (App $app) {
 
                     $renderer = $this->get('renderer');
                     $db = $this->get('db');
-
                     $houseRole = $db->getUserHouseAndRole($userId);
+
                     if($houseRole === false)
                         return $response->withHeader('Location', '/')->withStatus(302);
 
-                    $houseId = $houseRole[0];
-
-                    if($houseRole[1] == "member")
-                    {
-                        $user = ['userId' => $userId, 'homeless' => false];
-                        $dashboard = "dashboard.php";
-                    }
-                    else 
-                    {
-                        $user = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false ];
-                        $dashboard = ($houseRole[1] == "member") ? "dashboard.php" : "admindashboard.php";
-                    }
-                    $user = ['userId' => $userId, 'role' => $houseRole[1]];
-                    $data = ['link' => "No Link", 'page' => "addrule.php", 'currentUser' => $user];
-                    $data['rooms'] = $db->getRoomsInHousehold($houseId);
-                    $data['tasks'] = $db->getTasksInHousehold($houseId);
-                    $data['users'] = $db->getUsersNamesInHousehold($houseId);
+                    // Initialize $user with default values
+                    $user = ['userId' => $userId, 'role' => $houseRole[1], 'homeless' => false];
+                    $dashboard = "dashboard.php";  // Default dashboard, change if admin
+                    if ($houseRole[1] != "member") {
+                      $dashboard = "admindashboard.php";
+                     }
+                     $data = [
+                        'currentUser' => $user,
+                        'link' => "No Link",
+                        'page' => "addrule.php",
+                        'rooms' => $db->getRoomsInHousehold($houseRole[0]),
+                        'tasks' => $db->getTasksInHousehold($houseRole[0]),
+                        'users' => $db->getUsersNamesInHousehold($houseRole[0])
+                    ];
 
                     return $renderer->render($response, $dashboard, $data);
                 });
@@ -311,4 +350,9 @@ return function (App $app) {
         $group->post('/delete', Rule\DeleteRuleAction::class);
         $group->get('/data', Rule\ListRuleAction::class);
     });
+
+
+
+
+    
 };

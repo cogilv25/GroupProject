@@ -1,5 +1,32 @@
-$(document).ready(function () {
-    $(document).foundation();
+
+<table class="hover unstriped" id="taskTable">
+    <thead>
+        <tr>
+            <th>Task Name</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Duration</th>
+            <th>Day of Week</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- In Progress Header -->
+        <tr class="task-group-header" data-toggler=".InProgress">
+    <th colspan="6">In Progress</th>
+</tr>
+        <tr class="task-group-header" data-toggler=".Missed">
+    <th colspan="6">Missed Tasks</th>
+</tr>
+<tr class="task-group-header" data-toggler=".Upcoming">
+    <th colspan="6">Upcoming Tasks</th>
+</tr>
+    </tbody>
+</table>
+
+                <script>
+
+$(document).ready(function() {
+        $(document).foundation();
 
     $('#taskTable').on('click', '.task-group-header', function() {
         var togglerClass = $(this).data('toggler');
@@ -59,7 +86,7 @@ $(document).ready(function () {
                         var jobBeginSegment = job.begin;
 
                         var category;
-                        if ((jobDay === 0 && currentDayOfWeek === 1) || // Sunday tasks on Monday
+                        if ((jobDay === 0 && currentDayOfWeek === 1) || 
                             (jobDay < currentDayOfWeek)) {
                             category = 'Missed'; // Tasks from previous week's Sunday or earlier days
                         } else if (jobDay === currentDayOfWeek && jobBeginSegment >= currentTime) {
@@ -80,3 +107,41 @@ $(document).ready(function () {
         }
     });
 });
+</script>
+
+
+<?php 
+    if(isset($dynamicScripts))
+    {
+        foreach($dynamicScripts as $path)
+        {
+            echo("<script>\n");
+            include($path);
+            echo("</script>\n");
+        }
+    }
+
+    if(isset($staticScripts))
+    {
+        foreach($staticScripts as $path)
+        {
+            echo("<script src=\"" . $path . "\"></script>\n");
+        }
+    }
+?>
+
+<style> 
+.task-details.Missed {
+    background-color: #FFCCCC; /* Light red */
+}
+
+.task-details.Upcoming {
+    background-color: #FFFFCC; /* Light yellow */
+}
+
+.task-details.InProgress {
+    background-color: #CCFFCC; /* Light green */
+}
+</style>
+</body>
+</html> 

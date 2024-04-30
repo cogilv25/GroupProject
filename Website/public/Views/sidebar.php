@@ -32,8 +32,8 @@ border-color: black transparent transparent;
                         <li>
                             <a class="navlink <?= (isset($page) && $page == 'rules.php') ? 'active' : '' ?>">Rules</a>
                             <ul class="menu vertical nested">
-                                <li><a class="navlink <?= (isset($page) && $page == 'view_rules.php') ? 'active' : '' ?>" href="/rule">View Rules</a></li>
-                                <li><a class="navlink  <?= (isset($page) && $page == 'add_rule.php') ? 'active' : '' ?>" href="rule/create">Add Rule</a></li>
+                                <li><a class="navlink <?= (isset($page) && $page == 'rules.php') ? 'active' : '' ?>" href="/rule">View Rules</a></li>
+                                <li><a class="navlink  <?= (isset($page) && $page == 'addrule.php') ? 'active' : '' ?>" href="/rule/create">Add Rule</a></li>
                             </ul>
                         </li>
                         <li><a class="navlink <?= (isset($page) && $page == 'household.php') ? 'active' : '' ?>" href="/household">HouseHold</a></li>

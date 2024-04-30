@@ -29,54 +29,47 @@
                 {
                     // Default view goes here.
             ?>
-                  <table class="hover unstriped" id="taskTable">
-                    <thead>
-                        <tr>
-                            <th>Task Name</th>
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                            <th>Duration</th>
-                            <th>Day of  weeek</th>
-                            <th>Priority</th>
-                            <th>Points to gain</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="task-group-header" data-toggler=".Inprogress">
-                            <th colspan="6">
-                                <a href="javascript:void(0);" class="toggle-group">In Progress</a>
-                            </th>
-                        </tr>
-                        <tr class="task-details Inprogress" style="display: none;">
-                            <td>test</td>
-                            <td>test</td>
-                            <td>test</td>
-                            <td>test</td>
-                            <td>test</td>
-                            <td>test</td>
-                            <td>test</td>
-                        </tr>
-                        <tr class="task-group-header" data-toggler=".to-do">
-                            <th colspan="6">
-                                <a href="javascript:void(0);" class="toggle-group">To-do</a>
-                            </th>
-                        </tr>
-                        <tr class="task-details to-do" style="display: none;">
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
+<table class="hover unstriped" id="taskTable">
+    <thead>
+        <tr>
+            <th>Task Name</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Duration</th>
+            <th>Day of Week</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="task-group-header" data-toggler=".InProgress">
+            <th colspan="6">In Progress</th>
+        </tr>
+        <tr class="task-group-header" data-toggler=".Missed">
+            <th colspan="6">Missed Tasks</th>
+        </tr>
+        <tr class="task-group-header" data-toggler=".Upcoming">
+            <th colspan="6">Upcoming Tasks</th>
+        </tr>
+    </tbody>
+</table>
 
 
 
 
 
 
+<style> 
+.task-details.Missed {
+    background-color: #FFCCCC; /* Light red */
+}
+
+.task-details.Upcoming {
+    background-color: #FFFFCC; /* Light yellow */
+}
+
+.task-details.InProgress {
+    background-color: #CCFFCC; /* Light green */
+}
+</style>
 
 
 

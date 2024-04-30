@@ -27,16 +27,16 @@ use Psr\Http\Message\ResponseInterface as Response;
 // from the job until all jobs have been assigned to a user.
 
 // Now we go through the jobs for each user and try to fit them into their schedule, if we can't we give up,
-// this is not a final solution just an easy but bad one for now.
+// this is not a final solution just a simple first approximation.
 
-// We are probably somewhat there we just need to be able to move things around once they are in a container
-// a simple improvement would just be to try putting the job in another users space if we can't fit it in the
-// one it was assigned to.. maybe try swap it with one of their jobs. Another thing that would probably help
-// is being able to calculate how much space is in each container.
+// We are probably somewhat there we just need to be able to move things around once they are in a container. 
+// Another thing that would probably help is being able to calculate how much space is in each container and
+// using that somehow.
 
-// I think the best solution would involve some sort of fuzzy logic where we imagine that a job is in all the
-// places it could be and then move through each conflict resolving it by reducing the number of places a job
-// is able to be... badly explained but I'll explain it better as I figure it out.
+// The best solution I can think of would involve some sort of fuzzy logic where we imagine that a job is in all the
+// places it could be at once and then move through each conflict resolving it by reducing the number of places a job
+// is able to be, then once all conflicts are resolved we could either just plop them in whatever order they occur in
+// our array or place them in a random order to create variety... badly explained but hopefully the point comes across.
 
 
 class RotaGenAction extends AdminAction
@@ -102,10 +102,10 @@ class RotaGenAction extends AdminAction
             { 
                 // TODO: Get real Room and Time Schedules, we are currently
                 //         assuming rooms and tasks can be used/done anytime.
+                // TODO: We probably want to define how many concurrent users
+                //         can perform a task / use a room at a time per 
+                //         task / room.
                 $roomSchedules[$row[1]][$day][0] = [0,95];
-                //TODO: Incorporate task schedules, currently we assume that everyone can do a
-                //        specific task concurrently, which while true for some tasks is not for
-                //        others for example there may only be 1 hoover. 
                 $taskSchedules[$row[2]][$day][0] = [0,95];
             }
             $capacityJobSchedule[$job][0] = [0,95];
@@ -148,7 +148,7 @@ class RotaGenAction extends AdminAction
                         {
                             // Variables are just for readability.
                             $ubegin = $userScheduleRow[0]; $uend = $userScheduleRow[1];
-                            // If there is no room in this row of this users schedule
+                            // If there is no space in this row of this users schedule
                             //   the job doesn't fit and we can exit early.
                             if($uend - $ubegin < $job['duration']) continue;
 
@@ -158,96 +158,124 @@ class RotaGenAction extends AdminAction
                             {
                                 // Variables are just for readability.
                                 $rbegin = $roomScheduleRow[0]; $rend = $roomScheduleRow[1];
-                                // If there is no room in this row of the room's schedule
+                                // If there is no space in this row of the room's schedule
                                 //  the job doesn't fit and we can exit early.
                                 if($rend - $rbegin < $job['duration']) continue;
 
-                                //TODO: Task schedule checking would go here..
-
-                                // Get the inner range which is the maximum range of the user and room
-                                //   schedule rows combined.
-                                $ibegin = max($rbegin, $ubegin); $iend = min($rend, $uend);
-
-                                // The calculated range $iend - $ibegin will be negative if the schedules
-                                //   do not intersect so we don't need to explicitly check for this.
-
-                                // If there is no room in the combined user,room schedule row
-                                //   the job doesn't fit and we can exit early.
-                                if($iend - $ibegin < $job['duration']) continue;
-
-                                // This is the point where we know the job can fit in the current
-                                //   user's schedule and the job's room's schedule. We just have to
-                                //   insert it into the user's rota and remove the range from the
-                                //   user's schedule and the job's room's schedule.
-
-                                //Calculate the begin and end for the new rota entry
-                                $ebegin = $ibegin; $eend = $ebegin + $job['duration'];
-
-                                //Remove the range from the user's schedule
-
-                                // If the start of the range == the start of the users schedule
-                                //   row this is the easiest case where we shorten or remove the
-                                //   row from the users schedule,
-                                if($ebegin == $ubegin)
+                                // Loop through the rows in the task schedule that this job
+                                //   is associated with.
+                                foreach($taskSchedules[$job['task']][$day] as $taskScheduleRowIndex => $taskScheduleRow)
                                 {
-                                    // If the range exactly matches the user's schedule row
-                                    //   remove the row from the schedule, otherwise, set
-                                    //   the begin field of the schedule row to the end of
-                                    //   the range.
-                                    if($eend == $uend)
-                                        unset($userSchedules[$user][$day][$userScheduleRowIndex]);
-                                    else
-                                        $userSchedules[$user][$day][$userScheduleRowIndex][0] = $eend;
-                                }
-                                else
-                                {
-                                    // TODO: Moving things around we could get rid of a line of code
-                                    //         it requires rewording the comments though.
-                                    // Otherwise, if the end of the range == the end of the users
-                                    //   schedule row range then we just shorten the row.
-                                    if($eend == $uend)
-                                        $userSchedules[$user][$day][$userScheduleRowIndex][1] = $ebegin;
-                                    // Finally if the range is somewhere in the middle of
-                                    //   the user's schedule row then we need to split the
-                                    //   row into 2 seperate rows in their schedule.
+                                    // Variables are just for readability.
+                                    $tbegin = $roomScheduleRow[0]; $tend = $roomScheduleRow[1];
+                                    // If there is no space in this row of the task's schedule
+                                    //  the job doesn't fit and we can exit early.
+                                    if($tend - $tbegin < $job['duration']) continue;
+
+                                    // Get the inner range which is the maximum range of the 
+                                    //   user, task and room schedule rows combined.
+                                    $ibegin = max($rbegin, $ubegin, $tbegin); $iend = min($rend, $uend, $tend);
+
+                                    // The calculated range $iend - $ibegin will be negative if the schedules
+                                    //   do not intersect so we don't need to explicitly check for this.
+
+                                    // If there is no room in the combined user,room schedule row
+                                    //   the job doesn't fit and we can exit early.
+                                    if($iend - $ibegin < $job['duration']) continue;
+
+                                    // This is the point where we know the job can fit in the current
+                                    //   user's schedule and the job's room's schedule. We just have to
+                                    //   insert it into the user's rota and remove the range from the
+                                    //   user's schedule and the job's room's schedule.
+
+                                    //Calculate the begin and end for the new rota entry
+                                    $ebegin = $ibegin; $eend = $ebegin + $job['duration'];
+
+                                    //Remove the range from the user's schedule
+
+                                    // If the start of the range == the start of the users schedule
+                                    //   row this is the easiest case where we shorten or remove the
+                                    //   row from the users schedule,
+                                    if($ebegin == $ubegin)
+                                    {
+                                        // If the range exactly matches the user's schedule row
+                                        //   remove the row from the schedule, otherwise, set
+                                        //   the begin field of the schedule row to the end of
+                                        //   the range.
+                                        if($eend == $uend)
+                                            unset($userSchedules[$user][$day][$userScheduleRowIndex]);
+                                        else
+                                            $userSchedules[$user][$day][$userScheduleRowIndex][0] = $eend;
+                                    }
                                     else
                                     {
-                                        $userSchedules[$user][$day][] = [$eend, $uend];
-                                        $userSchedules[$user][$day][$userScheduleRowIndex][1] = $ebegin;
+                                        // TODO: Moving things around we could get rid of a line of code
+                                        //         it requires rewording the comments though.
+                                        // Otherwise, if the end of the range == the end of the users
+                                        //   schedule row range then we just shorten the row.
+                                        if($eend == $uend)
+                                            $userSchedules[$user][$day][$userScheduleRowIndex][1] = $ebegin;
+                                        // Finally if the range is somewhere in the middle of
+                                        //   the user's schedule row then we need to split the
+                                        //   row into 2 seperate rows in their schedule.
+                                        else
+                                        {
+                                            $userSchedules[$user][$day][] = [$eend, $uend];
+                                            $userSchedules[$user][$day][$userScheduleRowIndex][1] = $ebegin;
+                                        }
                                     }
-                                }
 
-                                //Remove the range from the room's schedule
+                                    //Remove the range from the room's schedule
 
-                                // This is the same process as for the user so I will omit
-                                //   the detailed comments.
-                                if($ebegin == $rbegin)
-                                {
-                                    if($eend == $rend)
-                                        unset($roomSchedules[$job['room']][$day][$roomScheduleRowIndex]);
+                                    // This is the same process as for the user so I will omit
+                                    //   the detailed comments.
+                                    if($ebegin == $rbegin)
+                                    {
+                                        if($eend == $rend)
+                                            unset($roomSchedules[$job['room']][$day][$roomScheduleRowIndex]);
+                                        else
+                                            $roomSchedules[$job['room']][$day][$roomScheduleRowIndex][0] = $eend;
+                                    }
                                     else
-                                        $roomSchedules[$job['room']][$day][$roomScheduleRowIndex][0] = $eend;
+                                    {
+                                        //More compact does the same thing.
+                                        if($eend != $rend)
+                                            $roomSchedules[$job['room']][$day][] = [$eend, $rend];
+
+                                        $roomSchedules[$job['room']][$day][$roomScheduleRowIndex][1] = $ebegin;
+                                    }
+
+                                    //Remove the range from the task's schedule
+
+                                    // This is the same process again.
+                                    if($ebegin == $tbegin)
+                                    {
+                                        if($eend == $tend)
+                                            unset($taskSchedules[$job['task']][$day][$taskScheduleRowIndex]);
+                                        else
+                                            $taskSchedules[$job['task']][$day][$taskScheduleRowIndex][0] = $eend;
+                                    }
+                                    else
+                                    {
+                                        if($eend != $tend)
+                                            $taskSchedules[$job['task']][$day][] = [$eend, $tend];
+
+                                        $taskSchedules[$job['task']][$day][$taskScheduleRowIndex][1] = $ebegin;
+                                    }
+
+                                    // Finally we can insert the new row into the rota and set the flag
+                                    //   that breaks the loops to get to the next job.
+                                    $row = ['room' => $roomNames[$job['room']]['name']];
+                                    $row['task'] = $taskDetails[$job['task']]['name'];
+                                    $row['begin'] = $ebegin;
+                                    $row['end'] = $eend;
+                                    $row['day'] = $nameOfDay;
+
+                                    $rota[$user]['jobs'][] = $row;
+                                    $jobAssigned = true;
+                                    break;
                                 }
-                                else
-                                {
-                                    //More compact does the same thing.
-                                    if($eend != $rend)
-                                        $roomSchedules[$job['room']][$day][] = [$eend, $rend];
-
-                                    $roomSchedules[$job['room']][$day][$roomScheduleRowIndex][1] = $ebegin;
-                                }
-
-                                // Finally we can insert the new row into the rota and set the flag
-                                //   that breaks the loops to get to the next job.
-                                $row = ['room' => $roomNames[$job['room']]['name']];
-                                $row['task'] = $taskDetails[$job['task']]['name'];
-                                $row['begin'] = $ebegin;
-                                $row['end'] = $eend;
-                                $row['day'] = $nameOfDay;
-
-                                $rota[$user]['jobs'][] = $row;
-                                $jobAssigned = true;
-                                break;
+                                if($jobAssigned) break;
                             }
                             if($jobAssigned) break;
                         }

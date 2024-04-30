@@ -108,7 +108,6 @@ class RotaGenAction extends AdminAction
                 $roomSchedules[$row[1]][$day][0] = [0,95];
                 $taskSchedules[$row[2]][$day][0] = [0,95];
             }
-            $capacityJobSchedule[$job][0] = [0,95];
         }
 
         $success = true;

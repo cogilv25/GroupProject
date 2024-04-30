@@ -24,13 +24,13 @@ CREATE TABLE `User` (
   `surname` VARCHAR(32) NOT NULL,
   `email` VARCHAR(64) NOT NULL,
   `password` VARCHAR(256) NOT NULL,
-  `House_houseId` INT,
+  `houseId` INT NOT NULL,
   `personalPoints` INT,
   `role` ENUM('member','admin','owner') NOT NULL DEFAULT 'member',
   PRIMARY KEY (`userId`),
-  INDEX `fk_user_House_idx` (`House_houseId` ASC),
+  INDEX `fk_user_House_idx` (`houseId` ASC),
   CONSTRAINT `fk_user_house`
-    FOREIGN KEY (`House_houseId`)
+    FOREIGN KEY (`houseId`)
     REFERENCES `House` (`houseId`));
 
 
@@ -39,7 +39,8 @@ CREATE TABLE `User` (
 -- -----------------------------------------------------
 CREATE TABLE `Room` (
   `roomId` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(32),
+  `name` VARCHAR(32) NOT NULL,
+  `capacity` INT NOT NULL,
   `houseId` INT NOT NULL,
   PRIMARY KEY (`roomId`),
   CONSTRAINT `House_RoomName_Unique` UNIQUE(`name`,`houseId`),
@@ -56,6 +57,9 @@ CREATE TABLE `Task` (
   `taskId` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(32) NOT NULL,
   `description` VARCHAR(1024) NOT NULL,
+  `capacity` INT NOT NULL DEFAULT 1,
+  `duration` INT NOT NULL DEFAULT 4,
+  `occurrencePerWeek` INT NOT NULL DEFAULT 7,
   `houseId` INT NOT NULL,
   PRIMARY KEY (`taskId`),
   CONSTRAINT `House_TaskName_Unique` UNIQUE(`name`,`houseId`),
@@ -218,33 +222,20 @@ CREATE TABLE `TaskPoints` (
 -- Table `Rota`
 -- -----------------------------------------------------
 CREATE TABLE `Rota` (
-  `rotaId` INT NOT NULL,
-  PRIMARY KEY (`rotaId`));
-
-
--- -----------------------------------------------------
--- Table `Task_has_user`
--- -----------------------------------------------------
--- TODO: Rename to something like job_has_user or just
---     rota and get rid of existing rota table.
---
--- TODO: should we be using day + timeslots? it would
---     make detecting collisions easier if we allow
---     manual modification of the rota post generation.
--- -----------------------------------------------------
-CREATE TABLE `Task_Has_User` (
+  `rotaId` INT NOT NULL AUTO_INCREMENT,
   `taskId` INT NOT NULL,
   `roomId` INT NOT NULL,
   `userId` INT NOT NULL,
-  `rotaId` INT NOT NULL,
-  `status` enum('Todo','Ongoing','Complete'),
-  `startTime` VARCHAR(45) NOT NULL,
-  `endTime` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`taskId`, `roomId`, `userId`, `rotaId`),
+  `houseId` INT NOT NULL,
+  `status` enum('Todo','Ongoing','Complete') NOT NULL,
+  `day` ENUM('Monday', 'Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+  `beginTimeslot` INT NOT NULL,
+  `endTimeslot` INT NOT NULL,
+  PRIMARY KEY (`rotaId`),
   INDEX `fk_Task_has_user_user1_idx` (`userId` ASC),
   INDEX `fk_Task_has_user_Task1_idx` (`taskId` ASC),
   INDEX `fk_Task_has_user_Room1_idx` (`roomId` ASC),
-  INDEX `fk_Task_has_user_Rota1_idx` (`rotaId` ASC),
+  INDEX `fk_Task_has_user_Rota1_idx` (`houseId` ASC),
   CONSTRAINT `fk_Task_has_user_Task1`
     FOREIGN KEY (`taskId`)
     REFERENCES `Task` (`taskId`),
@@ -255,5 +246,5 @@ CREATE TABLE `Task_Has_User` (
     FOREIGN KEY (`userId`)
     REFERENCES `User` (`userId`),
   CONSTRAINT `fk_Task_has_user_Rota1`
-    FOREIGN KEY (`rotaId`)
-    REFERENCES `Rota` (`rotaId`));
+    FOREIGN KEY (`houseId`)
+    REFERENCES `House` (`houseId`));

@@ -71,7 +71,7 @@ class DatabaseDomain
 
         if(!$result) return false;
 
-        return $this->db->query("UPDATE `User` SET `House_houseId`=". $id .", `role`='owner' WHERE `userId`=" . $userId);
+        return $this->db->query("UPDATE `User` SET `houseId`=". $id .", `role`='owner' WHERE `userId`=" . $userId);
     }
 
     public function getUserIdAndPasswordHash(string $email) : array | false
@@ -122,7 +122,7 @@ class DatabaseDomain
     public function addUserToHousehold(int $userId, int $houseId) : bool
     {
         $subQuery = "SELECT `houseId` FROM `House` WHERE `houseId`=". $houseId;
-        $query = "UPDATE `User` SET `House_houseId`=(".$subQuery.") WHERE `userId`=".$userId;
+        $query = "UPDATE `User` SET `houseId`=(".$subQuery.") WHERE `userId`=".$userId;
 
         return $this->db->query($query);
     }
@@ -130,7 +130,7 @@ class DatabaseDomain
     public function removeUserFromHousehold(int $userId, int $houseId, int $adminLevel) : bool
     {
         //Owner can delete anyone except themselves
-        $query = "UPDATE `User` SET `House_houseId`= NULL AND `role`='member' WHERE `House_houseId`=".$houseId." AND `userId`=".$userId . 
+        $query = "UPDATE `User` SET `houseId`= NULL AND `role`='member' WHERE `houseId`=".$houseId." AND `userId`=".$userId . 
         " AND NOT `role`='owner'";
 
         if($adminLevel == 1)
@@ -167,7 +167,7 @@ class DatabaseDomain
 
     public function getUserHouseAndRole(int $userId)
     {
-        $query = $this->db->prepare("SELECT `House_houseId`,`role` FROM `User` WHERE `userId` = ?");
+        $query = $this->db->prepare("SELECT `houseId`,`role` FROM `User` WHERE `userId` = ?");
         $query->bind_param("i", $userId);
         $query->execute(); 
         $query->bind_result($houseId, $role);
@@ -180,7 +180,7 @@ class DatabaseDomain
 
     public function getAdminHouse(int $adminId) : int | bool
     {
-        $query = $this->db->prepare("SELECT `House_houseId` FROM `User` WHERE `userId` = ? AND (`role`='owner' OR `role`='admin')");
+        $query = $this->db->prepare("SELECT `houseId` FROM `User` WHERE `userId` = ? AND (`role`='owner' OR `role`='admin')");
         $query->bind_param("i", $adminId);
         $query->execute(); 
         $query->bind_result($houseId);
@@ -192,7 +192,7 @@ class DatabaseDomain
 
     public function getOwnerHouse(int $ownerId) : int | bool
     {
-        $query = $this->db->prepare("SELECT `House_houseId` FROM `User` WHERE `userId` = ? AND `role`='owner'");
+        $query = $this->db->prepare("SELECT `houseId` FROM `User` WHERE `userId` = ? AND `role`='owner'");
         $query->bind_param("i", $ownerId);
         $query->execute(); 
         $query->bind_result($houseId);
@@ -209,13 +209,13 @@ class DatabaseDomain
     public function promoteUser(int $houseId, int $userId) : bool
     {
         return $this->db->query("UPDATE `User` SET `role`='admin' WHERE ".
-        "`House_houseId`=" . $houseId . " AND `userId`=" . $userId);
+        "`houseId`=" . $houseId . " AND `userId`=" . $userId);
     }
 
     public function demoteUser(int $houseId, int $userId) : bool
     {
         return $this->db->query("UPDATE `User` SET `role`='member' WHERE ".
-        "`House_houseId`=" . $houseId . " AND `userId`=" . $userId);
+        "`houseId`=" . $houseId . " AND `userId`=" . $userId);
     }
 
     public function transferOwnership(int $houseId, int $memberId, int $ownerId) : bool
@@ -256,7 +256,7 @@ class DatabaseDomain
     public function getUserInviteLink(int $userId) : string
     {
         $result = $this->db->query("SELECT `houseId`, `invite_link`, `role` FROM `User` JOIN ".
-            "`House` on `House_houseId`=`houseId` WHERE `userId`=" . $userId);
+            "`House` on `houseId`=`houseId` WHERE `userId`=" . $userId);
 
         if($result === false) return "No Link";
         if($result->num_rows == 0) return "No Link";
@@ -284,7 +284,7 @@ class DatabaseDomain
 
     public function getUserHousehold(int $userId) : int | false
     {
-        $query = $this->db->prepare("SELECT `House_houseId` FROM `User` WHERE `userId` = ?");
+        $query = $this->db->prepare("SELECT `houseId` FROM `User` WHERE `userId` = ?");
         $query->bind_param("i", $userId);
         $query->execute(); 
         $query->bind_result($houseId);
@@ -296,7 +296,7 @@ class DatabaseDomain
 
     public function getUsersInHousehold(int $houseId)
     {
-        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname`, `email`, `role` FROM `User` WHERE `House_houseId` = ?");
+        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname`, `email`, `role` FROM `User` WHERE `houseId` = ?");
         $query->bind_param("i", $houseId);
         $query->execute(); 
         $query->bind_result($userId, $forename, $surname, $email, $role);
@@ -314,7 +314,7 @@ class DatabaseDomain
     public function getUsersNamesInHousehold(int $houseId) : bool | array
     {
         $result = $this->db->query("SELECT `userId`, `forename`, `surname` FROM ".
-            "`User` WHERE `House_houseId`=" . $houseId);
+            "`User` WHERE `houseId`=" . $houseId);
 
         if($result === false) return false;
 
@@ -726,7 +726,7 @@ class DatabaseDomain
 
     public function getUserSchedulesInHousehold(int $houseId)
     {
-        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname` FROM `User` WHERE `House_houseId` = ?");
+        $query = $this->db->prepare("SELECT `userId`, `forename`, `surname` FROM `User` WHERE `houseId` = ?");
         $query->bind_param("i", $houseId);
         $query->execute(); 
         $query->bind_result($userId, $forename, $surname);
@@ -751,7 +751,7 @@ class DatabaseDomain
     {
         $query = "SELECT `User`.`userId`, `day`, `beginTimeslot`,`endTimeslot` FROM `UserSchedule` ". 
         "JOIN `User` ON `User`.`userId`=`UserSchedule`.`userId` ".
-        "WHERE `House_houseId`=" . $houseId;
+        "WHERE `houseId`=" . $houseId;
 
         $result = $this->db->query($query);
 
@@ -771,7 +771,7 @@ class DatabaseDomain
         "`User_Exempt_Task` ".
         "FROM `House` LEFT JOIN `Task` ON `House`.`houseId`=`Task`.`houseId`".
         "LEFT JOIN `Room` ON `House`.`houseId`=`Room`.`houseId` ".
-        "LEFT JOIN `User` ON `House`.`houseId`=`User`.`House_houseId` ".
+        "LEFT JOIN `User` ON `House`.`houseId`=`User`.`houseId` ".
         "LEFT JOIN `Task_has_user` ON `Task_has_user`.`userId`=`User`.`userId` ".
         "LEFT JOIN `TaskSchedule` ON `TaskSchedule`.`houseId`=`House`.`houseId`".
         "LEFT JOIN `RoomSchedule` ON `RoomSchedule`.`houseId`=`House`.`houseId`".
@@ -784,7 +784,7 @@ class DatabaseDomain
         $this->db->begin_transaction();
 
         //Makes all users who were in the Household homeless
-        $query = $this->db->prepare("UPDATE `User`SET `House_houseId`=NULL, `role`='member' WHERE `House_houseId`=?");
+        $query = $this->db->prepare("UPDATE `User`SET `houseId`=NULL, `role`='member' WHERE `houseId`=?");
         $query->bind_param("i", $houseId);
         $result = $query->execute();
         $query->close();
@@ -1048,10 +1048,10 @@ class DatabaseDomain
         // - The user is not exempt from the task (UET IS NULL)
         // - The user is not exempt from the room (UER IS NULL)
         $query = "SELECT `User`.`userId`, RHT.`roomId`, RHT.`taskId` FROM `User` ".
-        "JOIN `Room_Has_Task` RHT ON `User`.`House_houseId`=`houseId` ".
+        "JOIN `Room_Has_Task` RHT ON `User`.`houseId`=`houseId` ".
         "LEFT JOIN `User_Exempt_Task` UET ON UET.`taskId`=RHT.`taskId` AND UET.`userId`=`User`.`userId` ".
         "LEFT JOIN `User_Exempt_Room` UER ON UER.`roomId`=RHT.`roomId` AND UER.`userId`=`User`.`userId` ".
-        "WHERE UER.`UERId` IS NULL AND UET.`UETId` IS NULL AND `User`.`House_houseId`=" . $houseId;
+        "WHERE UER.`UERId` IS NULL AND UET.`UETId` IS NULL AND `User`.`houseId`=" . $houseId;
 
         $result = $this->db->query($query);
 

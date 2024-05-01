@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\HouseHold;
 
-use App\Application\Actions\AdminAction;
+use App\Application\Actions\MemberAction;
 use Psr\Http\Message\ResponseInterface as Response;
 
 // If you imagine this line as 24h with each '|' being a start/stop time for cleaning:
@@ -39,7 +39,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 // our array or place them in a random order to create variety... badly explained but hopefully the point comes across.
 
 
-class RotaGenAction extends AdminAction
+class RotaGenAction extends MemberAction
 {
     protected function action(): Response
     {

@@ -53,7 +53,7 @@
 - User took a moment to get the hang of the interface but with some help managed well.
 
 ### Linking
-- User linked tasks without prompting but did not update as it was off screen.
+- User linked tasks without prompting but did not know to update as the button was off screen.
 
 ## Evaluation
 - Did you have any difficulties with the process?
@@ -99,7 +99,7 @@
 ## Notes
 - Useful to be able to do all days at once
 - User was initially confused about what the colours were
-- Handles are too small for certain people.
+- Handles are too small for certain people on tablets, also probably on mobile.
 - Accidental refreshing is a concern on tablet/mobile.
 - Thought process was complete after applying all days.
 
@@ -133,7 +133,7 @@
 
 ## Notes
 - Didn't immediately know where to go.
-- Once on Household very straightforward.
+- Once on Household page very straightforward.
 
 ## Evaluation
 - Did you have any difficulties with the process?

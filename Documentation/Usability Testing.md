@@ -38,8 +38,8 @@
 
 # Creating Exemption Rules
 ## Process
-- Create a rule that exempts one of the users from a specific task.
-- Create a rule that exempts a different user from a specific room.
+- Create a rule that exempts yourself from a specific task.
+- Create a rule that exempts yourself from a specific room.
 - Enable the 2 rules you have created.
 
 ## Evaluation

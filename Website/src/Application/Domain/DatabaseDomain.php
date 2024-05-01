@@ -779,14 +779,13 @@ class DatabaseDomain
     //TODO: Delete Rota rows (currently isn't linked, might not be required..)
     public function deleteHousehold(int $houseId) : bool
     {
-         //If there is an issue with this, god help me!
-        $queryString = "DELETE `Room`, `Task`, `House`, `Task_has_user`, ".
+        $queryString = "DELETE `Room`, `Task`, `House`, `Rota`, ".
         "`taskPoints`, `RoomSchedule`, `TaskSchedule`, `User_Exempt_Room`, ".
         "`User_Exempt_Task` ".
         "FROM `House` LEFT JOIN `Task` ON `House`.`houseId`=`Task`.`houseId`".
         "LEFT JOIN `Room` ON `House`.`houseId`=`Room`.`houseId` ".
         "LEFT JOIN `User` ON `House`.`houseId`=`User`.`houseId` ".
-        "LEFT JOIN `Task_has_user` ON `Task_has_user`.`userId`=`User`.`userId` ".
+        "LEFT JOIN `Rota` ON `Rota`.`userId`=`User`.`userId` ".
         "LEFT JOIN `TaskSchedule` ON `TaskSchedule`.`houseId`=`House`.`houseId`".
         "LEFT JOIN `RoomSchedule` ON `RoomSchedule`.`houseId`=`House`.`houseId`".
         "LEFT JOIN `User_Exempt_Task` ON `User_Exempt_Task`.`houseId`=`House`.`houseId`".
@@ -831,7 +830,7 @@ class DatabaseDomain
 
     public function createUserRoomRule(int $houseId, $userId, $roomId, $active = false) : bool | int
     {
-        $active = $active ? "TRUE" : "FALSE";
+        $active = $active ? 1 : 0;
 
         //Create new user_room rule in house
         $query = $this->db->prepare("INSERT INTO `User_Exempt_Room` (`houseId`, `userId`, `roomId`, `active`) VALUES (?, ?, ?, ?)");
@@ -844,7 +843,7 @@ class DatabaseDomain
 
     public function createUserTaskRule(int $houseId, $userId, $taskId, $active = false) : bool | int
     {
-        $active = $active ? "TRUE" : "FALSE";
+        $active = $active ? 1 : 0;
 
         //Create new user_task rule in house
         $query = $this->db->prepare("INSERT INTO `User_Exempt_Task` (`houseId`, `userId`, `taskId`, `active`) VALUES (?, ?, ?, ?)");
@@ -857,7 +856,7 @@ class DatabaseDomain
 
     public function toggleUserTaskRule(int $houseId, int $ruleId, bool $state) : bool
     {
-        $active = $state ? "TRUE" : "FALSE"; 
+        $active = $state ? 1 : 0; 
         $query = "UPDATE `User_Exempt_Task` SET `active`=" . $active . " WHERE ".
             "houseId=" . $houseId . " AND `UETId`=" . $ruleId;
 
@@ -866,7 +865,7 @@ class DatabaseDomain
 
     public function toggleUserRoomRule(int $houseId, int $ruleId, bool $state) : bool
     {
-        $active = $state ? "TRUE" : "FALSE"; 
+        $active = $state ? 1 : 0; 
         $query = "UPDATE `User_Exempt_Room` SET `active`=" . $active . " WHERE ".
             "houseId=" . $houseId . " AND `UERId`=" . $ruleId;
 

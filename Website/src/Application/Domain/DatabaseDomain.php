@@ -255,8 +255,8 @@ class DatabaseDomain
 
     public function getUserInviteLink(int $userId) : string
     {
-        $result = $this->db->query("SELECT `houseId`, `invite_link`, `role` FROM `User` JOIN ".
-            "`House` on `houseId`=`houseId` WHERE `userId`=" . $userId);
+        $result = $this->db->query("SELECT `User`.`houseId`, `invite_link`, `role` FROM `User` JOIN ".
+            "`House` on `User`.`houseId`=`House`.`houseId` WHERE `userId`=" . $userId);
 
         if($result === false) return "No Link";
         if($result->num_rows == 0) return "No Link";
@@ -388,10 +388,7 @@ class DatabaseDomain
 
     public function getHouseholdTaskDetails(int $houseId)
     {
-        $query = "SELECT `Room`.`roomId`, `Room`.`name`, `Task`.`taskId`, `Task`.`name`, `Task`.`description`, `RHTId` ".
-        "FROM `Room` RIGHT JOIN `Task` ON `Task`.`houseId`=`Room`.`houseId` ". 
-        "LEFT JOIN `Room_Has_Task` ON (`Room`.`roomId` = `Room_Has_Task`.`roomId` ".
-        "AND `Task`.`taskId`=`Room_Has_Task`.`taskId`) WHERE `Task`.`houseId`=". $houseId;
+        $query = "SELECT `roomId`,`name` FROM `Room` WHERE `houseId`=". $houseId;
 
         $result = $this->db->query($query);       
 
@@ -400,13 +397,23 @@ class DatabaseDomain
 
         $details = ['rooms' => [], 'tasks' => []];
         while($row = $result->fetch_row())
-        {
-            $details['tasks'][$row[2]]['name'] = $row[3];
-            $details['tasks'][$row[2]]['description'] = $row[4];
-            $details['tasks'][$row[2]]['rooms'][$row[0]] = (bool)($row[5] != null);
+            $details['rooms'][$row[0]] = $row[1];
 
-            if($row[0] != null)
-                $details['rooms'][$row[0]] = $row[1];
+        $query = "SELECT `Task`.`taskId`, `Task`.`name`, `Task`.`description`, `RHTId`, `Room`.`roomId` FROM `Task` ".
+                 "LEFT JOIN `Room` ON `Room`.`houseId`=`Task`.`houseId` LEFT JOIN ".
+                 "`Room_Has_Task` ON (`Task`.`taskId` = `Room_Has_Task`.`taskId` AND ".
+                 "`Room`.`roomId`=`Room_Has_Task`.`roomId`) WHERE `Task`.`houseId`=" . $houseId;
+
+        $result = $this->db->query($query);       
+
+        if($result == false)
+            return $result;
+
+        while($row = $result->fetch_row())
+        {
+            $details['tasks'][$row[0]]['name'] = $row[1];
+            $details['tasks'][$row[0]]['description'] = $row[2];
+            $details['tasks'][$row[0]]['rooms'][$row[4]] = (bool)($row[3] != null);
         }
 
         return $details;
@@ -414,24 +421,31 @@ class DatabaseDomain
 
     public function getHouseholdRoomDetails(int $houseId)
     {
-        $query = "SELECT `Room`.`roomId`, `Room`.`name`, `Task`.`taskId`, `Task`.`name`, `RHTId` ".
-        "FROM `Room` JOIN `Task` ON `Task`.`houseId`=`Room`.`houseId` ". 
-        "LEFT JOIN `Room_Has_Task` ON (`Room`.`roomId` = `Room_Has_Task`.`roomId` ".
-        "AND `Task`.`taskId`=`Room_Has_Task`.`taskId`) WHERE `Room`.`houseId`=". $houseId;
+        $query = "SELECT `taskId`,`name` FROM `Task` WHERE `houseId`=". $houseId;
 
         $result = $this->db->query($query);       
 
         if($result == false)
             return $result;
 
-        $details = ['rooms' => [], 'tasks' => []];
+        $details = ['tasks' => [], 'rooms' => []];
+        while($row = $result->fetch_row())
+            $details['tasks'][$row[0]] = $row[1];
+
+        $query = "SELECT `Room`.`roomId`, `Room`.`name`, `RHTId`, `Task`.`taskId` FROM `Room` ".
+                 "LEFT JOIN `Task` ON `Room`.`houseId`=`Task`.`houseId` LEFT JOIN ".
+                 "`Room_Has_Task` ON (`Room`.`roomId`=`Room_Has_Task`.`roomId` AND ".
+                 "`Task`.`taskId`=`Room_Has_Task`.`taskId`) WHERE `Room`.`houseId`=" . $houseId;
+
+        $result = $this->db->query($query);       
+
+        if($result == false)
+            return $result;
+
         while($row = $result->fetch_row())
         {
             $details['rooms'][$row[0]]['name'] = $row[1];
-            $details['rooms'][$row[0]]['tasks'][$row[2]] = (bool)($row[4] != null);
-
-            if($row[2] != null)
-                $details['tasks'][$row[2]] = $row[3];
+            $details['rooms'][$row[0]]['tasks'][$row[3]] = (bool)($row[2] != null);
         }
 
         return $details;
@@ -1048,7 +1062,7 @@ class DatabaseDomain
         // - The user is not exempt from the task (UET IS NULL)
         // - The user is not exempt from the room (UER IS NULL)
         $query = "SELECT `User`.`userId`, RHT.`roomId`, RHT.`taskId` FROM `User` ".
-        "JOIN `Room_Has_Task` RHT ON `User`.`houseId`=`houseId` ".
+        "JOIN `Room_Has_Task` RHT ON `User`.`houseId`=RHT.`houseId` ".
         "LEFT JOIN `User_Exempt_Task` UET ON UET.`taskId`=RHT.`taskId` AND UET.`userId`=`User`.`userId` ".
         "LEFT JOIN `User_Exempt_Room` UER ON UER.`roomId`=RHT.`roomId` AND UER.`userId`=`User`.`userId` ".
         "WHERE UER.`UERId` IS NULL AND UET.`UETId` IS NULL AND `User`.`houseId`=" . $houseId;

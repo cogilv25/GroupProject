@@ -85,15 +85,16 @@ $tasks =
                     <!--loop for room and change id to have room id -->
                     <?php 
                     $start = array_key_first($tasks);
-                    if($start != null){
-                        if(count($rooms) > 0){
-                            foreach($tasks[$start]['rooms'] as $roomId => $value){ ?>
-                                <input id="assignedCheckbox<?=$roomId?>" type="checkbox" <?=$value?"checked":""?>>
-                                <label for="assignedCheckbox<?=$roomId?>"> <?=$rooms[$roomId]?> </label>
-                                <br>
+
+                    if(count($rooms) > 0){
+                        foreach($rooms as $roomId => $name){ 
+                            $checked = $start==null ? "" : ($tasks[$start]['rooms'][$roomId] ? "checked" : ""); ?>
+                            <input id="assignedCheckbox<?=$roomId?>" type="checkbox" <?=$checked?>>
+                            <label for="assignedCheckbox<?=$roomId?>"> <?=$name?> </label>
+                            <br>
                         
                     
-                    <?php }}} ?>
+                    <?php }} ?>
                 </fieldset>
             </div>
         </div>

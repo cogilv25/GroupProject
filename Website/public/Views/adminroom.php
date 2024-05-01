@@ -94,13 +94,14 @@ TODO:   When a room is created it probably makes sense for the backend to pass b
                     <legend>Assigned Tasks</legend>
                     <?php
                         $start = array_key_first($rooms);
-                        if($start != null) {
-                            if(count($tasks) > 0) {
-                                foreach($rooms[$start]['tasks'] as $taskId => $value){?>
-                                <input id="assignedCheckbox<?=$taskId?>" type="checkbox" <?=$value ? "checked" : ""?>>
-                                <label for="assignedCheckbox<?=$taskId?>"> <?=$tasks[$taskId]?> </label>
-                                <br>
-                    <?php }}} ?>
+
+                        if(count($tasks) > 0) {
+                            foreach($tasks as $taskId => $name){
+                                $checked = $start==null ? "" : ($rooms[$start]['tasks'][$taskId] ? "checked" : ""); ?>
+                            <input id="assignedCheckbox<?=$taskId?>" type="checkbox" <?=$checked?>>
+                            <label for="assignedCheckbox<?=$taskId?>"> <?=$name?> </label>
+                            <br>
+                    <?php }} ?>
                 </fieldset>
             </div>
         </div>

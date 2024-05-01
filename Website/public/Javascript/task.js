@@ -208,7 +208,6 @@ function deleteTask(event)
 
 					renderDropdown();
 					renderTaskList();
-					renderJobList();
                 } else {
                     console.error("Error: Invalid response format");
                 }

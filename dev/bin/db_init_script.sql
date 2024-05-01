@@ -24,7 +24,7 @@ CREATE TABLE `User` (
   `surname` VARCHAR(32) NOT NULL,
   `email` VARCHAR(64) NOT NULL,
   `password` VARCHAR(256) NOT NULL,
-  `houseId` INT NOT NULL,
+  `houseId` INT,
   `personalPoints` INT,
   `role` ENUM('member','admin','owner') NOT NULL DEFAULT 'member',
   PRIMARY KEY (`userId`),
@@ -40,7 +40,7 @@ CREATE TABLE `User` (
 CREATE TABLE `Room` (
   `roomId` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(32) NOT NULL,
-  `capacity` INT NOT NULL,
+  `capacity` INT NOT NULL DEFAULT 1,
   `houseId` INT NOT NULL,
   PRIMARY KEY (`roomId`),
   CONSTRAINT `House_RoomName_Unique` UNIQUE(`name`,`houseId`),

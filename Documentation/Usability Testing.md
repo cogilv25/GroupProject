@@ -26,17 +26,6 @@
 - Were there any confusing aspects about the process?
 - Any other comments?
 
-# Add 5 Rooms and 5 Tasks
-## Process
-- Think about your own home and attempt to add 5 rooms to the application.
-- Thinking about these rooms attempt to add some cleaning tasks that would be performed in some or all of these rooms. You do not need 1 task per room for example one task could be applicable to multiple rooms or a room may not have any applicable tasks but the tasks must all apply to at least 1 room.
-- Now attempt to link the tasks to all the rooms that require that task top be performed.
-
-## Evaluation
-- Did you have any difficulties with the process?
-- Were there any confusing aspects about the process?
-- Any other comments?
-
 # Allowing Other Users to Join your Household
 ## Process
 - Find the invite link and send it to the testing co-ordinator through e-mail, social media or any other method.
@@ -50,7 +39,17 @@
 # Creating Exemption Rules
 ## Process
 - Create a rule that exempts one of the users from a specific task.
-- Create a rule that exempts one of the users from a specific room.
+- Create a rule that exempts a different user from a specific room.
+- Enable the 2 rules you have created.
+
+## Evaluation
+- Did you have any difficulties with the process?
+- Were there any confusing aspects about the process?
+- Any other comments?
+
+# Setup your Cleaning Schedule
+## Process
+- Attempt to create a schedule for when you are typically able to clean and/or not clean
 
 ## Evaluation
 - Did you have any difficulties with the process?

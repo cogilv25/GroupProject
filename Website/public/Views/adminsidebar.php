@@ -11,12 +11,13 @@
                 <div class="cell">
                 <ul class="vertical menu accordion-menu" data-accordion-menu>
                       <li><a class="navlink <?= (!isset($page) || $page == 'home') ? 'active' : '' ?>" href="/">Home</a></li>
+                      <li><a class="navlink <?= (!isset($page) && $page == 'userdashboard.php') ? 'active' : '' ?>" href="/userdashboard">User Dashboard</a></li>
                       <li><a class="navlink  <?= (isset($page) && $page == 'notifications.php') ? 'active' : '' ?>" href="/notifications">Notifications</a></li>
                       <li>
                         <a class="navlink <?= (isset($page) && $page == 'rules.php') ? 'active' : '' ?>">Rules</a>
                         <ul class="menu vertical nested">
                                 <li><a class="navlink <?= (isset($page) && $page == 'rules.php') ? 'active' : '' ?>" href="/rule">View All Rules</a></li>
-                                <li><a class="navlink  <?= (isset($page) && $page == 'addrule.php') ? 'active' : '' ?>" href="rule/create">Add Rule</a></li>
+                                <li><a class="navlink  <?= (isset($page) && $page == 'addrule.php') ? 'active' : '' ?>" href="/rule/create">Add Rule</a></li>
                         </ul>
                         </li>
                       <li><a class="navlink  <?= (isset($page) && $page == 'adminTasks.php') ? 'active' : '' ?>" href="/task">Tasks</a></li>
@@ -27,6 +28,7 @@
                         <li><a class="navlink <?= (isset($page) && $page == 'settings.php') ? 'active' : '' ?>" href="/settings">Settings</a></li>
                         <li><a class="navlink <?= (isset($page) && $page == 'logout') ? 'active' : '' ?>" href="/logout">Logout</a></li>
                       <li><a id="inviteButton" class="navlink">Invite Link</a></li>
+                     
                   </ul>
                 </div>
             </div>

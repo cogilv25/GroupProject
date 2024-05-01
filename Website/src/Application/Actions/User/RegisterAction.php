@@ -41,7 +41,7 @@ class RegisterAction extends Action
         // Check if email unavailable
         $id = $this->db->getUserId($email);
         if ($id != false)
-            throw new HttpBadRequestException($this->request, "Cannot create an account with that email address" . $id );
+            throw new HttpBadRequestException($this->request, "Cannot create an account with that email address");
 
         // Hash the password
         $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);

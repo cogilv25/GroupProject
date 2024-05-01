@@ -28,7 +28,9 @@
     text-align: center; 
 }
 
-
+.logo {
+    font-size: 5rem;
+}
 .customStyle {
     background-color: #468F8B;
     color: black;
@@ -118,6 +120,7 @@ input::placeholder {
     color: rgb(190, 47, 47);
     font-size: 1em;
     height: 10px;
+    margin-bottom:15px;
 }
 #confirmPasswordError {
     margin-bottom: 25px;

@@ -153,25 +153,22 @@ $(document).ready(function() {
             dataType: "json",
             success: function(response) {
                 if (response && response.message) {
-                                        location.reload();
-
-                    console.log("Signup form Successful: ", response.message);
-                    
+                                        location.reload();                    
                 } else {
                     console.error("Error: Invalid response format");
                 }
             },
-            error: function(error) {
-                var response;
-            try {
-                response = JSON.parse(error.responseText);
-                console.error("Error: ", response.message);
-                console.log(error.responseText);
-            } catch (e) {
-                // If response is not JSON or empty
-                console.error("Error submitting login form: ", error);
-            }
-                // Handle error
+            error: function(xhr, status, error) {
+                var errorMsg;
+                try {
+                    var err = JSON.parse(xhr.responseText);
+                    errorMsg = err.error.description; // Accessing the error description sent from the server
+                } catch (e) {
+                    errorMsg = 'Failed to parse error message.';
+                }
+                // Display error message to the user
+                // Optionally, update the frontend to show the error
+                $('#error-message').text(errorMsg).show(); // Ensure you have a container with id `error-message` in your HTML
             }
         });
     });

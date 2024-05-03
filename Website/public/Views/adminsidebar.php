@@ -52,3 +52,6 @@ border-color: black transparent transparent;
 
 }
 </style>
+<script>
+$(document).foundation();
+</script>

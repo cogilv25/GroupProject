@@ -54,11 +54,9 @@
 
 
 <script> 
-// Dashboard.js
 $(document).ready(function () {
     $(document).foundation();
     const currentUserID = <?php echo $data['currentUser']['userId']; ?>;
-    console.log(currentUserID);
 
     $('#taskTable').on('click', '.task-group-header', function() {
         var togglerClass = $(this).data('toggler');

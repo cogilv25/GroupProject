@@ -53,4 +53,6 @@ border-color: black transparent transparent;
                     <span class="title-bar-title">CleanSync</span>
                 </div>
             </div>
-        
+<script>
+    $(document).foundation();
+</script>

@@ -184,7 +184,7 @@ height:30px;
         }
     ?>
     <script>
-    $(document).foundation();
+
 
     $('#inviteButton').on('click', function(e) {
         e.preventDefault(); // Prevent the default behavior of the link
@@ -207,7 +207,6 @@ height:30px;
         // Change button text to "Copied"
         $(this).text("Copied");
     });
-
     </script>
 </body>
 </html> 
